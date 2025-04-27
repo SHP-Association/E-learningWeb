@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="hero" id="homeSection">
+    <h2>Welcome to the e-Learning Platform</h2>
+    <p>Your one-stop destination for skill enhancement.</p>
+    <a href="{% url 'course_list' %}" class="cta-button">Explore Courses</a>
+</section>
+
+<section id="featuredCourses">
+    <h2>Featured Courses</h2>
+    <div class="course-list">
+        {% for course in featured_courses %}
+        <div class="course-item">
+            {% if course.thumbnail %}
+                <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+            {% endif %}
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.description|truncatewords:20 }}</p>
+            <div class="course-meta">
+                <span class="price">${{ course.price }}</span>
+                <span class="level">{{ course.get_level_display }}</span>
+            </div>
+            <a href="{% url 'course_detail' course.id %}" class="learn-more-btn">Learn More</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

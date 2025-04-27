@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-sidebar">
+        <div class="provider-profile">
+            <img src="{{ user.profile.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile">
+            <h3>{{ user.get_full_name }}</h3>
+        </div>
+        <nav class="dashboard-nav">
+            <a href="#" class="nav-item active" data-tab="courses">My Courses</a>
+            <a href="#" class="nav-item" data-tab="analytics">Analytics</a>
+            <a href="#" class="nav-item" data-tab="earnings">Earnings</a>
+            <a href="#" class="nav-item" data-tab="settings">Settings</a>
+        </nav>
+    </div>
+    
+    <div class="dashboard-main">
+        <div class="tab-content active" id="courses">
+            <div class="header-actions">
+                <h2>My Courses</h2>
+                <button class="btn-primary" id="addCourseBtn">Add New Course</button>
+            </div>
+            <div class="courses-grid">
+                {% for course in courses %}
+                <div class="course-card">
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                    <div class="course-info">
+                        <h3>{{ course.title }}</h3>
+                        <p>Students: {{ course.enrolled_students.count }}</p>
+                        <p>Revenue: ${{ course.total_revenue }}</p>
+                    </div>
+                    <div class="course-actions">
+                        <button class="btn-edit" data-id="{{ course.id }}">Edit</button>
+                        <button class="btn-delete" data-id="{{ course.id }}">Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

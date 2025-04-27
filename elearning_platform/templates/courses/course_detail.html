@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<section id="courseDetailSection">
+    <div class="course-detail">
+        {% if course.thumbnail %}
+            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="course-thumbnail">
+        {% endif %}
+        
+        <h2 id="course-title">{{ course.title }}</h2>
+        <div class="course-meta">
+            <span class="level">Level: {{ course.get_level_display }}</span>
+            <span class="category">Category: {{ course.category }}</span>
+            <span class="duration">Duration: {{ course.duration }} minutes</span>
+            <span class="price">Price: ${{ course.price }}</span>
+        </div>
+
+        <div class="instructor-info">
+            <h3>Instructor</h3>
+            <p>{{ instructor.get_full_name }}</p>
+        </div>
+
+        <div class="course-dates">
+            {% if course.start_date %}
+                <p>Starts: {{ course.start_date }}</p>
+            {% endif %}
+            {% if course.end_date %}
+                <p>Ends: {{ course.end_date }}</p>
+            {% endif %}
+        </div>
+
+        <div class="description">
+            <h3>Course Description</h3>
+            <p>{{ course.description }}</p>
+        </div>
+
+        {% if course.enrollment_limit %}
+            <p class="enrollment-limit">Limited to {{ course.enrollment_limit }} students</p>
+        {% endif %}
+
+        {% if not is_enrolled %}
+            <button id="enroll-btn" class="enroll-button" onclick="enroll()">Enroll Now</button>
+        {% else %}
+            <p class="enrolled-status">You are enrolled in this course</p>
+        {% endif %}
+    </div>
+
+    {% include 'includes/modal.html' %}
+</section>
+{% endblock %}

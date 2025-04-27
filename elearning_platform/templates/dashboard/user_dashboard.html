@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-sidebar">
+        <div class="user-profile">
+            <img src="{{ user.profile.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Profile">
+            <h3>{{ user.get_full_name }}</h3>
+        </div>
+        <nav class="dashboard-nav">
+            <a href="#" class="nav-item active" data-tab="my-courses">My Courses</a>
+            <a href="#" class="nav-item" data-tab="progress">Progress</a>
+            <a href="#" class="nav-item" data-tab="certificates">Certificates</a>
+            <a href="#" class="nav-item" data-tab="settings">Settings</a>
+        </nav>
+    </div>
+    
+    <div class="dashboard-main">
+        <div class="tab-content active" id="my-courses">
+            <h2>My Enrolled Courses</h2>
+            <div class="courses-grid">
+                {% for enrollment in enrollments %}
+                <div class="course-card">
+                    <img src="{{ enrollment.course.thumbnail.url }}" alt="{{ enrollment.course.title }}">
+                    <div class="course-info">
+                        <h3>{{ enrollment.course.title }}</h3>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: {{ enrollment.progress }}%"></div>
+                        </div>
+                        <p>Progress: {{ enrollment.progress }}%</p>
+                    </div>
+                    <a href="{% url 'course_detail' enrollment.course.id %}" class="btn-continue">Continue Learning</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
