@@ -3,8 +3,10 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
+from django.conf import settings
+from django.templatetags.static import static
 from .models import Course
-from .forms import UserRegistrationForm
+from .forms import UserRegistrationForm, CourseForm, ProfileForm
 
 def home(request):
     featured_courses = Course.objects.filter(is_published=True)[:3]
@@ -41,10 +43,13 @@ def course_list(request):
 
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id)
+    thumbnail_url = course.thumbnail.url if course.thumbnail else static('images/default-course-thumbnail.png')
     context = {
         'course': course,
         'instructor': course.instructor,
-        'is_enrolled': False
+        'thumbnail_url': thumbnail_url,
+        'is_enrolled': False,
+        'google_form_url': settings.GOOGLE_FORM_URL,
     }
     
     if request.user.is_authenticated:
@@ -55,8 +60,29 @@ def course_detail(request, course_id):
 
 @login_required
 def dashboard(request):
-    # ...existing code...
-    pass
+    profile_picture_url = request.user.profile.profile_picture.url if request.user.profile.profile_picture else static('images/default-avatar.png')
+    context = {
+        'profile_picture_url': profile_picture_url,
+        # ...other context data...
+    }
+    return render(request, 'dashboard/provider_dashboard.html', context)
+
+@login_required
+def create_course(request):
+    if request.method == 'POST':
+        form = CourseForm(request.POST, request.FILES)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.instructor = request.user
+            course.save()
+            messages.success(request, 'Course created successfully.')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Error creating course. Please check the form.')
+    else:
+        form = CourseForm()
+    
+    return render(request, 'courses/create_course.html', {'form': form})
 
 def user_login(request):
     if request.method == 'POST':
@@ -74,13 +100,30 @@ def user_login(request):
 
 def register(request):
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
+        user_form = UserRegistrationForm(request.POST)
+        profile_form = ProfileForm(request.POST, request.FILES)
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password'])
+            user.save()
+            
+            # Update the profile created by the signal
+            profile = user.profile
+            profile.user_type = profile_form.cleaned_data['user_type']
+            profile.bio = profile_form.cleaned_data['bio']
+            profile.profile_picture = profile_form.cleaned_data['profile_picture']
+            profile.save()
+            
             login(request, user)
             messages.success(request, 'Registration successful.')
             return redirect('dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
-        form = UserRegistrationForm()
-    
-    return render(request, 'accounts/register.html', {'form': form})
+        user_form = UserRegistrationForm()
+        profile_form = ProfileForm()
+
+    return render(request, 'accounts/register.html', {
+        'user_form': user_form,
+        'profile_form': profile_form,
+    })

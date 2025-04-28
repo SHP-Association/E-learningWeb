@@ -2,29 +2,33 @@
 {% load static %}
 
 {% block content %}
-<section class="hero" id="homeSection">
-    <h2>Welcome to the e-Learning Platform</h2>
-    <p>Your one-stop destination for skill enhancement.</p>
-    <a href="{% url 'course_list' %}" class="cta-button">Explore Courses</a>
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h2>Welcome to the e-Learning Platform</h2>
+        <p>Your one-stop destination for skill enhancement.</p>
+        <a href="{% url 'course_list' %}" class="btn btn-warning btn-lg">Explore Courses</a>
+    </div>
 </section>
 
-<section id="featuredCourses">
-    <h2>Featured Courses</h2>
-    <div class="course-list">
-        {% for course in featured_courses %}
-        <div class="course-item">
-            {% if course.thumbnail %}
-                <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
-            {% endif %}
-            <h3>{{ course.title }}</h3>
-            <p>{{ course.description|truncatewords:20 }}</p>
-            <div class="course-meta">
-                <span class="price">${{ course.price }}</span>
-                <span class="level">{{ course.get_level_display }}</span>
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Featured Courses</h2>
+        <div class="row">
+            {% for course in featured_courses %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    {% if course.thumbnail %}
+                        <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text">{{ course.description|truncatewords:20 }}</p>
+                        <a href="{% url 'course_detail' course.id %}" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
             </div>
-            <a href="{% url 'course_detail' course.id %}" class="learn-more-btn">Learn More</a>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </section>
 {% endblock %}

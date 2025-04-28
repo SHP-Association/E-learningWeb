@@ -10,6 +10,8 @@
             <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="course-thumbnail">
         {% endif %}
         
+        <img src="{{ thumbnail_url }}" alt="{{ course.title }}">
+        
         <h2 id="course-title">{{ course.title }}</h2>
         <div class="course-meta">
             <span class="level">Level: {{ course.get_level_display }}</span>

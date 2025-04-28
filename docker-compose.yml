@@ -1,0 +1,44 @@
+# version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.backend
+    container_name: elearning-backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    # depends_on:
+    #   - db
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=elearning.settings
+
+  frontend:
+    build:
+      context: ./elearning-frontend
+      dockerfile: ./Dockerfile.frontend
+    container_name: elearning-frontend
+    stdin_open: true
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  # db:
+  #   image: postgres:13
+  #   container_name: elearning-db
+  #   environment:
+  #     POSTGRES_USER: elearning_user
+  #     POSTGRES_PASSWORD: elearning_password
+  #     POSTGRES_DB: elearning_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

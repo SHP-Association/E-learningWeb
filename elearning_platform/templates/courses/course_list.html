@@ -4,59 +4,53 @@
 {% block title %}Available Courses{% endblock %}
 
 {% block content %}
-<section id="courseListSection">
-    <h2>Available Courses</h2>
-    
-    <!-- Search and Filter Form -->
-    <div class="search-filter-container">
-        <form method="GET" class="search-form">
-            <input type="text" name="q" value="{{ query }}" placeholder="Search courses...">
-            
-            <select name="level">
-                <option value="">All Levels</option>
-                {% for level_code, level_name in levels %}
-                <option value="{{ level_code }}" {% if level == level_code %}selected{% endif %}>
-                    {{ level_name }}
-                </option>
-                {% endfor %}
-            </select>
-            
-            <select name="category">
-                <option value="">All Categories</option>
-                {% for cat in categories %}
-                <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>
-                    {{ cat }}
-                </option>
-                {% endfor %}
-            </select>
-            
-            <button type="submit">Search</button>
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Available Courses</h2>
+        <form method="GET" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search courses...">
+            </div>
+            <div class="col-md-3">
+                <select name="level" class="form-select">
+                    <option value="">All Levels</option>
+                    {% for level_code, level_name in levels %}
+                    <option value="{{ level_code }}" {% if level == level_code %}selected{% endif %}>
+                        {{ level_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>
+                        {{ cat }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
         </form>
-    </div>
-
-    <div class="course-list">
-        {% for course in courses %}
-        <div class="course-item">
-            <div class="course-image">
-                {% if course.thumbnail %}
-                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="course-thumbnail">
-                {% else %}
-                    <img src="{% static 'images/default-course.jpg' %}" alt="Default course image" class="course-thumbnail">
-                {% endif %}
+        <div class="row">
+            {% for course in courses %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ course.thumbnail.url|default:'static/images/default-course.jpg' }}" class="card-img-top" alt="{{ course.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text">{{ course.description|truncatewords:30 }}</p>
+                        <a href="{% url 'course_detail' course.id %}" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
             </div>
-            <h3>{{ course.title }}</h3>
-            <p>{{ course.description|truncatewords:30 }}</p>
-            <div class="course-meta">
-                <span class="level">{{ course.get_level_display }}</span>
-                <span class="price">${{ course.price }}</span>
-                <span class="duration">{{ course.duration }} mins</span>
-                <span class="instructor">By {{ course.instructor.get_full_name }}</span>
-            </div>
-            <a href="{% url 'course_detail' course.id %}" class="learn-more-btn">Learn More</a>
+            {% empty %}
+            <p class="text-center">No courses found matching your criteria.</p>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p>No courses found matching your criteria.</p>
-        {% endfor %}
     </div>
 </section>
 {% endblock %}

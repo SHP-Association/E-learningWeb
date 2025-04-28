@@ -20,7 +20,7 @@
         <div class="tab-content active" id="courses">
             <div class="header-actions">
                 <h2>My Courses</h2>
-                <button class="btn-primary" id="addCourseBtn">Add New Course</button>
+                <a href="{% url 'course_create' %}" class="btn btn-primary" id="addCourseBtn">Add New Course</a>
             </div>
             <div class="courses-grid">
                 {% for course in courses %}
