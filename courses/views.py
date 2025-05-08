@@ -1,9 +1,12 @@
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Course, Enrollment, CustomUser
 from django import forms
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from .models import Course, Enrollment, CustomUser
 
 class RegisterForm(forms.ModelForm):
     password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
@@ -81,7 +84,7 @@ def user_logout(request):
 
 def register(request):
     """
-    Handles user registration.
+    Handles user registration and sends a welcome email.
     """
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -89,7 +92,26 @@ def register(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password1'])
             user.save()
+            # Send welcome email
+            subject = 'Welcome to E-Learn!'
+            html_message = render_to_string('emails/welcome_email.html', {
+                'user': user,
+                'site_url': request.build_absolute_uri('/')
+            })
+            plain_message = f"Hi {user.username},\n\nWelcome to E-Learn! We're excited to have you on board. Start exploring our courses at {request.build_absolute_uri('/')}\n\nBest,\nThe E-Learn Team"
+            try:
+                send_mail(
+                    subject,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+            except Exception as e:
+                messages.warning(request, 'Welcome email could not be sent, but your account was created.')
             login(request, user)
+            messages.success(request, 'Registration successful! A welcome email has been sent.')
             return redirect('index')
     else:
         form = RegisterForm()
@@ -98,12 +120,31 @@ def register(request):
 @login_required
 def enroll(request, slug):
     """
-    Handles course enrollment.
+    Handles course enrollment and sends an enrollment email.
     """
     course = get_object_or_404(Course, slug=slug)
     if request.method == 'POST':
         if not Enrollment.objects.filter(student=request.user, course=course).exists():
-            Enrollment.objects.create(student=request.user, course=course)
+            enrollment = Enrollment.objects.create(student=request.user, course=course)
+            # Send enrollment email
+            subject = f'Enrolled in {course.title}'
+            html_message = render_to_string('emails/course_enrollment_email.html', {
+                'user': request.user,
+                'course': course,
+                'course_url': request.build_absolute_uri(course.get_absolute_url())
+            })
+            plain_message = f"Hi {request.user.username},\n\nYou have successfully enrolled in {course.title}! Access the course at {request.build_absolute_uri(course.get_absolute_url())}\n\nBest,\nThe E-Learn Team"
+            try:
+                send_mail(
+                    subject,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [request.user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+            except Exception as e:
+                messages.warning(request, 'Enrollment email could not be sent, but you are enrolled.')
             messages.success(request, f'You have successfully enrolled in {course.title}!')
             return redirect('course_detail', slug=course.slug)
     return render(request, 'enroll.html', {'course': course})
