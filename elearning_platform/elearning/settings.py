@@ -10,7 +10,7 @@ SECRET_KEY = 'your-secret-key'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['31bd-2409-40c4-2103-a5a2-9256-9a6f-d300-39cc.ngrok-free.app']
 
 # Application definition
 INSTALLED_APPS = [

@@ -58,14 +58,14 @@ def course_detail(request, course_id):
         
     return render(request, 'courses/course_detail.html', context)
 
-@login_required
+# @login_required
 def dashboard(request):
-    profile_picture_url = request.user.profile.profile_picture.url if request.user.profile.profile_picture else static('images/default-avatar.png')
-    context = {
-        'profile_picture_url': profile_picture_url,
-        # ...other context data...
-    }
-    return render(request, 'dashboard/provider_dashboard.html', context)
+    # profile_picture_url = request.user.profile.profile_picture.url if request.user.profile.profile_picture 
+    # context = {
+    #     'profile_picture_url': profile_picture_url,
+    #     # ...other context data...
+    # }
+    return render(request, 'dashboard/provider_dashboard.html')
 
 @login_required
 def create_course(request):
