@@ -8,6 +8,7 @@ click==8.1.6
 colorama==0.4.6
 cryptography==41.0.7
 Django==4.2.11
+django-jazzmin
 gunicorn
 idna==3.6
 Jinja2==3.1.2
