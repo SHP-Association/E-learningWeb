@@ -180,7 +180,8 @@ class EnrollmentListCreateAPIView(generics.ListCreateAPIView):
         user = self.request.user
         print(user, "is requesting enrollments")
         if user.is_authenticated:
-            return Enrollment.objects.filter(student=user).order_by('-enrolled_at')
+            # return Enrollment.objects.filter(student=user).order_by('-enrolled_at')
+            return Enrollment.objects.all().order_by('-enrolled_at')
         return Enrollment.objects.none()
 
     def get_permissions(self):
