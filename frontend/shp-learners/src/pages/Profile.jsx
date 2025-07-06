@@ -85,14 +85,23 @@ function Profile({ user, enrollments, navigate }) {
           body.append(field.key, form[field.key]);
         }
       });
+      // Get CSRF token from cookie
+      const csrfToken = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+      if (!csrfToken) {
+        alert('CSRF token not found. Please refresh the page and try again.');
+        return;
+      }
+      // Debug: log CSRF token
+      // console.log('CSRF Token:', csrfToken);
+
       const headers = {
-        'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '',
+        'X-CSRFToken': csrfToken,
         // Do NOT set Content-Type when using FormData
       };
       const res = await fetch(`${BACKEND_URL}/api/users/${currentUser.id}/`, {
         method: 'PATCH',
         headers,
-        credentials: 'include',
+        credentials: 'include', // This is required for cookies/session auth
         body,
       });
       if (res.ok) {
@@ -100,7 +109,13 @@ function Profile({ user, enrollments, navigate }) {
         handleLogin(updated);
         setEditing(false);
       } else {
-        alert('Failed to update profile.');
+        // Try to parse error message
+        let msg = 'Failed to update profile.';
+        try {
+          const err = await res.json();
+          if (err.detail) msg = err.detail;
+        } catch {}
+        alert(msg);
       }
     } catch {
       alert('Failed to update profile.');

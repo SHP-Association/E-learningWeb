@@ -32,7 +32,7 @@ function CourseDetail({ course, isEnrolled, user, navigate, enrollment }) {
                 className="rounded-xl border shadow max-w-full"
                 style={{ maxHeight: 320, objectFit: 'contain', background: '#f3f4f6' }}
               />
-              <span className="text-xs text-gray-500 mt-2">Original Size Preview</span>
+              {/* <span className="text-xs text-gray-500 mt-2">Original Size Preview</span> */}
             </div>
           ) : category.image ? (
             <img
