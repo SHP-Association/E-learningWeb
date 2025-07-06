@@ -4,8 +4,9 @@ function PasswordReset({ navigate }) {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
@@ -15,16 +16,28 @@ function PasswordReset({ navigate }) {
       return;
     }
 
-    // Simulate sending a password reset email
-    // In a real application, you would make an API call to your backend here
-    // For demonstration, we'll just navigate to a "done" page.
-    console.log(`Simulating password reset request for: ${email}`);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/password_reset/request/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-    // Assuming success for demo purposes
-    setMessage('If your email is registered, you will receive a password reset link.');
-    setTimeout(() => {
-      navigate('/password_reset/done'); // Navigate to the done page
-    }, 1500); // Simulate a short delay for email sending
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage(data.message || 'If your email is registered, you will receive a password reset link.');
+        setTimeout(() => {
+          navigate('/password_reset/done');
+        }, 1500);
+      } else {
+        setError(data.error || 'Failed to send password reset email. Please try again.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again later.');
+    }
   };
 
   return (

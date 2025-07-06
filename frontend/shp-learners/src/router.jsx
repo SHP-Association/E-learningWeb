@@ -1,8 +1,6 @@
 import React, { useEffect, useState, Suspense } from 'react';
-// No longer need to import Home directly since it's lazy-loaded
-// import Home from './pages/Home.jsx';
-// Dynamically import components using React.lazy
-const Home = React.lazy(() => import('./pages/Home.jsx')); // Added back lazy load for Home
+
+const Home = React.lazy(() => import('./pages/Home.jsx'));
 const CourseDetail = React.lazy(() => import('./pages/CourseDetail.jsx'));
 const Enroll = React.lazy(() => import('./pages/Enroll.jsx'));
 const FAQ = React.lazy(() => import('./pages/FAQ.jsx'));
@@ -14,24 +12,7 @@ const PasswordResetDone = React.lazy(() => import('./pages/PasswordResetDone.jsx
 const PasswordResetConfirm = React.lazy(() => import('./pages/PasswordResetConfirm.jsx'));
 const PasswordResetComplete = React.lazy(() => import('./pages/PasswordResetComplete.jsx'));
 
-// Use Vite's import.meta.env or fallback to localhost
 const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
-
-const getCookie = (name) => {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
 
 export default function Router({
   currentRoute,
@@ -46,7 +27,6 @@ export default function Router({
   const [enrollments, setEnrollments] = useState(initialEnrollments || []);
   const [loading, setLoading] = useState(false);
 
-  // Fetch courses on component mount
   useEffect(() => {
     setLoading(true);
     fetch(`${BACKEND_URL}/api/courses/`, { credentials: 'include' })
@@ -61,9 +41,8 @@ export default function Router({
         console.error("Failed to fetch courses:", error);
       })
       .finally(() => setLoading(false));
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
-  // Fetch enrollments if user is logged in
   useEffect(() => {
     if (user) {
       setLoading(true);
@@ -80,28 +59,21 @@ export default function Router({
         })
         .finally(() => setLoading(false));
     }
-  }, [user]); // Re-run when user changes
+  }, [user]);
 
-  // The enrollment logic in the original useEffect was misplaced and would try to enroll on every user change.
-  // Enrollment should be triggered by an action (e.g., a button click) within the Enroll component,
-  // not automatically from the Router. The `addEnrollment` prop is already there for this.
-
-  const pathSegments = currentRoute.split('/').filter(Boolean);
-
-  // Redirect helper component to avoid calling navigate in render
   function Redirect({ to }) {
     useEffect(() => {
       navigate(to);
-    }, [to, navigate]); // Added navigate to dependency array
+    }, [to, navigate]);
     return null;
   }
 
-  // Use Redirect component for '/courses'
+  const pathSegments = currentRoute.split('/').filter(Boolean);
+
   if (pathSegments[0] === 'courses') {
     return <Redirect to="/" />;
   }
 
-  // Helper functions for route matching
   const isHome = pathSegments.length === 0 || pathSegments[0] === 'index';
   const isCourseDetail = pathSegments[0] === 'course' && pathSegments[1];
   const isProfile = pathSegments[0] === 'profile';
@@ -151,8 +123,7 @@ export default function Router({
   } else if (isPasswordReset) {
     if (pathSegments[1] === 'done') {
       ComponentToRender = PasswordResetDone;
-    } else if (pathSegments[1] && pathSegments[2]) { // For /password_reset/confirm/:uid/:token
-      // These values need to be passed to the PasswordResetConfirm component
+    } else if (pathSegments[1] && pathSegments[2] && pathSegments[1] !== 'complete') {
       const uid = pathSegments[1];
       const token = pathSegments[2];
       ComponentToRender = PasswordResetConfirm;
@@ -162,19 +133,16 @@ export default function Router({
     } else {
       ComponentToRender = PasswordReset;
     }
-    componentProps = { ...componentProps, navigate }; // Merge navigate prop
+    componentProps = { ...componentProps, navigate };
   } else {
-    // Default fallback
     ComponentToRender = Home;
     componentProps = { courses, navigate };
   }
 
-  // Show a loading indicator if data is being fetched
   if (loading) {
     return <div className="text-center text-xl mt-10">Loading data...</div>;
   }
 
-  // Render the selected component within a Suspense boundary
   return (
     <Suspense fallback={<div className="text-center text-xl mt-10">Loading component...</div>}>
       <ComponentToRender {...componentProps} />

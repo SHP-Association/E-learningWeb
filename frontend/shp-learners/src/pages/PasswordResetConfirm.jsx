@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
+// PasswordResetConfirm.jsx
+import React, { useState, useEffect } from 'react';
 
-function PasswordResetConfirm({ navigate }) {
+function PasswordResetConfirm({ navigate, uid, token }) { // uid and token are now passed as props
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
   // In a real app, uidb64 and token would be extracted from the URL (e.g., via React Router)
   // For this simulation, we'll just show the form.
+  // The router.jsx already extracts these and passes them as props.
+  useEffect(() => {
+    // You might want to do some initial validation of uid and token here if needed
+    // before the form is even submitted, e.g., to display an invalid link error
+    // However, the backend will ultimately validate them upon submission.
+  }, [uid, token]);
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => { // Made async to handle fetch
     e.preventDefault();
     setError('');
     setMessage('');
@@ -23,14 +31,50 @@ function PasswordResetConfirm({ navigate }) {
       return;
     }
 
-    // Simulate password change
-    // In a real application, you would make an API call to your backend
-    console.log('Simulating password change for user with new password.');
-    setMessage('Your password has been successfully reset.');
+    try {
+      const response = await fetch(`${BACKEND_URL}/reset/${uid}/${token}/`, { // Fixed URL
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // If you're using CSRF protection, you'd need to include the CSRF token here.
+          // For simplicity, we'll omit it for now, but it's crucial for production.
+          // 'X-CSRFToken': getCsrfToken(), // You'd need a function to get this from a cookie
+        },
+        body: JSON.stringify({
+          new_password1: newPassword, // Django expects new_password1
+          new_password2: confirmPassword, // Django expects new_password2
+        }),
+        credentials: 'include' // Important for cookies, if Django uses session cookies for CSRF
+      });
 
-    setTimeout(() => {
-      navigate('/password_reset/complete'); // Navigate to the complete page
-    }, 1500);
+      const data = await response.json(); // Assuming Django sends JSON responses
+
+      if (response.ok) {
+        setMessage('Your password has been successfully reset.');
+        setTimeout(() => {
+          navigate('/password_reset/complete'); // Navigate to the complete page
+        }, 1500);
+      } else {
+        // Handle specific Django error messages
+        if (data && data.new_password2) {
+          setError(data.new_password2[0]); // e.g., "The two password fields didn't match."
+        } else if (data && data.new_password1) {
+            setError(data.new_password1[0]); // e.g., "This password is too short."
+        }
+        else if (data && data.token) { // Invalid token
+            setError(data.token[0]);
+        }
+        else if (data && data.uid) { // Invalid uid
+            setError(data.uid[0]);
+        }
+        else {
+            setError('Failed to reset password. Please try again.');
+        }
+      }
+    } catch (apiError) {
+      console.error('Error resetting password:', apiError);
+      setError('An error occurred. Please try again later.');
+    }
   };
 
   return (
@@ -73,7 +117,7 @@ function PasswordResetConfirm({ navigate }) {
               type="password"
               name="confirm_password"
               id="confirm_password"
-              className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
+              className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus::ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
               required
               autoComplete="new-password"
               value={confirmPassword}
