@@ -1,31 +1,20 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-# import dj_database_url
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- Core Settings ---
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# Get SECRET_KEY from environment variable. Provide a default for local development.
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-@pqg#nf+l=6lp)x5(+d8-(u$ud^1mujk5^(+@5lv3t)azj+jw*')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# Get DEBUG from environment variable. Convert to boolean.
-DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 't')
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() in ('true', '1', 't')
 
-# ALLOWED_HOSTS needs to be a list of strings.
-# Get ALLOWED_HOSTS from environment variable, split by comma, and strip whitespace.
-# Provide a default for local development.
-ALLOWED_HOSTS_STR = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,')
-ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',') if host.strip()]
+ALLOWED_HOSTS_STR = os.getenv('DJANGO_ALLOWED_HOSTS')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',') if host.strip()] if ALLOWED_HOSTS_STR else []
 
-# Application definition
 INSTALLED_APPS = [
     'jazzmin',
     'corsheaders',  # <-- Add this line at the top
@@ -59,9 +48,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# IMPORTANT: Replace 'X' with your actual Django project's main module name (e.g., 'myproject')
-# Get ROOT_URLCONF from environment variable, or use a default.
-ROOT_URLCONF = os.getenv('DJANGO_ROOT_URLCONF', 'X.urls') # Example: 'myproject.urls'
+ROOT_URLCONF = os.getenv('DJANGO_ROOT_URLCONF')
 
 TEMPLATES = [
     {
@@ -79,15 +66,11 @@ TEMPLATES = [
     },
 ]
 
-# IMPORTANT: Replace 'X' with your actual Django project's main module name (e.g., 'myproject')
-# Get WSGI_APPLICATION from environment variable, or use a default.
-WSGI_APPLICATION = os.getenv('DJANGO_WSGI_APPLICATION', 'X.wsgi.application') # Example: 'myproject.wsgi.application'
+WSGI_APPLICATION = os.getenv('DJANGO_WSGI_APPLICATION')
 
 # --- Database Configuration ---
-# Hardcoded to SQLite by default, but can be overridden by environment variables.
-# For more complex DBs (PostgreSQL, MySQL), you'd parse more variables (NAME, USER, PASSWORD, HOST, PORT).
-DATABASE_ENGINE = os.getenv('DJANGO_DB_ENGINE', 'django.db.backends.sqlite3')
-DATABASE_NAME = os.getenv('DJANGO_DB_NAME', BASE_DIR / 'db.sqlite3')
+DATABASE_ENGINE = os.getenv('DJANGO_DB_ENGINE')
+DATABASE_NAME = os.getenv('DJANGO_DB_NAME')
 
 DATABASES = {
     'default': {
@@ -96,15 +79,6 @@ DATABASES = {
     }
 }
 
-
-# DATABASES = {
-#     'default': dj_database_url.parse(
-#         "postgresql://sandesh:EreQwn1yHR3YG00BnNfkPqkhJc9zHZTC@dpg-d1gdml7fte5s738gvq6g-a/shplearner",
-#         conn_max_age=600,  # helps with persistent connections
-#         ssl_require=True   # ensure secure connection
-#     )
-# }
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -112,27 +86,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
-# Get TIME_ZONE from environment variable.
-TIME_ZONE = os.getenv('DJANGO_TIME_ZONE', 'UTC') # Consider 'Asia/Kolkata' if your primary users are in India for local time awareness
+TIME_ZONE = os.getenv('DJANGO_TIME_ZONE')
 USE_I18N = True
-USE_TZ = True # Django's recommended way to handle datetimes
+USE_TZ = True
 
-# Static and media files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static'] # Django will look for static files here in development
-STATIC_ROOT = BASE_DIR / 'staticfiles' # Directory where `python manage.py collectstatic` will gather all static files for deployment
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media' # Directory where user-uploaded media will be stored
+MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'Account.CustomUser'
 
-# Custom User Model
-AUTH_USER_MODEL = 'Account.CustomUser' 
-
-# Django REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -144,37 +111,28 @@ REST_FRAMEWORK = {
 }
 
 # --- Email Configuration ---
-# Get email settings from environment variables.
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your_email@example.com') # IMPORTANT: Change default
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your_email_password') # IMPORTANT: Change default
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'your_email@example.com') # IMPORTANT: Change default
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT')) if os.getenv('EMAIL_PORT') else None
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False').lower() in ('true', '1', 't')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 # --- Security Settings ---
-# Get security settings from environment variables, relying on DEBUG for defaults.
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 't') and not DEBUG
 SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1', 't') and not DEBUG
 CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() in ('true', '1', 't') and not DEBUG
 SECURE_BROWSER_XSS_FILTER = os.getenv('SECURE_BROWSER_XSS_FILTER', 'True').lower() in ('true', '1', 't')
 SECURE_CONTENT_TYPE_NOSNIFF = os.getenv('SECURE_CONTENT_TYPE_NOSNIFF', 'True').lower() in ('true', '1', 't')
 
-# CSRF_TRUSTED_ORIGINS should include all domains that serve your site.
-# Get CSRF_TRUSTED_ORIGINS from environment variable, split by comma.
-CSRF_TRUSTED_ORIGINS_STR = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1,http://localhost,http://localhost:5173,http://127.0.0.1:5173')
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS_STR.split(',') if origin.strip()]
+CSRF_TRUSTED_ORIGINS_STR = os.getenv('CSRF_TRUSTED_ORIGINS')
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS_STR.split(',') if origin.strip()] if CSRF_TRUSTED_ORIGINS_STR else []
 
-# CORS settings for development (allow all origins)
-# Get CORS_ALLOWED_ORIGINS from environment variable, split by comma.
-CORS_ALLOWED_ORIGINS_STR = os.getenv('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1,http://localhost,http://localhost:5173,http://127.0.0.1:5173,http://192.168.184.221:4173')
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS_STR.split(',') if origin.strip()]
-CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'True').lower() in ('true', '1', 't')
+CORS_ALLOWED_ORIGINS_STR = os.getenv('CORS_ALLOWED_ORIGINS')
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS_STR.split(',') if origin.strip()] if CORS_ALLOWED_ORIGINS_STR else []
+CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'False').lower() in ('true', '1', 't')
 
-
-# --- Jazzmin Settings ---
-# Reference: https://django-jazzmin.readthedocs.io/
 JAZZMIN_SETTINGS = {
     "site_title": "SHP-Learner Admin",
     "site_header": "SHP-Learner",
@@ -190,13 +148,19 @@ JAZZMIN_SETTINGS = {
     "order_with_respect_to": ["courses", "auth"],
 
     "search_model": ["courses.Course", "Account.CustomUser"],
-
-    "topmenu_links": [
+ "topmenu_links": [
         {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "View Live Site", "url": "https://shplearner.netlify.app/", "new_window": True},
-        {"name": "Support & Docs", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
+        {
+            "name": "View Live Site",
+            "url": os.getenv("FRONTEND_URL"),
+            "new_window": True,
+        },
+        {
+            "name": "Support & Docs",
+            "url": "https://github.com/farridav/django-jazzmin/issues",
+            "new_window": True,
+        },
     ],
-
     "usermenu_links": [
         {"name": "My Profile", "url": "admin:Account_customuser_change", "permissions": ["Account.change_customuser"]},
     ],
