@@ -10,34 +10,58 @@ function CourseDetail({ course, isEnrolled, user, navigate, enrollment }) {
   const instructor = course.instructor || {};
   const category = course.category || {};
 
+  // Helper: Format multiline description with bullets and emojis
+  const formatDescription = (desc) => {
+    if (!desc) return null;
+    return desc.split(/\r?\n|• /).filter(Boolean).map((line, idx) => (
+      <li key={idx} className="mb-1">{line.replace(/^[-•\s]+/, '')}</li>
+    ));
+  };
+
   return (
-    <div className="bg-white p-6 sm:p-10 rounded-2xl shadow-2xl border border-gray-100 max-w-4xl mx-auto mt-10">
-      <div className="flex flex-col md:flex-row gap-8 mb-6">
-        {/* Course Thumbnail or Category Image */}
-        <div className="flex-shrink-0">
+    <div className="bg-gradient-to-br from-blue-50 to-white p-0 sm:p-0 rounded-2xl shadow-2xl border border-gray-100 max-w-4xl mx-auto mt-10">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row gap-8 p-8 border-b border-gray-100 bg-white rounded-t-2xl">
+        {/* Thumbnail */}
+        <div className="flex-shrink-0 w-full md:w-80 flex flex-col items-center">
           {course.thumbnail ? (
-            <img
-              src={course.thumbnail}
-              alt={course.title}
-              className="w-56 h-56 object-cover rounded-xl border shadow"
-            />
+            <div className="relative w-full flex flex-col items-center">
+              <img
+                src={course.thumbnail}
+                alt={course.title}
+                className="rounded-xl border shadow max-w-full"
+                style={{ maxHeight: 320, objectFit: 'contain', background: '#f3f4f6' }}
+              />
+              <span className="text-xs text-gray-500 mt-2">Original Size Preview</span>
+            </div>
           ) : category.image ? (
             <img
               src={category.image}
               alt={category.name}
-              className="w-56 h-56 object-cover rounded-xl border shadow"
+              className="rounded-xl border shadow max-w-full"
+              style={{ maxHeight: 320, objectFit: 'contain', background: '#f3f4f6' }}
             />
           ) : (
-            <div className="w-56 h-56 flex items-center justify-center bg-gray-100 rounded-xl border text-gray-400">
+            <div className="w-full h-44 md:h-72 flex items-center justify-center bg-gray-100 rounded-xl border text-gray-400">
               No Image
             </div>
           )}
+          {course.promo_video_url && (
+            <a
+              href={course.promo_video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-4 bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition text-center"
+            >
+              ▶ Watch Promo Video
+            </a>
+          )}
         </div>
         {/* Main Info */}
-        <div className="flex-1">
-          <h1 className="text-3xl sm:text-4xl font-bold text-blue-800 mb-2">{course.title}</h1>
+        <div className="flex-1 flex flex-col">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-2">{course.title}</h1>
           <p className="text-gray-700 mb-3 text-lg">{course.short_description || course.description}</p>
-          <div className="flex flex-wrap gap-4 items-center mb-3">
+          <div className="flex flex-wrap gap-3 items-center mb-3">
             <span className="inline-flex items-center bg-blue-50 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
               <strong>Category:</strong>&nbsp;{category.name}
             </span>
@@ -48,21 +72,28 @@ function CourseDetail({ course, isEnrolled, user, navigate, enrollment }) {
               <strong>Lectures:</strong>&nbsp;{course.total_lectures}
             </span>
             <span className="inline-flex items-center bg-purple-50 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-              <strong>Rating:</strong>&nbsp;{course.average_rating}
+              <strong>Rating:</strong>&nbsp;{Number(course.average_rating || 0).toFixed(2)}
             </span>
             <span className="inline-flex items-center bg-gray-50 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
               <strong>Reviews:</strong>&nbsp;{course.number_of_reviews}
+            </span>
+            <span className="inline-flex items-center bg-pink-50 text-pink-800 px-3 py-1 rounded-full text-sm font-medium">
+              <strong>Price:</strong>&nbsp;{course.is_free ? 'Free of Cost' : `₹${course.price}`}
             </span>
           </div>
           <div className="flex items-center gap-3 mb-3">
             <span className="font-semibold text-gray-800">Instructor:</span>
             <span className="flex items-center gap-2">
-              {instructor.profile_picture && (
+              {instructor.profile_picture ? (
                 <img
                   src={instructor.profile_picture}
                   alt={instructor.username}
                   className="w-8 h-8 rounded-full object-cover border"
                 />
+              ) : (
+                <span className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg">
+                  {instructor.username?.[0]?.toUpperCase() || "?"}
+                </span>
               )}
               <span className="font-medium">{instructor.username}</span>
               {instructor.instructor_rating > 0 && (
@@ -73,9 +104,6 @@ function CourseDetail({ course, isEnrolled, user, navigate, enrollment }) {
             </span>
           </div>
           <div className="flex flex-wrap gap-4 mb-2">
-            <span className="text-gray-700">
-              <strong>Price:</strong> {course.is_free ? 'Free of Cost' : `₹${course.price}`}
-            </span>
             <span className="text-gray-500 text-sm">
               <strong>Published:</strong>{' '}
               {new Date(course.created_at).toLocaleDateString('en-US', {
@@ -84,51 +112,53 @@ function CourseDetail({ course, isEnrolled, user, navigate, enrollment }) {
                 day: 'numeric',
               })}
             </span>
+            {course.duration && (
+              <span className="text-gray-700 text-sm">
+                <strong>Duration:</strong> {course.duration}
+              </span>
+            )}
           </div>
-          {course.duration && (
-            <div className="text-gray-700 mb-2">
-              <strong>Duration:</strong> {course.duration}
-            </div>
-          )}
-          {course.promo_video_url && (
-            <div className="mb-2">
-              <a
-                href={course.promo_video_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition"
-              >
-                ▶ Watch Promo Video
-              </a>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* What you'll learn, Requirements, Target Audience */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {course.what_you_will_learn && (
-          <section className="bg-blue-50 rounded-xl p-4">
-            <h2 className="text-lg font-semibold text-blue-900 mb-1">What you'll learn</h2>
-            <p className="text-gray-700 text-sm">{course.what_you_will_learn}</p>
-          </section>
-        )}
-        {course.requirements && (
-          <section className="bg-green-50 rounded-xl p-4">
-            <h2 className="text-lg font-semibold text-green-900 mb-1">Requirements</h2>
-            <p className="text-gray-700 text-sm">{course.requirements}</p>
-          </section>
-        )}
-        {course.target_audience && (
-          <section className="bg-yellow-50 rounded-xl p-4">
-            <h2 className="text-lg font-semibold text-yellow-900 mb-1">Target Audience</h2>
-            <p className="text-gray-700 text-sm">{course.target_audience}</p>
-          </section>
+      {/* Description Section */}
+      <div className="px-8 py-6 border-b border-gray-100 bg-white">
+        <h2 className="text-xl font-semibold text-blue-900 mb-2">Course Overview</h2>
+        {course.description ? (
+          <ul className="list-disc pl-6 text-gray-800 text-base leading-relaxed">
+            {formatDescription(course.description)}
+          </ul>
+        ) : (
+          <p className="text-gray-600">No detailed description available.</p>
         )}
       </div>
 
+      {/* What you'll learn, Requirements, Target Audience */}
+      {(course.what_you_will_learn || course.requirements || course.target_audience) && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8 py-6 border-b border-gray-100 bg-white">
+          {course.what_you_will_learn && (
+            <section className="bg-blue-50 rounded-xl p-4">
+              <h2 className="text-lg font-semibold text-blue-900 mb-1">What you'll learn</h2>
+              <p className="text-gray-700 text-sm">{course.what_you_will_learn}</p>
+            </section>
+          )}
+          {course.requirements && (
+            <section className="bg-green-50 rounded-xl p-4">
+              <h2 className="text-lg font-semibold text-green-900 mb-1">Requirements</h2>
+              <p className="text-gray-700 text-sm">{course.requirements}</p>
+            </section>
+          )}
+          {course.target_audience && (
+            <section className="bg-yellow-50 rounded-xl p-4">
+              <h2 className="text-lg font-semibold text-yellow-900 mb-1">Target Audience</h2>
+              <p className="text-gray-700 text-sm">{course.target_audience}</p>
+            </section>
+          )}
+        </div>
+      )}
+
       {/* Enrollment/Progress Section */}
-      <div className="mb-8">
+      <div className="px-8 py-6 border-b border-gray-100 bg-white">
         {user ? (
           isEnrolled ? (
             <div className="bg-green-50 border border-green-300 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -182,7 +212,7 @@ function CourseDetail({ course, isEnrolled, user, navigate, enrollment }) {
       </div>
 
       {/* Lessons Section */}
-      <div className="mt-8">
+      <div className="px-8 py-6 border-b border-gray-100 bg-white">
         <h2 className="text-2xl font-semibold text-gray-800 mb-3">Lessons</h2>
         {isEnrolled ? (
           course.lessons && course.lessons.length > 0 ? (
@@ -221,7 +251,7 @@ function CourseDetail({ course, isEnrolled, user, navigate, enrollment }) {
       </div>
 
       {/* More Details Section */}
-      <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="px-8 py-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-b-2xl">
         <div className="bg-gray-50 rounded-xl p-5 border">
           <h3 className="font-semibold text-gray-800 mb-2">Course Details</h3>
           <ul className="text-gray-700 text-sm space-y-1">

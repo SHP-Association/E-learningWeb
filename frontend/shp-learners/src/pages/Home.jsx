@@ -93,133 +93,101 @@ function Home({ courses: initialCourses, navigate }) {
           <p className="text-sm mt-2">Please check your internet connection or try again later.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {courses && courses.length > 0 ? (
             courses.map((course, idx) => (
               <div
-  key={course.slug}
-  className="card bg-white p-6 rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 ease-in-out border border-gray-100 transform hover:-translate-y-2 hover:scale-[1.03] relative overflow-hidden group flex flex-col cursor-pointer"
-  onClick={() => navigate(`/course/${course.slug}`)}
-  style={{ minHeight: 440 }}
->
-  {/* FEATURED Badge */}
-  {idx === 0 && (
-    <span className="absolute top-4 left-4 bg-yellow-400 text-blue-900 text-xs font-semibold px-3 py-1 rounded-full z-10 tracking-wide shadow-md animate-pulse">
-      🌟 FEATURED
-    </span>
-  )}
-
-  {/* FREE Badge */}
-  {course.is_free && (
-    <span className="absolute top-4 right-4 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full z-10 shadow-md">
-      FREE
-    </span>
-  )}
-
-  {/* Thumbnail */}
-  <div className="w-full h-48 overflow-hidden rounded-xl mb-4 bg-gray-100 flex items-center justify-center">
-    {course.thumbnail ? (
-      <img
-        src={course.thumbnail}
-        alt={course.title}
-        className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-      />
-    ) : course.category?.image ? (
-      <img
-        src={course.category.image}
-        alt={course.category.name}
-        className="w-full h-full object-cover opacity-80"
-      />
-    ) : (
-      <div className="text-gray-400 flex flex-col items-center justify-center h-full w-full">
-        <svg className="w-12 h-12 mb-1 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2C6.48 2 2 6.48...z" />
-        </svg>
-        <span className="text-sm">No Image Available</span>
-      </div>
-    )}
-  </div>
-
-  {/* Title */}
-  <h3 className="text-xl font-bold mb-1 text-blue-800 group-hover:text-blue-900 transition-colors duration-300 leading-snug">
-    {course.title}
-  </h3>
-
-  {/* Rating */}
-  <div className="flex items-center text-sm text-gray-600 mb-3">
-    {renderStars(course.average_rating)}
-    <span className="ml-2 font-semibold">{Number(course.average_rating || 0).toFixed(1)}</span>
-    <span className="ml-1 text-xs text-gray-500">({course.number_of_reviews || 0} reviews)</span>
-  </div>
-
-  {/* Details Info */}
-  <div className="text-sm text-gray-600 mb-4 space-y-1">
-    <p>
-      <span className="font-medium">📂 Category:</span>{" "}
-      <span className="text-blue-600 font-semibold">{course.category?.name || 'Uncategorized'}</span>
-    </p>
-    <p>
-      <span className="font-medium">🎯 Level:</span>{" "}
-      {course.level ? course.level.charAt(0).toUpperCase() + course.level.slice(1) : 'N/A'}
-    </p>
-    <p>
-      <span className="font-medium">🎥 Lectures:</span> {course.total_lectures || 0}
-    </p>
-  </div>
-
-  {/* Description */}
-  <p className="text-sm text-gray-700 mb-4 leading-relaxed line-clamp-3">
-    {course.short_description ||
-      (course.description?.split(' ').slice(0, 25).join(' ') +
-        (course.description.split(' ').length > 25 ? '...' : '')) ||
-      'No description available.'}
-  </p>
-
-  {/* Instructor Info */}
-  <div className="flex items-center text-sm text-gray-700 mb-4">
-    {course.instructor?.profile_picture ? (
-      <img
-        src={course.instructor.profile_picture}
-        alt={course.instructor.username}
-        className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-300"
-      />
-    ) : (
-      <svg className="w-8 h-8 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 9a3 3 0 100-6...z" />
-      </svg>
-    )}
-    <span>
-      <span className="font-semibold">By:</span>{" "}
-      <span className="ml-1 text-blue-600">{course.instructor?.username || 'N/A'}</span>
-    </span>
-  </div>
-
-  {/* Price */}
-  <div className="flex items-center justify-between text-gray-800 border-t pt-4">
-    <strong className="text-base">Price:</strong>
-    {course.is_free ? (
-      <span className="text-green-600 font-bold text-lg">Free</span>
-    ) : (
-      <span className="text-blue-800 font-bold text-lg">
-        ₹{typeof course.price === 'number'
-          ? course.price.toFixed(2)
-          : Number(parseFloat(course.price)).toFixed(2)}
-      </span>
-    )}
-  </div>
-
-  {/* CTA Button */}
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      navigate(`/course/${course.slug}`);
-    }}
-    className="btn bg-blue-800 text-white mt-5 py-2 rounded-lg w-full hover:bg-blue-700 transition-transform hover:scale-105 text-sm font-semibold"
-  >
-    View Details
-  </button>
-</div>
-
+                key={course.slug}
+                className="yt-card group bg-white rounded-xl shadow-md hover:shadow-2xl border border-gray-100 transition-all duration-300 flex flex-col cursor-pointer overflow-hidden"
+                onClick={() => navigate(`/course/${course.slug}`)}
+              >
+                {/* Thumbnail */}
+                <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
+                  {course.thumbnail ? (
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-full object-contain bg-white group-hover:scale-105 transition-transform duration-300"
+                      style={{ maxHeight: '220px' }}
+                    />
+                  ) : course.category?.image ? (
+                    <img
+                      src={course.category.image}
+                      alt={course.category.name}
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full w-full text-gray-400">
+                      <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48...z" />
+                      </svg>
+                    </div>
+                  )}
+                  {/* Badges */}
+                  {idx === 0 && (
+                    <span className="absolute top-2 left-2 bg-yellow-400 text-blue-900 text-xs font-semibold px-2 py-1 rounded z-10 shadow animate-pulse">
+                      🌟 FEATURED
+                    </span>
+                  )}
+                  {course.is_free && (
+                    <span className="absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded z-10 shadow">
+                      FREE
+                    </span>
+                  )}
+                </div>
+                {/* Card Body */}
+                <div className="flex flex-row p-3 gap-3">
+                  {/* Instructor Avatar */}
+                  <div className="flex-shrink-0">
+                    {course.instructor?.profile_picture ? (
+                      <img
+                        src={course.instructor.profile_picture}
+                        alt={course.instructor.username}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg">
+                        {course.instructor?.username?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base md:text-lg font-bold text-blue-900 mb-1 truncate group-hover:text-blue-700 transition-colors">
+                      {course.title}
+                    </h3>
+                    <div className="flex items-center text-xs text-gray-500 mb-1">
+                      {renderStars(course.average_rating)}
+                      <span className="ml-1 font-semibold">{Number(course.average_rating || 0).toFixed(1)}</span>
+                      <span className="ml-1">({course.number_of_reviews || 0})</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 text-xs mb-1">
+                      <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{course.category?.name || 'Uncategorized'}</span>
+                      <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{course.level ? course.level.charAt(0).toUpperCase() + course.level.slice(1) : 'N/A'}</span>
+                      <span className="bg-gray-50 text-gray-700 px-2 py-0.5 rounded">{course.total_lectures || 0} Lectures</span>
+                    </div>
+                    <p className="text-xs text-gray-700 mt-1 line-clamp-2">
+                      {course.short_description ||
+                        (course.description?.split(' ').slice(0, 20).join(' ') +
+                          (course.description?.split(' ').length > 20 ? '...' : '')) ||
+                        'No description available.'}
+                    </p>
+                  </div>
+                </div>
+                {/* Card Footer */}
+                <div className="flex items-center justify-between px-3 pb-3">
+                  <span className="text-xs text-gray-500">
+                    By <span className="font-semibold text-blue-700">{course.instructor?.username || 'N/A'}</span>
+                  </span>
+                  <span className={`font-bold text-sm ${course.is_free ? 'text-green-600' : 'text-blue-800'}`}>
+                    {course.is_free
+                      ? 'Free'
+                      : `₹${typeof course.price === 'number'
+                        ? course.price.toFixed(2)
+                        : Number(parseFloat(course.price)).toFixed(2)}`}
+                  </span>
+                </div>
+              </div>
             ))
           ) : (
             <p className="text-gray-600 col-span-full text-center py-8 md:py-12 text-lg md:text-xl italic">
@@ -228,7 +196,6 @@ function Home({ courses: initialCourses, navigate }) {
           )}
         </div>
       )}
-
       {/* Tailwind CSS Customizations and Animations */}
       <style>{`
         @keyframes fade-in-down {
@@ -301,6 +268,37 @@ function Home({ courses: initialCourses, navigate }) {
         @keyframes spinner {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        .yt-card {
+          transition: box-shadow 0.2s, transform 0.2s;
+          background: #fff;
+          display: flex;
+          flex-direction: column;
+          border-radius: 1rem;
+        }
+        .yt-card .aspect-video {
+          aspect-ratio: 16 / 9;
+        }
+        @media (max-width: 640px) {
+          .yt-card .aspect-video {
+            min-height: 160px;
+          }
+        }
+        @media (min-width: 641px) and (max-width: 1023px) {
+          .yt-card .aspect-video {
+            min-height: 180px;
+          }
+        }
+        @media (min-width: 1024px) {
+          .yt-card .aspect-video {
+            min-height: 200px;
+          }
+        }
+        .yt-card .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </div>
