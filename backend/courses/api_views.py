@@ -56,7 +56,7 @@ class CustomUserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIVi
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated] # Typically, only owner or admin should update/delete
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
 
     def patch(self, request, *args, **kwargs):
         # Only allow users to edit their own profile, or admin
