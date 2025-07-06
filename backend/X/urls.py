@@ -1,10 +1,16 @@
+# myproject/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
-from courses import views
+from courses import views # Assuming 'courses' app views are still needed
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth import views as auth_views
-from courses.views import faq_view
+# from django.contrib.auth import views as auth_views # Commented out as we are replacing with API views
+from courses.views import faq_view # Assuming faq_view is still needed
+
+# Import your new API views from your app (e.g., 'myapp')
+# Make sure 'Account.views' matches the actual path to your views.py file
+from Account.views import password_reset_request_api, password_reset_confirm_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -18,41 +24,10 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('enroll/<slug:slug>/', views.enroll, name='enroll'),
     path('api/', include('courses.urls')),
-   path('faq/', faq_view, name='faq'),
-   path(
-        'password_reset/',
-        auth_views.PasswordResetView.as_view(
-            template_name='registration/password_reset_form.html',
-            email_template_name='registration/password_reset_email.html',
-            subject_template_name='registration/password_reset_subject.txt'
-        ),
-        name='password_reset'
-    ),
-
-    # Password reset - email sent confirmation
-    path(
-        'password_reset/done/',
-        auth_views.PasswordResetDoneView.as_view(
-            template_name='registration/password_reset_done.html'
-        ),
-        name='password_reset_done'
-    ),
-
-    # Password reset - confirm link with uid and token
-    path(
-        'reset/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name='registration/password_reset_confirm.html'
-        ),
-        name='password_reset_confirm'
-    ),
-
-    # Password reset - complete
-    path(
-        'reset/done/',
-        auth_views.PasswordResetCompleteView.as_view(
-            template_name='registration/password_reset_complete.html'
-        ),
-        name='password_reset_complete'
-    ),
+    path('faq/', faq_view, name='faq'),
+    # Password Reset API Endpoints
+    path('api/password_reset/request/', password_reset_request_api, name='api_password_reset_request'),
+    # This endpoint matches the frontend's fetch URL: /reset/<uidb64>/<token>/
+    path('reset/<str:uidb64>/<str:token>/', password_reset_confirm_api, name='api_password_reset_confirm'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

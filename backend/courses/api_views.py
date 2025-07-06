@@ -109,6 +109,7 @@ class CourseListCreateAPIView(generics.ListCreateAPIView):
     """
     API view to list all Courses or create a new Course.
     """
+    print("CourseListCreateAPIView called",os.getenv('SESSION_COOKIE_SECURE23'))
     queryset = Course.objects.all().order_by('-created_at')
     serializer_class = CourseSerializer
     permission_classes = [AllowAny] # Allow anyone to view, but restrict create to instructors/admins
@@ -324,18 +325,22 @@ class RegisterAPIView(APIView):
 
         # --- Send Welcome Email ---
         try:
-            # Log important user info and environment variables for debug purposes
             print(f"Preparing to send welcome email to: {user.email}")
             print(f"Username: {user.username}")
-            
-        
+
+            # Use environment variables for all links and branding in the email context
+            import os
             welcome_context = {
                 'user': user,
-                            }
-        
+                'imgLogo': os.getenv('EMAIL_LOGO_URL'),
+                'VITE_APP_BACKEND_URL': os.getenv('FRONTEND_URL'),
+                'ADDRESS': os.getenv('ADDRESS'),
+                'SUPPORT_MAIL': os.getenv('SUPPORT_MAIL'),
+            }
+
             welcome_email_template = 'welcome_email.html'
             welcome_email_subject = f'Welcome to SHP-Learner, {user.username}!'
-        
+
             email_error = trigger_email(
                 context=welcome_context,
                 template=welcome_email_template,
@@ -343,15 +348,14 @@ class RegisterAPIView(APIView):
                 recipients=[user.email],
                 message=f"Welcome to SHP-Learner, {user.username}! We're excited to have you."
             )
-        
+
             if email_error:
-                print(f"[Email Error] Failed to send welcome email to1212 {user.email}: {email_error}")
+                print(f"[Email Error] Failed to send welcome email to {user.email}: {email_error}")
                 print(email_error)
-        
+
         except Exception as e:
             print("[Exception] Unexpected error when trying to send welcome email:")
             traceback.print_exc()
-        
         # --- End Send Welcome Email ---
-        
+
         return Response({'message': 'Registration successful!'}, status=status.HTTP_201_CREATED)
