@@ -1,0 +1,23 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+.env
+.DS_Store
+
+# ignore virtualenvs
+venv/
+.env/
+*.egg-info/
+*.log
+
+# ignore docker itself
+docker-compose*.yml
+Dockerfile
+
+# large media or cache dirs
+media/
+uploads/
