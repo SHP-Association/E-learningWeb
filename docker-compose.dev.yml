@@ -6,9 +6,10 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: e-learning-backend
-    command: python manage.py runserver 0.0.0.0:8001
+    # ENTRYPOINT will handle migrations, DB restore, superuser
     volumes:
       - ./backend:/app
+      - backend_data:/data       # persist restore flag
     env_file:
       - .env
     ports:
@@ -29,7 +30,7 @@ services:
       - .env
     depends_on:
       - backend
-
+ 
   db:
     image: postgres:15
     container_name: e-learning-postgres
@@ -42,6 +43,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/db-init:/docker-entrypoint-initdb.d:ro  
 
 volumes:
   postgres_data:
+  backend_data:
