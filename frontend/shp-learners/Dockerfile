@@ -4,11 +4,14 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if available)
-COPY package*.json ./
+# Install Yarn globally
+RUN npm install -g yarn --force
 
-# Install all dependencies (including devDependencies)
-RUN npm install
+# Copy package.json and yarn.lock
+COPY package.json yarn.lock ./
+
+# Install dependencies with Yarn
+RUN yarn install
 
 # Copy the rest of the source code
 COPY . .
@@ -17,4 +20,4 @@ COPY . .
 EXPOSE 5173
 
 # Run Vite dev server with proper host binding
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD ["yarn", "dev", "--host"]
