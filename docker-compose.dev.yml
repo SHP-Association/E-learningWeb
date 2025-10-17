@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: e-learning-backend
+    # ENTRYPOINT will handle migrations, DB restore, superuser
+    volumes:
+      - ./backend:/app
+      - backend_data:/data       # persist restore flag
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend/shp-learners
+      dockerfile: Dockerfile
+    container_name: e-learning-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/shp-learners:/app
+    env_file:
+      - .env
+    depends_on:
+      - backend
+ 
+  db:
+    image: postgres:15
+    container_name: e-learning-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sandesh}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password123}
+      POSTGRES_DB: ${POSTGRES_DB:-shplearner}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db-init:/docker-entrypoint-initdb.d:ro  
+
+volumes:
+  postgres_data:
+  backend_data:
