@@ -29,10 +29,12 @@
       <div class="space-y-4">
         <div v-for="faq in filteredFaqs" :key="faq.id" class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300">
           <button
-            class="w-full text-left p-6 flex justify-between items-center focus:outline-none hover:bg-blue-50 transition"
+            class="w-full text-left p-6 flex justify-between items-center focus:outline-none hover:bg-blue-50 transition focus:ring-2 focus:ring-blue-500 rounded-t-xl"
             @click="toggleFaq(faq.id)"
+            :id="`faq-question-${faq.id}`"
             :aria-expanded="openFaq === faq.id"
             :aria-controls="`faq-answer-${faq.id}`"
+            :aria-label="`Toggle answer for: ${faq.question}`"
           >
             <span class="text-xl font-semibold text-blue-800">{{ faq.question }}</span>
             <svg
@@ -42,6 +44,7 @@
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden="true"
             >
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
@@ -51,8 +54,11 @@
             v-show="openFaq === faq.id"
             :id="`faq-answer-${faq.id}`"
             class="p-6 pt-0 text-gray-700 text-lg border-t border-gray-100"
+            role="region"
+            :aria-labelledby="`faq-question-${faq.id}`"
           >
-            <p v-html="faq.answer"></p>
+            <!-- Safe text rendering instead of v-html to prevent XSS -->
+            <p class="whitespace-pre-line">{{ faq.answer }}</p>
           </div>
         </div>
       </div>
@@ -104,8 +110,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useFAQSEO } from '../composables/useSEO';
+import { apiService } from '../services/api.service';
+import { sanitizeInput } from '../utils/helpers';
 
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+// Set SEO for FAQ page
+useFAQSEO();
 
 // Type for a single FAQ item
 interface FaqItem {
@@ -121,7 +131,7 @@ const staticFaqs: FaqItem[] = [
   { id: 'static-3', question: 'Do you offer certificates?', answer: 'Yes, we provide certificates for most paid courses after successful completion.' },
   { id: 'static-4', question: 'Can I access the course after purchase forever?', answer: 'Yes, once you purchase a course, you get lifetime access unless specified otherwise.' },
   { id: 'static-5', question: 'Is there a mobile app?', answer: 'We are working on our mobile app. Meanwhile, you can access all features through your mobile browser.' },
-  { id: 'static-6', question: 'How can I get support?', answer: 'You can email us at <a href="mailto:patelbr5118s@gmail.com" class="text-blue-400 hover:underline">patelbr5118s@gmail.com</a> or use the contact form on our website.' },
+  { id: 'static-6', question: 'How can I get support?', answer: 'You can email us at patelbr5118s@gmail.com or use the contact form on our website.' },
 ];
 
 // State variables
@@ -136,16 +146,10 @@ const errorMessage = ref('');
 // Fetch FAQs from API on mount
 onMounted(async () => {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/faqs/`, {
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const data = await res.json();
-      faqs.value = data;
-    } else {
-      faqs.value = [];
-    }
-  } catch {
+    const data = await apiService.get<FaqItem[]>('/api/faqs/');
+    faqs.value = data;
+  } catch (error) {
+    console.error('Failed to load FAQs:', error);
     faqs.value = [];
   }
 });
@@ -171,26 +175,19 @@ const toggleFaq = (id: string | number) => {
 const handleSubmitQuestion = async () => {
   if (!question.value.trim()) return;
 
+  // Sanitize user input before sending
+  const sanitizedQuestion = sanitizeInput(question.value.trim());
+
   isSubmitting.value = true;
   successMessage.value = '';
   errorMessage.value = '';
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/contact/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: question.value }),
-    });
-
-    if (response.ok) {
-      successMessage.value = 'Thank you for your question! We will get back to you shortly.';
-      question.value = '';
-    } else {
-      const errorData = await response.json();
-      errorMessage.value = errorData.message || 'Failed to submit question. Please try again.';
-    }
-  } catch {
-    errorMessage.value = 'An unexpected error occurred. Please try again.';
+    await apiService.post('/api/contact/', { question: sanitizedQuestion });
+    successMessage.value = 'Thank you for your question! We will get back to you shortly.';
+    question.value = '';
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Failed to submit question. Please try again.';
   } finally {
     isSubmitting.value = false;
   }

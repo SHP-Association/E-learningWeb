@@ -99,9 +99,13 @@
 import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/userStore';
+import { useRegisterSEO } from '../composables/useSEO';
 
 const router = useRouter();
 const userStore = useUserStore();
+
+// Set SEO meta tags for register page
+useRegisterSEO();
 
 const username = ref('');
 const email = ref('');

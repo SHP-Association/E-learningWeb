@@ -86,10 +86,14 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/userStore';
+import { useLoginSEO } from '../composables/useSEO';
 import AlertMessage from '../components/AlertMessage.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
+
+// Set SEO meta tags for login page
+useLoginSEO();
 
 const username = ref('');
 const password = ref('');

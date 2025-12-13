@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { apiService } from '../services/api.service';
+import { SESSION, STORAGE_KEYS } from '../config/constants';
 import type { User, LoginCredentials, RegisterData } from '../types/api.types';
 
 export const useUserStore = defineStore('user', () => {
@@ -8,33 +9,69 @@ export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  let sessionTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   // Getters
   const isLoggedIn = computed(() => !!user.value);
   const isAdmin = computed(() => user.value?.is_staff ?? false);
   const isInstructor = computed(() => user.value?.role === 'instructor');
 
+  // Session timeout management
+  function resetSessionTimeout() {
+    if (sessionTimeoutId) {
+      clearTimeout(sessionTimeoutId);
+    }
+
+    if (user.value) {
+      sessionTimeoutId = setTimeout(() => {
+        console.warn('Session expired due to inactivity');
+        logout();
+        // Optionally redirect to login with timeout message
+        window.location.href = '/login?timeout=true';
+      }, SESSION.TIMEOUT);
+    }
+  }
+
   // Actions
   function loadUser() {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
+    const storedData = localStorage.getItem(STORAGE_KEYS.USER);
+    if (storedData) {
       try {
-        user.value = JSON.parse(storedUser);
+        const data = JSON.parse(storedData);
+
+        // Check if data has expired
+        if (data.expiry && Date.now() > data.expiry) {
+          console.warn('Stored user data expired');
+          localStorage.removeItem(STORAGE_KEYS.USER);
+          return;
+        }
+
+        user.value = data.user;
+        resetSessionTimeout();
       } catch (e) {
         console.error('Failed to parse stored user:', e);
-        localStorage.removeItem('currentUser');
+        localStorage.removeItem(STORAGE_KEYS.USER);
       }
     }
   }
 
   function setUser(userData: User) {
+    const data = {
+      user: userData,
+      expiry: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
+    };
     user.value = userData;
-    localStorage.setItem('currentUser', JSON.stringify(userData));
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data));
+    resetSessionTimeout();
   }
 
   function clearUser() {
     user.value = null;
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    if (sessionTimeoutId) {
+      clearTimeout(sessionTimeoutId);
+      sessionTimeoutId = null;
+    }
   }
 
   async function loginUser(credentials: LoginCredentials): Promise<void> {
@@ -117,6 +154,13 @@ export const useUserStore = defineStore('user', () => {
   // Alias for compatibility
   const handleLogout = logout;
 
+  // Reset session timeout on user activity
+  if (typeof window !== 'undefined') {
+    window.addEventListener('click', resetSessionTimeout);
+    window.addEventListener('keypress', resetSessionTimeout);
+    window.addEventListener('scroll', resetSessionTimeout);
+  }
+
   return {
     // State
     user,
@@ -135,5 +179,6 @@ export const useUserStore = defineStore('user', () => {
     updateProfile,
     logout,
     handleLogout,
+    resetSessionTimeout,
   };
 });
