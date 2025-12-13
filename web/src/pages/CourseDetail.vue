@@ -197,11 +197,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted, ref } from 'vue';
+import { defineComponent, computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCourseStore } from '../stores/courseStore';
 import { useEnrollmentStore } from '../stores/enrollmentStore';
 import { useUserStore } from '../stores/userStore';
+import { useCourseSEO } from '../composables/useSEO';
 
 export default defineComponent({
   name: 'CourseDetail',
@@ -225,6 +226,24 @@ export default defineComponent({
     const isEnrolled = computed(() => enrollmentStore.isEnrolled(slug));
     const enrollment = computed(() => enrollmentStore.getEnrollment(slug));
     const user = computed(() => userStore.user);
+
+    // Set SEO when course data is available
+    watch(course, (newCourse) => {
+      if (newCourse) {
+        useCourseSEO({
+          title: newCourse.title,
+          description: newCourse.short_description || newCourse.description,
+          instructor: newCourse.instructor?.username || 'Unknown',
+          category: newCourse.category?.name || 'Uncategorized',
+          level: newCourse.level,
+          price: newCourse.price,
+          isFree: newCourse.is_free,
+          rating: newCourse.average_rating || 0,
+          reviewCount: newCourse.number_of_reviews || 0,
+          image: newCourse.thumbnail,
+        });
+      }
+    }, { immediate: true });
 
     const formattedDescription = computed(() => {
       if (!course.value?.description) return [];
@@ -259,4 +278,5 @@ export default defineComponent({
   },
 });
 </script>
+
 

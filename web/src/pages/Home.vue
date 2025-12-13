@@ -83,12 +83,16 @@
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCourseStore } from '../stores/courseStore';
+import { useHomeSEO } from '../composables/useSEO';
 import CourseCard from '../components/CourseCard.vue';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
 import AlertMessage from '../components/AlertMessage.vue';
 
 const router = useRouter();
 const courseStore = useCourseStore();
+
+// Set SEO meta tags for home page
+useHomeSEO();
 
 onMounted(async () => {
   await courseStore.fetchCourses();
