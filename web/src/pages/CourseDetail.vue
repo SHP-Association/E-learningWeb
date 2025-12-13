@@ -197,21 +197,38 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, PropType } from 'vue';
+import { defineComponent, computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useCourseStore } from '../stores/courseStore';
+import { useEnrollmentStore } from '../stores/enrollmentStore';
+import { useUserStore } from '../stores/userStore';
 
 export default defineComponent({
   name: 'CourseDetail',
-  props: {
-    course: { type: Object as PropType<any>, required: false },
-    isEnrolled: { type: Boolean, default: false },
-    user: { type: Object as PropType<any>, default: null },
-    enrollment: { type: Object as PropType<any>, default: null },
-    navigate: { type: Function as PropType<(path: string) => void>, required: true },
-  },
-  setup(props) {
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const courseStore = useCourseStore();
+    const enrollmentStore = useEnrollmentStore();
+    const userStore = useUserStore();
+
+    const slug = route.params.slug as string;
+
+    onMounted(async () => {
+      await courseStore.fetchCourseBySlug(slug);
+      if (userStore.isLoggedIn) {
+        await enrollmentStore.fetchEnrollments();
+      }
+    });
+
+    const course = computed(() => courseStore.currentCourse);
+    const isEnrolled = computed(() => enrollmentStore.isEnrolled(slug));
+    const enrollment = computed(() => enrollmentStore.getEnrollment(slug));
+    const user = computed(() => userStore.user);
+
     const formattedDescription = computed(() => {
-      if (!props.course?.description) return [];
-      return props.course.description
+      if (!course.value?.description) return [];
+      return course.value.description
         .split(/\r?\n|• /)
         .filter(Boolean)
         .map((line: string) => line.replace(/^[-•\s]+/, ''));
@@ -227,7 +244,19 @@ export default defineComponent({
       return new Date(dateStr).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     };
 
-    return { formattedDescription, formatDate, formatDateTime };
+    const navigate = (path: string) => router.push(path);
+
+    return { 
+      course, 
+      isEnrolled, 
+      enrollment,
+      user, 
+      formattedDescription, 
+      formatDate, 
+      formatDateTime,
+      navigate,
+    };
   },
 });
 </script>
+

@@ -95,7 +95,7 @@
             About Us
           </h4>
           <p class="text-gray-300 text-base leading-relaxed">
-            SHP-Learnering Platform is dedicated to providing high-quality courses...
+            SHP-Learning Platform is dedicated to providing high-quality courses...
           </p>
         </div>
 
@@ -125,7 +125,7 @@
         </div>
       </div>
       <div class="footer-bottom text-center text-gray-400 mt-10 border-t border-blue-800 pt-5 px-4">
-        <p>&copy; {{ new Date().getFullYear() }} SHP-Learnering Platform. All Rights Reserved.</p>
+        <p>&copy; {{ new Date().getFullYear() }} SHP-Learning Platform. All Rights Reserved.</p>
       </div>
     </footer>
   </div>
@@ -141,9 +141,9 @@ export default defineComponent({
   name: 'BaseLayout',
   setup() {
     const router = useRouter();
-    // const userStore = inject('userStore') as any; // assume provide() in App.vue
-    const user = useUserStore?.user;
-    const handleLogout = useUserStore?.handleLogout;
+    const userStore = useUserStore();
+    const user = userStore.user;
+    const handleLogout = userStore.handleLogout;
 
     const showProfileDropdown = ref(false);
     const profileBtnRef = ref<HTMLElement | null>(null);

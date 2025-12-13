@@ -8,12 +8,11 @@
         Log in to access your courses and profile.
       </p>
 
-      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm sm:text-base flex items-center space-x-3 shadow-md animate-fade-in">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="font-semibold">{{ errorMessage }}</p>
-      </div>
+      <AlertMessage
+        v-if="errorMessage"
+        type="error"
+        :message="errorMessage"
+      />
 
       <form @submit.prevent="handleSubmit" class="space-y-5 animate-fade-in delay-300">
         <div class="form-group">
@@ -55,13 +54,13 @@
             type="submit"
             :class="[
               'w-full py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-200 text-lg font-semibold flex items-center justify-center',
-              isSubmitting
+              userStore.loading
                 ? 'bg-blue-400 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-opacity-75 shadow-md hover:shadow-lg'
             ]"
-            :disabled="isSubmitting"
+            :disabled="userStore.loading"
           >
-            <span v-if="isSubmitting" class="flex items-center">
+            <span v-if="userStore.loading" class="flex items-center">
               <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -84,101 +83,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '../stores/userStore';
+import AlertMessage from '../components/AlertMessage.vue';
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role: 'student' | 'instructor' | string;
-  is_staff: boolean;
-}
-
-interface InjectedContext {
-  handleLogin: (user: User) => void;
-}
-
-// Use Vue Router
 const router = useRouter();
-
-// Injected login handler
-const { handleLogin } = inject('user-context', {} as InjectedContext);
-
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+const userStore = useUserStore();
 
 const username = ref('');
 const password = ref('');
 const errorMessage = ref('');
-const isSubmitting = ref(false);
-
-function getCookie(name: string): string | null {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
 
 const handleSubmit = async () => {
   errorMessage.value = '';
-  isSubmitting.value = true;
 
   try {
-    const csrfToken = getCookie('csrftoken');
-    if (!csrfToken) {
-      errorMessage.value = 'CSRF token not found. Please refresh and try again.';
-      isSubmitting.value = false;
-      return;
-    }
-
-    const response = await fetch(`${BACKEND_URL}/api/login/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,
-      },
-      credentials: 'include',
-      body: JSON.stringify({ username: username.value, password: password.value }),
+    await userStore.loginUser({
+      username: username.value,
+      password: password.value,
     });
-
-    if (!response.ok) {
-      errorMessage.value = 'Invalid username or password.';
-      isSubmitting.value = false;
-      return;
-    }
-
-    const userRes = await fetch(`${BACKEND_URL}/api/users/`, { credentials: 'include' });
-    if (!userRes.ok) {
-      errorMessage.value = 'Failed to retrieve user profile.';
-      isSubmitting.value = false;
-      return;
-    }
-
-    const users: User[] = await userRes.json();
-    const user = users.find(u => u.username === username.value);
-
-    if (!user) {
-      errorMessage.value = 'User profile not found.';
-      isSubmitting.value = false;
-      return;
-    }
-
-    handleLogin(user);
+    
     router.push('/profile');
-
-  } catch (err) {
-    console.error("Login error:", err);
-    errorMessage.value = 'An unexpected error occurred.';
-  } finally {
-    isSubmitting.value = false;
+  } catch (err: any) {
+    errorMessage.value = err.message || 'Invalid username or password.';
   }
 };
 </script>
