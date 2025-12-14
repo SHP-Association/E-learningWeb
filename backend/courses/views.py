@@ -150,11 +150,13 @@ def index(request):
     return render(request, 'index.html', context)
 
 def frontend(request):
-    return redirect(os.getenv('FRONTEND_URL'))
+    frontend_url = os.getenv('FRONTEND_URL', '/admin/')
+    return redirect(frontend_url)
+
 def courses(request):
-    courses = Course.objects.all()
-    courses = {'courses': courses}
-    return render(courses)
+    course_list = Course.objects.all()
+    context = {'courses': course_list}
+    return render(request, 'courses.html', context)
 
 def course_detail(request, slug):
     course = get_object_or_404(Course, slug=slug)
