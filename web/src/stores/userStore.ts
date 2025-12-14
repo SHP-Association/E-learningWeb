@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { apiService } from '../services/api.service';
-import { SESSION, STORAGE_KEYS } from '../config/constants';
 import type { User, LoginCredentials, RegisterData } from '../types/api.types';
 
 export const useUserStore = defineStore('user', () => {
@@ -9,157 +8,169 @@ export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
-  let sessionTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   // Getters
-  const isLoggedIn = computed(() => !!user.value);
-  const isAdmin = computed(() => user.value?.is_staff ?? false);
+  const isLoggedIn = computed(() => user.value !== null);
   const isInstructor = computed(() => user.value?.role === 'instructor');
+  const isAdmin = computed(() => user.value?.role === 'admin' || user.value?.is_staff === true);
+  const isStudent = computed(() => user.value?.role === 'student');
 
-  // Session timeout management
-  function resetSessionTimeout() {
-    if (sessionTimeoutId) {
-      clearTimeout(sessionTimeoutId);
+  // Load user from localStorage on app start
+  function loadUser() {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        user.value = JSON.parse(storedUser);
+      } catch (e) {
+        console.error('Failed to parse stored user:', e);
+        localStorage.removeItem('user');
+      }
     }
+  }
 
-    if (user.value) {
-      sessionTimeoutId = setTimeout(() => {
-        console.warn('Session expired due to inactivity');
-        logout();
-        // Optionally redirect to login with timeout message
-        window.location.href = '/login?timeout=true';
-      }, SESSION.TIMEOUT);
-    }
+  // Save user to localStorage
+  function saveUser(userData: User) {
+    user.value = userData;
+    localStorage.setItem('user', JSON.stringify(userData));
+  }
+
+  // Clear user from localStorage
+  function clearUser() {
+    user.value = null;
+    localStorage.removeItem('user');
   }
 
   // Actions
-  function loadUser() {
-    const storedData = localStorage.getItem(STORAGE_KEYS.USER);
-    if (storedData) {
-      try {
-        const data = JSON.parse(storedData);
-
-        // Check if data has expired
-        if (data.expiry && Date.now() > data.expiry) {
-          console.warn('Stored user data expired');
-          localStorage.removeItem(STORAGE_KEYS.USER);
-          return;
-        }
-
-        user.value = data.user;
-        resetSessionTimeout();
-      } catch (e) {
-        console.error('Failed to parse stored user:', e);
-        localStorage.removeItem(STORAGE_KEYS.USER);
-      }
-    }
-  }
-
-  function setUser(userData: User) {
-    const data = {
-      user: userData,
-      expiry: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-    };
-    user.value = userData;
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data));
-    resetSessionTimeout();
-  }
-
-  function clearUser() {
-    user.value = null;
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    if (sessionTimeoutId) {
-      clearTimeout(sessionTimeoutId);
-      sessionTimeoutId = null;
-    }
-  }
-
-  async function loginUser(credentials: LoginCredentials): Promise<void> {
+  async function login(credentials: LoginCredentials): Promise<boolean> {
     loading.value = true;
     error.value = null;
 
     try {
-      // Login request
-      await apiService.post('/api/login/', credentials);
+      // Call backend login API
+      const response = await apiService.post<{ detail: string }>('/api/login/', credentials);
 
-      // Fetch user profile
-      const users = await apiService.get<User[]>('/api/users/');
-      const loggedInUser = users.find(u => u.username === credentials.username);
-
-      if (!loggedInUser) {
-        throw new Error('User profile not found');
+      if (response.detail === 'Login successful') {
+        // Fetch user profile after successful login
+        await fetchUserProfile();
+        return true;
       }
 
-      setUser(loggedInUser);
+      error.value = 'Login failed';
+      return false;
     } catch (err: any) {
       error.value = err.message || 'Login failed';
-      throw err;
+      console.error('Login error:', err);
+      return false;
     } finally {
       loading.value = false;
     }
   }
 
-  async function registerUser(data: RegisterData): Promise<User> {
+  async function register(data: RegisterData): Promise<boolean> {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await apiService.post<User>('/api/register/', data);
+      const response = await apiService.post<{ message: string }>('/api/register/', data);
 
-      // Set user after successful registration
-      const newUser: User = {
-        ...response,
-        username: data.username,
-        email: data.email,
-        role: data.role,
-        is_staff: data.role === 'instructor',
-      };
+      if (response.message === 'Registration successful!') {
+        // Auto-login after registration
+        return await login({
+          username: data.username,
+          password: data.password,
+        });
+      }
 
-      setUser(newUser);
-      return newUser;
+      error.value = response.message || 'Registration failed';
+      return false;
     } catch (err: any) {
       error.value = err.message || 'Registration failed';
-      throw err;
+      console.error('Registration error:', err);
+      return false;
     } finally {
       loading.value = false;
     }
   }
 
-  async function updateProfile(updates: Partial<User>): Promise<void> {
+  async function logout(): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await apiService.post('/api/logout/', {});
+    } catch (err: any) {
+      console.error('Logout error:', err);
+    } finally {
+      clearUser();
+      loading.value = false;
+    }
+  }
+
+  async function fetchUserProfile(): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Fetch current user profile
+      const response = await apiService.get<any>('/api/users/');
+
+      // Handle paginated response
+      let users: User[];
+      if (response.results && Array.isArray(response.results)) {
+        users = response.results;
+      } else if (Array.isArray(response)) {
+        users = response;
+      } else {
+        // Single user object
+        saveUser(response);
+        return;
+      }
+
+      // Get first user (should be current user)
+      if (users.length > 0) {
+        saveUser(users[0]);
+      }
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch user profile';
+      console.error('Error fetching user profile:', err);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateProfile(updates: Partial<User>): Promise<boolean> {
     if (!user.value) {
-      throw new Error('No user logged in');
+      error.value = 'No user logged in';
+      return false;
     }
 
     loading.value = true;
     error.value = null;
 
     try {
-      const updatedUser = await apiService.put<User>(
+      const updatedUser = await apiService.patch<User>(
         `/api/users/${user.value.id}/`,
         updates
       );
-      setUser(updatedUser);
+      saveUser(updatedUser);
+      return true;
     } catch (err: any) {
-      error.value = err.message || 'Profile update failed';
-      throw err;
+      error.value = err.message || 'Failed to update profile';
+      console.error('Error updating profile:', err);
+      return false;
     } finally {
       loading.value = false;
     }
   }
 
-  function logout() {
-    clearUser();
+  function clearError() {
+    error.value = null;
   }
 
-  // Alias for compatibility
+  // Aliases for compatibility
+  const loginUser = login;
+  const registerUser = register;
   const handleLogout = logout;
-
-  // Reset session timeout on user activity
-  if (typeof window !== 'undefined') {
-    window.addEventListener('click', resetSessionTimeout);
-    window.addEventListener('keypress', resetSessionTimeout);
-    window.addEventListener('scroll', resetSessionTimeout);
-  }
 
   return {
     // State
@@ -168,17 +179,21 @@ export const useUserStore = defineStore('user', () => {
     error,
     // Getters
     isLoggedIn,
-    isAdmin,
     isInstructor,
+    isAdmin,
+    isStudent,
     // Actions
     loadUser,
-    setUser,
+    saveUser,
     clearUser,
+    login,
     loginUser,
+    register,
     registerUser,
-    updateProfile,
     logout,
     handleLogout,
-    resetSessionTimeout,
+    fetchUserProfile,
+    updateProfile,
+    clearError,
   };
 });

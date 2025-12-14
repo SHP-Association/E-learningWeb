@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { apiService } from '../services/api.service';
 import type { Course } from '../types/api.types';
+import { transformCourse, transformPaginatedResponse } from '../utils/transformers';
 
 export const useCourseStore = defineStore('course', () => {
     // State
@@ -33,7 +34,11 @@ export const useCourseStore = defineStore('course', () => {
         error.value = null;
 
         try {
-            const fetchedCourses = await apiService.get<Course[]>('/api/courses/');
+            const response = await apiService.get<any>('/api/courses/');
+
+            // Transform and handle paginated response
+            const fetchedCourses = transformPaginatedResponse(response, transformCourse);
+
             courses.value = fetchedCourses;
             lastFetchTime.value = now;
 
@@ -60,7 +65,8 @@ export const useCourseStore = defineStore('course', () => {
         error.value = null;
 
         try {
-            const course = await apiService.get<Course>(`/api/courses/${slug}/`);
+            const response = await apiService.get<any>(`/api/courses/${slug}/`);
+            const course = transformCourse(response);
             currentCourse.value = course;
             coursesCache.value.set(slug, course);
             return course;
