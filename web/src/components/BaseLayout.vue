@@ -131,70 +131,62 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted, onBeforeUnmount, inject } from 'vue';
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import logo from '../assets/logo.png';
 import { useUserStore } from '../stores/userStore';
+import logo from '../assets/logo.png';
 
-export default defineComponent({
-  name: 'BaseLayout',
-  setup() {
-    const router = useRouter();
-    const userStore = useUserStore();
-    const user = userStore.user;
-    const handleLogout = userStore.handleLogout;
+const router = useRouter();
+const userStore = useUserStore();
 
-    const showProfileDropdown = ref(false);
-    const profileBtnRef = ref<HTMLElement | null>(null);
-    const profileDropdownRef = ref<HTMLElement | null>(null);
+// Use computed to make user reactive
+const user = computed(() => userStore.user);
 
-    const navigate = (path: string) => router.push(path);
+const showProfileDropdown = ref(false);
+const profileBtnRef = ref<HTMLElement | null>(null);
+const profileDropdownRef = ref<HTMLElement | null>(null);
 
-    const toggleDropdown = () => {
-      showProfileDropdown.value = !showProfileDropdown.value;
-    };
+const navigate = (path: string) => {
+  router.push(path);
+  showProfileDropdown.value = false;
+};
 
-    const goProfile = () => {
-      navigate('/profile');
-      showProfileDropdown.value = false;
-    };
+const toggleDropdown = () => {
+  showProfileDropdown.value = !showProfileDropdown.value;
+};
 
-    const logout = () => {
-      handleLogout?.();
-      showProfileDropdown.value = false;
-    };
+const goProfile = () => {
+  navigate('/profile');
+};
 
-    const openAdmin = () => {
-      window.open(`${import.meta.env.VITE_APP_BACKEND_URL}/admin`, '_blank');
-    };
+const logout = async () => {
+  await userStore.logout();
+  showProfileDropdown.value = false;
+  router.push('/');
+};
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        profileBtnRef.value &&
-        !profileBtnRef.value.contains(event.target as Node) &&
-        profileDropdownRef.value &&
-        !profileDropdownRef.value.contains(event.target as Node)
-      ) {
-        showProfileDropdown.value = false;
-      }
-    };
+const openAdmin = () => {
+  window.open(`${import.meta.env.VITE_APP_BACKEND_URL}/admin`, '_blank');
+};
 
-    onMounted(() => document.addEventListener('mousedown', handleClickOutside));
-    onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutside));
+const handleClickOutside = (event: MouseEvent) => {
+  if (
+    profileBtnRef.value &&
+    !profileBtnRef.value.contains(event.target as Node) &&
+    profileDropdownRef.value &&
+    !profileDropdownRef.value.contains(event.target as Node)
+  ) {
+    showProfileDropdown.value = false;
+  }
+};
 
-    return {
-      logo,
-      user,
-      showProfileDropdown,
-      profileBtnRef,
-      profileDropdownRef,
-      navigate,
-      toggleDropdown,
-      goProfile,
-      logout,
-      openAdmin,
-    };
-  },
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside);
 });
 </script>
+

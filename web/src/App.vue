@@ -18,7 +18,7 @@ export default defineComponent({
 
     // Provide user context for pages that need it (Login, Register)
     provide('user-context', {
-      handleLogin: (user: any) => userStore.setUser(user),
+      handleLogin: (user: any) => userStore.saveUser(user),
       handleLogout: () => userStore.logout(),
     });
 

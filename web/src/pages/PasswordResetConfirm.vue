@@ -15,12 +15,12 @@
 
       <form @submit.prevent="handleSubmit" class="w-full space-y-4">
         <div class="form-group">
-          <label for="new_password" class="form-label">New Password</label>
+          <label for="new_password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
           <input
             type="password"
             name="new_password"
             id="new_password"
-            class="form-input"
+            class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
             required
             autocomplete="new-password"
             v-model="newPassword"
@@ -28,12 +28,12 @@
         </div>
 
         <div class="form-group">
-          <label for="confirm_password" class="form-label">Confirm New Password</label>
+          <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
           <input
             type="password"
             name="confirm_password"
             id="confirm_password"
-            class="form-input"
+            class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
             required
             autocomplete="new-password"
             v-model="confirmPassword"
@@ -42,7 +42,7 @@
 
         <button 
           type="submit" 
-          class="btn-primary w-full py-3 mt-4"
+          class="bg-blue-900 text-white hover:bg-blue-700 px-6 py-3 rounded-md font-semibold transition w-full mt-4"
           :disabled="isSubmitting"
         >
           {{ isSubmitting ? 'Resetting...' : 'Reset Password' }}
@@ -117,15 +117,3 @@ const handleSubmit = async () => {
 };
 </script>
 
-<style scoped>
-/* Simplified input/button styles for Vue conversion */
-.form-input {
-  @apply w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800;
-}
-.form-label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
-}
-.btn-primary {
-  @apply bg-blue-900 text-white hover:bg-blue-700 px-6 py-3 rounded-md font-semibold transition;
-}
-</style>

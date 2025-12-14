@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { apiService } from '../services/api.service';
 import type { Enrollment, Course } from '../types/api.types';
 import { useUserStore } from './userStore';
+import { transformEnrollment, transformPaginatedResponse } from '../utils/transformers';
 
 export const useEnrollmentStore = defineStore('enrollment', () => {
     // State
@@ -36,15 +37,12 @@ export const useEnrollmentStore = defineStore('enrollment', () => {
         error.value = null;
 
         try {
-            // Try to fetch from localStorage first (for mock data)
-            const storedEnrollments = localStorage.getItem('mockEnrollments');
-            if (storedEnrollments) {
-                enrollments.value = JSON.parse(storedEnrollments);
-            } else {
-                // Fetch from API
-                const fetchedEnrollments = await apiService.get<Enrollment[]>('/api/enrollments/');
-                enrollments.value = fetchedEnrollments;
-            }
+            const response = await apiService.get<any>('/api/enrollments/');
+
+            // Transform and handle paginated response
+            const fetchedEnrollments = transformPaginatedResponse(response, transformEnrollment);
+
+            enrollments.value = fetchedEnrollments;
         } catch (err: any) {
             error.value = err.message || 'Failed to load enrollments';
             console.error('Error fetching enrollments:', err);
@@ -72,10 +70,6 @@ export const useEnrollmentStore = defineStore('enrollment', () => {
             });
 
             enrollments.value.push(enrollment);
-
-            // Save to localStorage for persistence
-            localStorage.setItem('mockEnrollments', JSON.stringify(enrollments.value));
-
             return true;
         } catch (err: any) {
             error.value = err.message || 'Enrollment failed';
@@ -99,15 +93,11 @@ export const useEnrollmentStore = defineStore('enrollment', () => {
         if (enrollment) {
             enrollment.progress = progress;
             enrollment.completed = progress >= 100;
-
-            // Save to localStorage
-            localStorage.setItem('mockEnrollments', JSON.stringify(enrollments.value));
         }
     }
 
     function clearEnrollments() {
         enrollments.value = [];
-        localStorage.removeItem('mockEnrollments');
     }
 
     return {
