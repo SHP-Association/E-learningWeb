@@ -79,12 +79,16 @@ TEMPLATES = [
 # =========================
 DATABASES = {
     "default": {
-        "ENGINE": os.environ["DJANGO_DB_ENGINE"],
-        "NAME": os.environ["DJANGO_DB_NAME"],
-        "USER": os.environ["DJANGO_DB_USER"],
-        "PASSWORD": os.environ["DJANGO_DB_PASSWORD"],
-        "HOST": os.environ["DJANGO_DB_HOST"],
-        "PORT": os.environ["DJANGO_DB_PORT"],
+        "ENGINE": os.environ.get("DJANGO_DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("DJANGO_DB_NAME", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("DJANGO_DB_USER", ""),
+        "PASSWORD": os.environ.get("DJANGO_DB_PASSWORD", ""),
+        "HOST": os.environ.get("DJANGO_DB_HOST", ""),
+        "PORT": os.environ.get("DJANGO_DB_PORT", ""),
+        "CONN_MAX_AGE": 600,  # Connection pooling (10 minutes)
+        "OPTIONS": {
+            "connect_timeout": 10,
+        } if os.environ.get("DJANGO_DB_ENGINE") != "django.db.backends.sqlite3" else {},
     }
 }
 
@@ -130,32 +134,73 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
+    # Pagination
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+    # Rate Limiting (Throttling)
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",  # Anonymous users
+        "user": "1000/hour",  # Authenticated users
+    },
 }
 
 # =========================
 # 📧 EMAIL SETTINGS
 # =========================
-EMAIL_BACKEND = os.environ["EMAIL_BACKEND"]
-EMAIL_HOST = os.environ["EMAIL_HOST"]
-EMAIL_PORT = int(os.environ["EMAIL_PORT"])
-EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"].lower() in ("true", "1", "t")
-EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
-EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("true", "1", "t")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "noreply@shp-learner.com")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "dummy-password")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # =========================
 # 🔐 SECURITY SETTINGS
 # =========================
-SECURE_SSL_REDIRECT = os.environ["DJANGO_SECURE_SSL_REDIRECT"].lower() in ("true", "1", "t")
-SESSION_COOKIE_SECURE = os.environ["DJANGO_SESSION_COOKIE_SECURE"].lower() in ("true", "1", "t")
-CSRF_COOKIE_SECURE = os.environ["DJANGO_CSRF_COOKIE_SECURE"].lower() in ("true", "1", "t")
+SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "False").lower() in ("true", "1", "t")
+SESSION_COOKIE_SECURE = os.environ.get("DJANGO_SESSION_COOKIE_SECURE", "False").lower() in ("true", "1", "t")
+CSRF_COOKIE_SECURE = os.environ.get("DJANGO_CSRF_COOKIE_SECURE", "False").lower() in ("true", "1", "t")
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-CSRF_TRUSTED_ORIGINS = [f"http://{h.strip()}" for h in os.environ["DJANGO_ALLOWED_HOSTS"].split(",")]
-CORS_ALLOWED_ORIGINS = [os.environ["VITE_API_URL"]]
-CORS_ALLOW_CREDENTIALS = False
+# CSRF Trusted Origins - Support both HTTP (dev) and HTTPS (prod)
+allowed_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
+CSRF_TRUSTED_ORIGINS = []
+
+for host in allowed_hosts:
+    host = host.strip()
+    if host:
+        # Always add HTTPS for production
+        CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
+        # Add HTTP only in development
+        if DEBUG:
+            CSRF_TRUSTED_ORIGINS.append(f"http://{host}")
+
+# Add frontend URL to CSRF trusted origins
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS += [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+
+# CORS Settings - CRITICAL: Must allow credentials for session authentication
+CORS_ALLOWED_ORIGINS = [os.environ.get("VITE_API_URL", "http://localhost:5173")]
+CORS_ALLOW_CREDENTIALS = True  # Required for session auth with credentials: 'include'
+
+# Add development origins if in DEBUG mode
+if DEBUG:
+    CORS_ALLOWED_ORIGINS += [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
 # =========================
 # 🎛️ JAZZMIN ADMIN UI
@@ -175,7 +220,7 @@ JAZZMIN_SETTINGS = {
     "search_model": ["courses.Course", "Account.CustomUser"],
     "topmenu_links": [
         {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "View Live Site", "url": os.environ["VITE_API_URL"], "new_window": True},
+        {"name": "View Live Site", "url": os.environ.get("VITE_API_URL", "http://localhost:8000"), "new_window": True},
         {"name": "Support & Docs", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
     ],
     "usermenu_links": [

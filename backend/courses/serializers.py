@@ -7,10 +7,29 @@ from Lesson.models import Lesson
 from Quiz.models import Quiz
 from FAQ.models import FAQ
 
+from rest_framework import serializers
+from .models import Course
+from Enrollment.models import Enrollment
+from Account.models import CustomUser
+from Category.models import Category
+from Lesson.models import Lesson
+from Quiz.models import Quiz
+from FAQ.models import FAQ
+
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'role', 'bio', 'profile_picture', 'date_of_birth', 'gender',
+            'contact_number', 'address', 'country', 'is_email_verified',
+            'highest_qualification', 'institution', 'skills',
+            'linkedin_profile', 'github_profile', 'instructor_rating',
+            'total_reviews', 'date_joined', 'last_login'
+        ]
+        read_only_fields = ['id', 'date_joined', 'last_login', 'instructor_rating', 'total_reviews']
+        # Explicitly exclude sensitive fields
+        # Never expose: password, is_superuser, user_permissions, groups, login_ip, last_activity
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
