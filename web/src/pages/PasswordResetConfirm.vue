@@ -1,0 +1,131 @@
+<template>
+  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+    <div class="bg-white p-8 rounded-lg shadow-xl border border-gray-200 w-full max-w-md">
+      <h1 class="text-3xl font-bold mb-6 text-blue-800 text-center">Set New Password</h1>
+      <p class="text-gray-600 mb-6 text-center">
+        Enter your new password below.
+      </p>
+
+      <div v-if="message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4" role="alert">
+        {{ message }}
+      </div>
+      <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4" role="alert">
+        {{ error }}
+      </div>
+
+      <form @submit.prevent="handleSubmit" class="w-full space-y-4">
+        <div class="form-group">
+          <label for="new_password" class="form-label">New Password</label>
+          <input
+            type="password"
+            name="new_password"
+            id="new_password"
+            class="form-input"
+            required
+            autocomplete="new-password"
+            v-model="newPassword"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirm_password" class="form-label">Confirm New Password</label>
+          <input
+            type="password"
+            name="confirm_password"
+            id="confirm_password"
+            class="form-input"
+            required
+            autocomplete="new-password"
+            v-model="confirmPassword"
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          class="btn-primary w-full py-3 mt-4"
+          :disabled="isSubmitting"
+        >
+          {{ isSubmitting ? 'Resetting...' : 'Reset Password' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const props = defineProps<{
+  navigate: (path: string) => void;
+  uid: string;
+  token: string;
+}>();
+
+const newPassword = ref('');
+const confirmPassword = ref('');
+const error = ref('');
+const message = ref('');
+const isSubmitting = ref(false);
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+
+// Optional: Initial validation check from JSX is omitted as the form handles submission
+// onMounted(() => { /* initial validation logic */ });
+
+const handleSubmit = async () => {
+  error.value = '';
+  message.value = '';
+
+  if (newPassword.value.length < 6) {
+    error.value = 'New password must be at least 6 characters long.';
+    return;
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    error.value = 'Passwords do not match.';
+    return;
+  }
+
+  isSubmitting.value = true;
+
+  try {
+    // NOTE: The original JSX used `/reset/${uid}/${token}/`, assuming a custom Django/backend URL pattern.
+    const response = await fetch(`${BACKEND_URL}/reset/${props.uid}/${props.token}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        new_password: newPassword.value,
+        confirm_password: confirmPassword.value
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      message.value = data.message || 'Your password has been reset successfully.';
+      // Redirect to a final page
+      props.navigate('/password_reset/complete');
+    } else {
+      // Handle backend errors (e.g., token expired, password too simple)
+      error.value = data.error || data.detail || 'Password reset failed. The link may be invalid or expired.';
+    }
+  } catch (err) {
+    error.value = 'An unexpected error occurred. Please try again.';
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+</script>
+
+<style scoped>
+/* Simplified input/button styles for Vue conversion */
+.form-input {
+  @apply w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800;
+}
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+.btn-primary {
+  @apply bg-blue-900 text-white hover:bg-blue-700 px-6 py-3 rounded-md font-semibold transition;
+}
+</style>
