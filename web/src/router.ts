@@ -1,8 +1,6 @@
 // router.ts
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
-
 // Lazy-loaded components
 const Home = () => import('./pages/Home.vue');
 const CourseDetail = () => import('./pages/CourseDetail.vue');
