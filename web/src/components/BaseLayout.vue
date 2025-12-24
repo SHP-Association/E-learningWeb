@@ -95,7 +95,7 @@
             About Us
           </h4>
           <p class="text-gray-300 text-base leading-relaxed">
-            SHP-Learnering Platform is dedicated to providing high-quality courses...
+            SHP-Learning Platform is dedicated to providing high-quality courses...
           </p>
         </div>
 
@@ -125,76 +125,68 @@
         </div>
       </div>
       <div class="footer-bottom text-center text-gray-400 mt-10 border-t border-blue-800 pt-5 px-4">
-        <p>&copy; {{ new Date().getFullYear() }} SHP-Learnering Platform. All Rights Reserved.</p>
+        <p>&copy; {{ new Date().getFullYear() }} SHP-Learning Platform. All Rights Reserved.</p>
       </div>
     </footer>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted, onBeforeUnmount, inject } from 'vue';
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import logo from '../assets/logo.png';
 import { useUserStore } from '../stores/userStore';
+import logo from '../assets/logo.png';
 
-export default defineComponent({
-  name: 'BaseLayout',
-  setup() {
-    const router = useRouter();
-    // const userStore = inject('userStore') as any; // assume provide() in App.vue
-    const user = useUserStore?.user;
-    const handleLogout = useUserStore?.handleLogout;
+const router = useRouter();
+const userStore = useUserStore();
 
-    const showProfileDropdown = ref(false);
-    const profileBtnRef = ref<HTMLElement | null>(null);
-    const profileDropdownRef = ref<HTMLElement | null>(null);
+// Use computed to make user reactive
+const user = computed(() => userStore.user);
 
-    const navigate = (path: string) => router.push(path);
+const showProfileDropdown = ref(false);
+const profileBtnRef = ref<HTMLElement | null>(null);
+const profileDropdownRef = ref<HTMLElement | null>(null);
 
-    const toggleDropdown = () => {
-      showProfileDropdown.value = !showProfileDropdown.value;
-    };
+const navigate = (path: string) => {
+  router.push(path);
+  showProfileDropdown.value = false;
+};
 
-    const goProfile = () => {
-      navigate('/profile');
-      showProfileDropdown.value = false;
-    };
+const toggleDropdown = () => {
+  showProfileDropdown.value = !showProfileDropdown.value;
+};
 
-    const logout = () => {
-      handleLogout?.();
-      showProfileDropdown.value = false;
-    };
+const goProfile = () => {
+  navigate('/profile');
+};
 
-    const openAdmin = () => {
-      window.open(`${import.meta.env.VITE_APP_BACKEND_URL}/admin`, '_blank');
-    };
+const logout = async () => {
+  await userStore.logout();
+  showProfileDropdown.value = false;
+  router.push('/');
+};
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        profileBtnRef.value &&
-        !profileBtnRef.value.contains(event.target as Node) &&
-        profileDropdownRef.value &&
-        !profileDropdownRef.value.contains(event.target as Node)
-      ) {
-        showProfileDropdown.value = false;
-      }
-    };
+const openAdmin = () => {
+  window.open(`${import.meta.env.VITE_APP_BACKEND_URL}/admin`, '_blank');
+};
 
-    onMounted(() => document.addEventListener('mousedown', handleClickOutside));
-    onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutside));
+const handleClickOutside = (event: MouseEvent) => {
+  if (
+    profileBtnRef.value &&
+    !profileBtnRef.value.contains(event.target as Node) &&
+    profileDropdownRef.value &&
+    !profileDropdownRef.value.contains(event.target as Node)
+  ) {
+    showProfileDropdown.value = false;
+  }
+};
 
-    return {
-      logo,
-      user,
-      showProfileDropdown,
-      profileBtnRef,
-      profileDropdownRef,
-      navigate,
-      toggleDropdown,
-      goProfile,
-      logout,
-      openAdmin,
-    };
-  },
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', handleClickOutside);
 });
 </script>
+

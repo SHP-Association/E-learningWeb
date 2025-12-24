@@ -66,13 +66,13 @@
             type="submit"
             :class="[
               'w-full py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-200 text-base sm:text-lg font-semibold flex items-center justify-center mt-7',
-              isSubmitting
+              userStore.loading
                 ? 'bg-purple-400 cursor-not-allowed'
                 : 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500 focus:ring-opacity-75 shadow-md hover:shadow-lg'
             ]"
-            :disabled="isSubmitting"
+            :disabled="userStore.loading"
           >
-            <span v-if="isSubmitting" class="flex items-center">
+            <span v-if="userStore.loading" class="flex items-center">
               <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -96,34 +96,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, inject } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
-
-interface User {
-  username: string;
-  email: string;
-  role: 'student' | 'instructor' | string;
-  is_staff: boolean;
-  id?: number;
-}
-
-interface InjectedContext {
-  handleLogin: (user: User) => void;
-}
+import { useUserStore } from '../stores/userStore';
+import { useRegisterSEO } from '../composables/useSEO';
 
 const router = useRouter();
-const { handleLogin } = inject('user-context', {} as InjectedContext);
+const userStore = useUserStore();
 
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+// Set SEO meta tags for register page
+useRegisterSEO();
 
 const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
-const role = ref('student');
+const role = ref<'student' | 'instructor'>('student');
 const errors = reactive<Record<string, string>>({});
 const successMessage = ref('');
-const isSubmitting = ref(false);
 
 const hasErrors = computed(() => Object.keys(errors).length > 0);
 
@@ -152,43 +142,27 @@ const handleSubmit = async () => {
 
   if (!validateForm()) return;
 
-  isSubmitting.value = true;
-
   try {
-    const response = await fetch(`${BACKEND_URL}/api/register/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: username.value, email: email.value, password: password.value, role: role.value }),
+    await userStore.registerUser({
+      username: username.value,
+      email: email.value,
+      password: password.value,
+      role: role.value,
     });
 
-    const data = await response.json();
+    successMessage.value = 'Registration successful! Redirecting to profile...';
 
-    if (response.ok) {
-      successMessage.value = 'Registration successful! Redirecting to profile...';
+    setTimeout(() => {
+      router.push('/profile');
+    }, 1500);
 
-      const registeredUser: User = {
-        username: username.value,
-        email: email.value,
-        role: role.value,
-        is_staff: role.value === 'instructor',
-        id: data.id || 0
-      };
-
-      setTimeout(() => {
-        handleLogin(registeredUser);
-        router.push('/profile');
-      }, 1500);
-
+  } catch (err: any) {
+    if (err.errors) {
+      if (err.errors.username) errors.username = Array.isArray(err.errors.username) ? err.errors.username[0] : err.errors.username;
+      if (err.errors.email) errors.email = Array.isArray(err.errors.email) ? err.errors.email[0] : err.errors.email;
     } else {
-      if (data.username) errors.username = Array.isArray(data.username) ? data.username[0] : data.username;
-      else if (data.email) errors.email = Array.isArray(data.email) ? data.email[0] : data.email;
-      else errors.apiError = data.message || 'Registration failed.';
+      errors.apiError = err.message || 'Registration failed.';
     }
-
-  } catch (err) {
-    errors.apiError = 'An unexpected error occurred.';
-  } finally {
-    isSubmitting.value = false;
   }
 };
 </script>
