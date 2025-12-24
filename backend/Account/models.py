@@ -40,12 +40,10 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.role})"
     
-
-    # The save method was commented out, keep it that way if it's not needed,
-    # otherwise uncomment and ensure it doesn't conflict with AbstractUser's save logic
-    # def save(self, *args, **kwargs):
-    #     if self.role in ['instructor', 'admin']:
-    #         self.is_staff = True
-    #     else:
-    #         self.is_staff = False
-    #     super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        """Auto-assign staff status based on user role"""
+        if self.role in ['instructor', 'admin']:
+            self.is_staff = True
+        else:
+            self.is_staff = False
+        super().save(*args, **kwargs)
