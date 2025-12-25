@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: timescale/timescaledb:2.9.1-pg14
+    container_name: shp-learner-postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${GO_DB_NAME:-shplearner}
+      POSTGRES_USER: ${GO_DB_USER:-sandesh}
+      POSTGRES_PASSWORD: ${GO_DB_PASSWORD:-password123}
+    restart: unless-stopped
+    networks:
+      - shp-learner-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GO_DB_USER:-sandesh}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend-go:
+    build:
+      context: ./backend-go
+      dockerfile: Dockerfile
+    container_name: shp-learner-backend
+    volumes:
+      - backend_data:/data
+    env_file:
+      - .env
+    environment:
+      - GO_DB_HOST=postgres
+    ports:
+      - "${GO_PORT:-8002}:${GO_PORT:-8002}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - shp-learner-net
+
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: shp-learner-frontend
+    ports:
+      - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL=http://backend-go:${GO_PORT:-8002}
+    depends_on:
+      - backend-go
+    restart: unless-stopped
+    networks:
+      - shp-learner-net
+
+volumes:
+  postgres_data:
+  backend_data:
+
+networks:
+  shp-learner-net:
+    driver: bridge

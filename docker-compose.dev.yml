@@ -1,61 +1,24 @@
 version: "3.9"
 
 services:
-  db:
-    image: postgres:15
-    container_name: e-learning-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: ${DJANGO_DB_USER}
-      POSTGRES_PASSWORD: ${DJANGO_DB_PASSWORD}
-      POSTGRES_DB: ${DJANGO_DB_NAME}
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env
+  postgres:
+    image: timescale/timescaledb:2.9.1-pg14
+    container_name: shp-learner-postgres-dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/db-init:/docker-entrypoint-initdb.d:ro
-    networks:
-      - e-learning-net
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: e-learning-backend
-    volumes:
-      - ./backend:/app
-      - backend_data:/data
-    env_file:
-      - .env
+    environment:
+      POSTGRES_DB: ${GO_DB_NAME:-shplearner}
+      POSTGRES_USER: ${GO_DB_USER:-sandesh}
+      POSTGRES_PASSWORD: ${GO_DB_PASSWORD:-password123}
+    restart: unless-stopped
     ports:
-      - "8001:8001"
-    depends_on:
-      - db
+      - "5433:5432"
     networks:
-      - e-learning-net
-
-  frontend:
-    build:
-      context: ./frontend/shp-learners
-      dockerfile: Dockerfile
-    container_name: e-learning-frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend/shp-learners:/app
-    env_file:
-      - .env
-    depends_on:
-      - backend
-    networks:
-      - e-learning-net
+      - shp-learner-net
 
 volumes:
   postgres_data:
-  backend_data:
 
 networks:
-  e-learning-net:
+  shp-learner-net:
     driver: bridge

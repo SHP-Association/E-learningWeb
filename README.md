@@ -1,60 +1,197 @@
-# e-Learning Platform
+# SHP-Learner E-Learning Platform
 
-Welcome to the e-Learning platform, your one-stop destination for skill enhancement. Explore a wide range of courses, from web development to Python programming, and start learning today!
+A modern e-learning platform built with Go (Pagoda framework) backend, Vue.js frontend, and PostgreSQL database.
 
-## Table of Contents
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Setup Instructions](#setup-instructions)
-- [Contact](#contact)
-- [License](#license)
+## 🚀 Tech Stack
 
-## Project Overview
-This platform offers a wide variety of online courses to help users enhance their skills and knowledge. Whether you're looking to learn HTML, CSS, JavaScript, or Python, we have the right course for you!
+- **Backend**: Go 1.21+ with Pagoda framework
+- **Frontend**: Vue.js 3 with Vite
+- **Database**: PostgreSQL 14 with TimescaleDB extension
+- **Containerization**: Docker & Docker Compose
 
-## Features
-- Dynamic course listing
-- Course details with enrollment functionality
-- Modal-based enrollment form integrated with Google Forms
-- Responsive design for all devices
-- Social media and contact links in the footer
-- Easy navigation between Home and Courses sections
+## 📋 Features
 
-## Technologies Used
-- HTML5
-- CSS3
-- JavaScript
-- Google Forms for course enrollment
-- Font Awesome for icons
+- 🔐 JWT-based authentication
+- 👥 User management and profiles
+- 📚 Course management system
+- 📝 Lesson and content delivery
+- 📜 Certificate generation
+- ❓ FAQ system
+- 📊 Progress tracking
+- 🎓 Enrollment management
 
-## Setup Instructions
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/sandeshPatel06/E-learningWeb.git
-    ```
-2. Navigate to the project directory:
-    ```bash
-    cd e-learning-platform
-    ```
-3. Open the `index.html` file in a web browser to run the platform locally.
+## 🛠️ Setup Instructions
 
-4. Optionally, customize the content in `style.css` or `scripts.js` based on your preferences.
+### Prerequisites
 
-## How It Works
-- **Home Section:** The homepage welcomes users with an introduction to the platform and a "Explore Courses" call-to-action button.
-- **Courses Section:** Users can view a dynamic list of available courses. Clicking on a course will show more detailed information.
-- **Enrollment:** Users can enroll in a course by clicking on the "Enroll Now" button, which opens a Google Form in a modal window.
+- Go 1.21 or higher
+- Node.js 18+ and npm
+- Docker and Docker Compose
+- Git
 
-## Contact
-If you have any questions, feel free to reach out:
+### Development Setup (Local Backend & Frontend)
 
-- **Email:** sandeshpatel.sp.93@gmail.com
-- **Phone:** +91 9399613606
-- **Location:** 420 Kareli St, MP Narsinghpur, India
-- **Twitter:** [@SandeshPat007](https://x.com/SandeshPat007?t=teYEP7w9aNZYSYKc0sF7dQ&s=09)
-- **LinkedIn:** [Sandesh Patel](https://www.linkedin.com/in/sandesh-patel07?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
-- **Instagram:** [sandesh_patel007](https://www.instagram.com/sandesh_patel007?igsh=MXVjd3JreWNkMzBsYg==)
+This setup runs only PostgreSQL in Docker while backend and frontend run on your host machine.
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/SHP-Association/E-learningWeb.git
+   cd E-learningWeb
+   ```
+
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env and update values as needed
+   ```
+
+3. **Start PostgreSQL**
+   ```bash
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+
+4. **Run Go Backend**
+   ```bash
+   cd backend-go/cmd/server
+   GO_DB_HOST=localhost go run . serve
+   ```
+   Backend will be available at `http://localhost:8002`
+
+5. **Run Vue.js Frontend**
+   ```bash
+   cd web
+   npm install
+   npm run dev
+   ```
+   Frontend will be available at `http://localhost:5173`
+
+### Production Setup (All Services in Docker)
+
+This setup runs all services (PostgreSQL, Go backend, Vue frontend) in Docker containers.
+
+1. **Clone and configure**
+   ```bash
+   git clone https://github.com/SHP-Association/E-learningWeb.git
+   cd E-learningWeb
+   cp .env.example .env
+   # Edit .env and update production values
+   ```
+
+2. **Start all services**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+3. **Access the application**
+   - Frontend: `http://localhost:5173`
+   - Backend API: `http://localhost:8002`
+
+### Stopping Services
+
+**Development:**
+```bash
+docker-compose -f docker-compose.dev.yml down
+```
+
+**Production:**
+```bash
+docker-compose -f docker-compose.prod.yml down
+```
+
+## 📁 Project Structure
+
+```
+E-learningWeb/
+├── backend-go/           # Go backend (Pagoda framework)
+│   ├── cmd/
+│   │   └── server/       # Main application entry point
+│   ├── internal/
+│   │   ├── api/          # API handlers and routes
+│   │   ├── config/       # Configuration management
+│   │   ├── database/     # Database connection
+│   │   ├── models/       # Data models
+│   │   └── store/        # Data access layer
+│   └── Dockerfile
+├── web/                  # Vue.js frontend
+│   ├── src/
+│   │   ├── components/   # Vue components
+│   │   ├── views/        # Page views
+│   │   ├── router/       # Vue Router
+│   │   └── stores/       # Pinia stores
+│   └── Dockerfile
+├── docker-compose.dev.yml   # Development (postgres only)
+├── docker-compose.prod.yml  # Production (all services)
+├── .env.example             # Environment variables template
+└── README.md
+```
+
+## 🔧 Environment Variables
+
+Key environment variables (see `.env.example` for full list):
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GO_DB_HOST` | Database host (`localhost` for local, `postgres` for Docker) | `postgres` |
+| `GO_DB_NAME` | Database name | `shplearner` |
+| `GO_DB_USER` | Database user | `sandesh` |
+| `GO_DB_PASSWORD` | Database password | `password123` |
+| `GO_PORT` | Backend server port | `8002` |
+| `GO_JWT_SECRET` | JWT signing secret | Change in production! |
+| `VITE_PORT` | Frontend dev server port | `5173` |
+| `VITE_API_URL` | Backend API URL | `http://localhost:8002` |
+
+## 🧪 Development
+
+### Running Backend Tests
+```bash
+cd backend-go
+go test ./...
+```
+
+### Building for Production
+```bash
+# Backend
+cd backend-go
+go build -o server ./cmd/server
+
+# Frontend
+cd web
+npm run build
+```
+
+## 📝 API Documentation
+
+The Go backend provides a RESTful API. Key endpoints:
+
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/courses` - List courses
+- `GET /api/courses/:id` - Get course details
+- `POST /api/enrollments` - Enroll in course
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📧 Contact
+
+**Sandesh Patel**
+- Email: sandeshpatel.sp.93@gmail.com
+- Phone: +91 9399613606
+- Twitter: [@SandeshPat007](https://x.com/SandeshPat007)
+- LinkedIn: [Sandesh Patel](https://www.linkedin.com/in/sandesh-patel07)
+- Instagram: [@sandesh_patel007](https://www.instagram.com/sandesh_patel007)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Pagoda](https://github.com/mikestefanello/pagoda) - Go web framework
+- UI powered by [Vue.js](https://vuejs.org/)
+- Database: [TimescaleDB](https://www.timescale.com/)
