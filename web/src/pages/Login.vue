@@ -102,15 +102,15 @@ const errorMessage = ref('');
 const handleSubmit = async () => {
   errorMessage.value = '';
 
-  try {
-    await userStore.loginUser({
-      username: username.value,
-      password: password.value,
-    });
-    
+  const success = await userStore.loginUser({
+    username: username.value,
+    password: password.value,
+  });
+
+  if (success) {
     router.push('/profile');
-  } catch (err: any) {
-    errorMessage.value = err.message || 'Invalid username or password.';
+  } else {
+    errorMessage.value = userStore.error || 'Invalid username or password.';
   }
 };
 </script>

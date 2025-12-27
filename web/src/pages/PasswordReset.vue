@@ -62,11 +62,13 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+import { apiService } from '../services/api.service';
+
 const email = ref('');
 const message = ref('');
 const error = ref('');
 const isSubmitting = ref(false);
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+const BACKEND_URL = apiService.baseURL;
 
 const handleSubmit = async () => {
   message.value = '';
@@ -80,23 +82,15 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/password_reset/request/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value }),
-    });
+    const data = await apiService.requestPasswordReset(email.value);
 
-    const data = await response.json();
-
-    if (response.ok) {
-      message.value = data.message || 'If your email is registered, you will receive a password reset link.';
-      setTimeout(() => {
-        router.push('/password_reset/done');
-      }, 1500);
-    } else {
-      error.value = data.error || 'Failed to send password reset email. Please try again.';
-    }
-  } catch (err) {
+    message.value = data.message || 'If your email is registered, you will receive a password reset link.';
+    setTimeout(() => {
+      router.push('/password_reset/done');
+    }, 1500);
+  } catch (err: any) {
+    error.value = err.message || 'Failed to send password reset email. Please try again.';
+  } finally {
     error.value = 'An error occurred. Please try again later.';
   } finally {
     isSubmitting.value = false;

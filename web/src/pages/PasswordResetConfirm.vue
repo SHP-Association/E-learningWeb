@@ -61,12 +61,14 @@ const props = defineProps<{
   token: string;
 }>();
 
+import { apiService } from '../services/api.service';
+
 const newPassword = ref('');
 const confirmPassword = ref('');
 const error = ref('');
 const message = ref('');
 const isSubmitting = ref(false);
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL;
+const BACKEND_URL = apiService.baseURL;
 
 // Optional: Initial validation check from JSX is omitted as the form handles submission
 // onMounted(() => { /* initial validation logic */ });
@@ -87,29 +89,14 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    // NOTE: The original JSX used `/reset/${uid}/${token}/`, assuming a custom Django/backend URL pattern.
-    const response = await fetch(`${BACKEND_URL}/reset/${props.uid}/${props.token}/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        new_password: newPassword.value,
-        confirm_password: confirmPassword.value
-      }),
-    });
+    const data = await apiService.confirmPasswordReset(props.uid, props.token, newPassword.value);
 
-    const data = await response.json();
-
-    if (response.ok) {
-      message.value = data.message || 'Your password has been reset successfully.';
-      // Redirect to a final page
-      props.navigate('/password_reset/complete');
-    } else {
-      // Handle backend errors (e.g., token expired, password too simple)
-      error.value = data.error || data.detail || 'Password reset failed. The link may be invalid or expired.';
-    }
-  } catch (err) {
+    message.value = data.message || 'Your password has been reset successfully.';
+    // Redirect to a final page
+    props.navigate('/password_reset/complete');
+  } catch (err: any) {
+    error.value = err.message || 'Password reset failed. The link may be invalid or expired.';
+  } finally {
     error.value = 'An unexpected error occurred. Please try again.';
   } finally {
     isSubmitting.value = false;

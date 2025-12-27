@@ -173,7 +173,15 @@ onMounted(() => {
 });
 
 // Define editable fields
-const studentFields = [
+// Define editable fields interface
+interface EditableField {
+  key: string;
+  label: string;
+  type: 'text' | 'date' | 'url' | 'email' | 'textarea' | 'select';
+  options?: string[];
+}
+
+const studentFields: EditableField[] = [
   { key: 'first_name', label: 'First Name', type: 'text' },
   { key: 'last_name', label: 'Last Name', type: 'text' },
   { key: 'bio', label: 'Bio', type: 'textarea' },
@@ -190,7 +198,7 @@ const studentFields = [
   { key: 'website', label: 'Website', type: 'url' },
 ];
 
-const instructorFields = [
+const instructorFields: EditableField[] = [
   { key: 'first_name', label: 'First Name', type: 'text' },
   { key: 'last_name', label: 'Last Name', type: 'text' },
   { key: 'bio', label: 'Bio', type: 'textarea' },
@@ -239,12 +247,14 @@ const handleEditSubmit = async () => {
   try {
     const updates: Record<string, any> = {};
     editableFields.value.forEach(field => {
-      if (form[field.key] !== undefined && form[field.key] !== null) {
+      if (form[field.key] !== undefined && form[field.key] !== null && form[field.key] !== '') {
         updates[field.key] = form[field.key];
       }
     });
 
-    // Handle profile picture upload separately if file is selected
+    let success = false;
+
+    // Handle profile picture upload if file is selected
     if (profilePictureFile.value) {
       const formData = new FormData();
       formData.append('profile_picture', profilePictureFile.value);
@@ -254,31 +264,21 @@ const handleEditSubmit = async () => {
         formData.append(key, updates[key]);
       });
       
-      // Use fetch for file upload
-      const response = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/users/${userStore.user.id}/`, {
-        method: 'PATCH',
-        credentials: 'include',
-        body: formData,
-      });
+      success = await userStore.updateProfile(formData);
       
-      if (response.ok) {
-        const updatedUser = await response.json();
-        userStore.saveUser(updatedUser);
-        editing.value = false;
+      if (success) {
         profilePictureFile.value = null;
         profilePicturePreview.value = '';
-      } else {
-        const error = await response.json();
-        alert(error.detail || 'Failed to update profile');
       }
     } else {
       // No file upload, use regular update
-      const success = await userStore.updateProfile(updates);
-      if (success) {
-        editing.value = false;
-      } else {
-        alert(userStore.error || 'Failed to update profile');
-      }
+      success = await userStore.updateProfile(updates);
+    }
+
+    if (success) {
+      editing.value = false;
+    } else {
+      alert(userStore.error || 'Failed to update profile');
     }
   } catch (err: any) {
     alert(err.message || 'An error occurred while updating the profile');
