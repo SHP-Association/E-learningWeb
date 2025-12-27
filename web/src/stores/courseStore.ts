@@ -34,16 +34,17 @@ export const useCourseStore = defineStore('course', () => {
         error.value = null;
 
         try {
-            const response = await apiService.get<any>('/api/courses/');
+            // Use new standardized API method
+            const { items } = await apiService.getCourses();
 
-            // Transform and handle paginated response
-            const fetchedCourses = transformPaginatedResponse(response, transformCourse);
+            // Transform courses to ensure proper types (strings to numbers)
+            const transformedCourses = items.map(transformCourse);
 
-            courses.value = fetchedCourses;
+            courses.value = transformedCourses;
             lastFetchTime.value = now;
 
             // Update cache
-            fetchedCourses.forEach(course => {
+            transformedCourses.forEach(course => {
                 coursesCache.value.set(course.slug, course);
             });
         } catch (err: any) {
@@ -65,8 +66,10 @@ export const useCourseStore = defineStore('course', () => {
         error.value = null;
 
         try {
-            const response = await apiService.get<any>(`/api/courses/${slug}/`);
-            const course = transformCourse(response);
+            // Use new standardized API method
+            const courseData = await apiService.getCourse(slug);
+            // Transform to ensure proper types
+            const course = transformCourse(courseData);
             currentCourse.value = course;
             coursesCache.value.set(slug, course);
             return course;

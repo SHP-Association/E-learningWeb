@@ -15,15 +15,21 @@ from Category.models import Category
 from Lesson.models import Lesson
 from Quiz.models import Quiz
 from FAQ.models import FAQ
+from Certificate.models import Certificate
+from Question.models import Question, AnswerChoice
+from Review.models import Review
+
 from .serializers import (
     CustomUserSerializer, CategorySerializer, CourseSerializer,
-    LessonSerializer, EnrollmentSerializer, QuizSerializer, FAQSerializer
+    LessonSerializer, EnrollmentSerializer, QuizSerializer, FAQSerializer,
+    CertificateSerializer, QuestionSerializer, AnswerChoiceSerializer, ReviewSerializer
 )
 
 import os
 import logging
 import traceback
 from utils.mail import trigger_email
+from utils.response import api_response, api_list_response, api_error_response, api_success_response
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +84,11 @@ class CustomUserListCreateAPIView(generics.ListCreateAPIView):
             return [AllowAny()]
         return [IsAuthenticated()]  # List requires authentication
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
 
 class CustomUserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -91,17 +102,34 @@ class CustomUserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIVi
 
     def get_object(self):
         obj = super().get_object()
-        # Users can only access their own profile unless admin
+        # Users can only access their own profile unless they're admin
         if obj != self.request.user and not is_admin(self.request.user):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You can only access your own profile.")
         return obj
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
         user = self.get_object()
         if request.user != user and not is_admin(request.user):
             return Response({'detail': 'Not allowed.'}, status=status.HTTP_403_FORBIDDEN)
         return super().partial_update(request, *args, **kwargs)
+
+
+class CurrentUserAPIView(APIView):
+    """
+    API view to get the current logged-in user's profile.
+    """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+
+    def get(self, request):
+        serializer = CustomUserSerializer(request.user)
+        return api_response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
         user = self.get_object()
@@ -126,6 +154,11 @@ class CategoryListCreateAPIView(generics.ListCreateAPIView):
             return [IsAuthenticated()]
         return [AllowAny()]
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
     def perform_create(self, serializer):
         if not (is_admin(self.request.user) or is_instructor(self.request.user)):
             from rest_framework.exceptions import PermissionDenied
@@ -144,6 +177,11 @@ class CategoryRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
 
     def put(self, request, *args, **kwargs):
         if not (is_admin(request.user) or is_instructor(request.user)):
@@ -187,6 +225,19 @@ class CourseListCreateAPIView(generics.ListCreateAPIView):
             return [IsAuthenticated()]
         return [AllowAny()]
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
+    def create(self, request, *args, **kwargs):
+        if not (is_admin(self.request.user) or is_instructor(self.request.user)):
+            return api_error_response('Only instructors and admins can create courses.', status_code=status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(instructor=self.request.user)
+        return api_response(serializer.data, status_code=status.HTTP_201_CREATED)
+
     def perform_create(self, serializer):
         if not (is_admin(self.request.user) or is_instructor(self.request.user)):
             from rest_framework.exceptions import PermissionDenied
@@ -215,6 +266,11 @@ class CourseRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
 
     def put(self, request, *args, **kwargs):
         if not (is_admin(request.user) or is_instructor(request.user)):
@@ -245,6 +301,11 @@ class LessonListCreateAPIView(generics.ListCreateAPIView):
             return [IsAuthenticated()]
         return [AllowAny()]
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
     def perform_create(self, serializer):
         if not (is_admin(self.request.user) or is_instructor(self.request.user)):
             from rest_framework.exceptions import PermissionDenied
@@ -263,6 +324,11 @@ class LessonRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
 
     def put(self, request, *args, **kwargs):
         if not (is_admin(request.user) or is_instructor(request.user)):
@@ -301,6 +367,11 @@ class EnrollmentListCreateAPIView(generics.ListCreateAPIView):
         # Regular users only see their own enrollments
         return Enrollment.objects.filter(student=user).order_by('-enrolled_at')
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
     def perform_create(self, serializer):
         serializer.save(student=self.request.user)
 
@@ -323,6 +394,11 @@ class EnrollmentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIVi
             raise PermissionDenied("You can only access your own enrollments.")
         return obj
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
+
     def delete(self, request, *args, **kwargs):
         # Only admin can delete enrollments
         if not is_admin(request.user):
@@ -343,6 +419,11 @@ class QuizListCreateAPIView(generics.ListCreateAPIView):
             return [IsAuthenticated()]
         return [AllowAny()]
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
     def perform_create(self, serializer):
         if not (is_admin(self.request.user) or is_instructor(self.request.user)):
             from rest_framework.exceptions import PermissionDenied
@@ -361,6 +442,11 @@ class QuizRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
 
     def put(self, request, *args, **kwargs):
         if not (is_admin(request.user) or is_instructor(request.user)):
@@ -396,6 +482,11 @@ class FAQListCreateAPIView(generics.ListCreateAPIView):
             return [AllowAny()]  # Anyone can submit questions
         return [AllowAny()]
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
 
 class FAQRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -408,6 +499,11 @@ class FAQRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
 
     def put(self, request, *args, **kwargs):
         if not (is_admin(request.user) or is_instructor(request.user)):
@@ -437,9 +533,9 @@ class LoginAPIView(APIView):
         password = request.data.get('password')
 
         if not username or not password:
-            return Response(
-                {'detail': 'Username and password are required'}, 
-                status=status.HTTP_400_BAD_REQUEST
+            return api_error_response(
+                'Username and password are required',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
 
         user = authenticate(request, username=username, password=password)
@@ -447,10 +543,14 @@ class LoginAPIView(APIView):
         if user is not None and user.is_active:
             login(request, user)
             logger.info(f"User {username} logged in successfully")
-            return Response({'detail': 'Login successful'}, status=status.HTTP_200_OK)
+            return api_success_response(
+                'Login successful',
+                data={'username': user.username, 'role': user.role},
+                status_code=status.HTTP_200_OK
+            )
 
         logger.warning(f"Failed login attempt for username: {username}")
-        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        return api_error_response('Invalid credentials', status_code=status.HTTP_401_UNAUTHORIZED)
 
 
 # --- Register API View ---
@@ -517,4 +617,195 @@ class RegisterAPIView(APIView):
         except Exception as e:
             logger.exception(f"Unexpected error when trying to send welcome email to {user.email}")
 
-        return Response({'message': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+        return api_success_response(
+            message='Registration successful!',
+            data={'username': user.username, 'email': user.email, 'role': user.role},
+            status_code=status.HTTP_201_CREATED
+        )
+
+
+# --- Certificate API Views ---
+class CertificateListCreateAPIView(generics.ListCreateAPIView):
+    """
+    API view to list all Certificates or create a new Certificate.
+    Only authenticated users can access.
+    """
+    serializer_class = CertificateSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Admins can see all certificates
+        if user.is_staff:
+            return Certificate.objects.all().order_by('-issue_date')
+        # Students can only see their own certificates
+        return Certificate.objects.filter(enrollment__student=user).order_by('-issue_date')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return api_response(serializer.data, status_code=status.HTTP_201_CREATED)
+
+
+class CertificateRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API view to retrieve, update, or delete a specific Certificate by ID.
+    """
+    queryset = Certificate.objects.all()
+    serializer_class = CertificateSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return api_response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        if not is_admin(request.user):
+            return api_error_response('Permission denied.', status_code=status.HTTP_403_FORBIDDEN)
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return api_success_response('Certificate deleted successfully.', status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Question API Views ---
+class QuestionListCreateAPIView(generics.ListCreateAPIView):
+    """
+    API view to list all Questions or create a new Question.
+    """
+    queryset = Question.objects.all().order_by('quiz', 'order')
+    serializer_class = QuestionSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
+    def create(self, request, *args, **kwargs):
+        if not (is_admin(self.request.user) or is_instructor(self.request.user)):
+            return api_error_response('Only instructors and admins can create questions.', status_code=status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return api_response(serializer.data, status_code=status.HTTP_201_CREATED)
+
+
+class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API view to retrieve, update, or delete a specific Question by ID.
+    """
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        if not (is_admin(request.user) or is_instructor(request.user)):
+            return api_error_response('Permission denied.', status_code=status.HTTP_403_FORBIDDEN)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return api_response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        if not (is_admin(request.user) or is_instructor(request.user)):
+            return api_error_response('Permission denied.', status_code=status.HTTP_403_FORBIDDEN)
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return api_success_response('Question deleted successfully.', status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Review API Views ---
+class ReviewListCreateAPIView(generics.ListCreateAPIView):
+    """
+    API view to list all Reviews or create a new Review.
+    Only approved reviews are shown to non-staff users.
+    """
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Review.objects.all().order_by('-created_at')
+        return Review.objects.filter(is_approved=True).order_by('-created_at')
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return api_list_response(serializer.data, total=queryset.count())
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(student=self.request.user)
+        return api_response(serializer.data, status_code=status.HTTP_201_CREATED)
+
+
+class ReviewRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API view to retrieve, update, or delete a specific Review by ID.
+    """
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return api_response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        if not (is_admin(request.user) or is_instructor(request.user)):
+            return api_error_response('Permission denied.', status_code=status.HTTP_403_FORBIDDEN)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return api_response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        if not (is_admin(request.user) or is_instructor(request.user)):
+            return api_error_response('Permission denied.', status_code=status.HTTP_403_FORBIDDEN)
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return api_success_response('Review deleted successfully.', status_code=status.HTTP_204_NO_CONTENT)

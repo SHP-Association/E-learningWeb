@@ -37,16 +37,11 @@ export const useEnrollmentStore = defineStore('enrollment', () => {
         error.value = null;
 
         try {
-            const response = await apiService.get<any>('/api/enrollments/');
-
-            // Transform and handle paginated response
-            const fetchedEnrollments = transformPaginatedResponse(response, transformEnrollment);
-
-            enrollments.value = fetchedEnrollments;
+            const { items } = await apiService.getEnrollments();
+            enrollments.value = items.map(transformEnrollment);
         } catch (err: any) {
             error.value = err.message || 'Failed to load enrollments';
             console.error('Error fetching enrollments:', err);
-            // Fallback to empty array on error
             enrollments.value = [];
         } finally {
             loading.value = false;
@@ -65,11 +60,11 @@ export const useEnrollmentStore = defineStore('enrollment', () => {
         error.value = null;
 
         try {
-            const enrollment = await apiService.post<Enrollment>('/api/enrollments/', {
+            const response = await apiService.createEnrollment({
                 course_slug: courseSlug,
             });
 
-            enrollments.value.push(enrollment);
+            enrollments.value.push(transformEnrollment(response));
             return true;
         } catch (err: any) {
             error.value = err.message || 'Enrollment failed';

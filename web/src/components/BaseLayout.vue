@@ -135,6 +135,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/userStore';
+import { apiService } from '../services/api.service';
 import logo from '../assets/logo.png';
 
 const router = useRouter();
@@ -167,7 +168,7 @@ const logout = async () => {
 };
 
 const openAdmin = () => {
-  window.open(`${import.meta.env.VITE_APP_BACKEND_URL}/admin`, '_blank');
+  window.open(`${apiService.baseURL}/admin`, '_blank');
 };
 
 const handleClickOutside = (event: MouseEvent) => {
