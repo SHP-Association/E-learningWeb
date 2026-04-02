@@ -1,7 +1,6 @@
 // router.ts
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 
-// Lazy-loaded components
 const Home = () => import('./pages/Home.vue');
 const CourseDetail = () => import('./pages/CourseDetail.vue');
 const Enroll = () => import('./pages/Enroll.vue');
@@ -13,6 +12,7 @@ const PasswordReset = () => import('./pages/PasswordReset.vue');
 const PasswordResetDone = () => import('./pages/PasswordResetDone.vue');
 const PasswordResetConfirm = () => import('./pages/PasswordResetConfirm.vue');
 const PasswordResetComplete = () => import('./pages/PasswordResetComplete.vue');
+const QuizTake = () => import('./pages/QuizTake.vue');
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -37,6 +37,12 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
   { path: '/faq', name: 'FAQ', component: FAQ },
+  {
+    path: '/quiz/:id',
+    name: 'QuizTake',
+    component: QuizTake,
+    props: (route) => ({ id: route.params.id }),
+  },
   {
     path: '/password_reset',
     name: 'PasswordReset',

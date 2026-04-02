@@ -4,7 +4,7 @@
       v-for="i in 5"
       :key="i"
       class="w-4 h-4"
-      :class="i <= Math.round(rating) ? 'text-yellow-400' : 'text-gray-300'"
+      :class="i <= Math.round(Number(rating || 0)) ? 'text-yellow-400' : 'text-gray-300'"
       fill="currentColor"
       viewBox="0 0 20 20"
     >
@@ -16,16 +16,31 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 
 export default defineComponent({
   name: 'StarRating',
   props: {
     rating: {
-      type: Number,
+      type: [Number, String],
       required: true,
-      default: 0,
     },
+    maxRating: {
+      type: Number,
+      default: 5,
+    },
+  },
+  setup(props) {
+    const numericRating = computed(() => Number(props.rating || 0));
+    const fullStars = computed(() => Math.floor(numericRating.value));
+    const hasHalfStar = computed(() => numericRating.value % 1 >= 0.5);
+    const emptyStars = computed(() => props.maxRating - fullStars.value - (hasHalfStar.value ? 1 : 0));
+
+    return {
+      fullStars,
+      hasHalfStar,
+      emptyStars,
+    };
   },
 });
 </script>

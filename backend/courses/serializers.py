@@ -15,6 +15,9 @@ from Category.models import Category
 from Lesson.models import Lesson
 from Quiz.models import Quiz
 from FAQ.models import FAQ
+from Certificate.models import Certificate
+from Question.models import Question, AnswerChoice
+from Review.models import Review
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -79,3 +82,47 @@ class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
         fields = ['id', 'question', 'answer', 'created_at']
+
+class CertificateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Certificate model.
+    Includes nested enrollment data.
+    """
+    enrollment = EnrollmentSerializer(read_only=True)
+    
+    class Meta:
+        model = Certificate
+        fields = ['id', 'enrollment', 'unique_id', 'issue_date']
+        read_only_fields = ['unique_id', 'issue_date']
+
+class AnswerChoiceSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the AnswerChoice model.
+    """
+    class Meta:
+        model = AnswerChoice
+        fields = ['id', 'choice_text', 'is_correct']
+
+class QuestionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Question model.
+    Includes nested answer choices.
+    """
+    choices = AnswerChoiceSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Question
+        fields = ['id', 'quiz', 'question_text', 'question_type', 'order', 'choices']
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Review model.
+    Includes nested student and course data.
+    """
+    student = CustomUserSerializer(read_only=True)
+    course = CourseSerializer(read_only=True)
+    
+    class Meta:
+        model = Review
+        fields = ['id', 'course', 'student', 'rating', 'comment', 'created_at', 'is_approved']
+        read_only_fields = ['created_at']

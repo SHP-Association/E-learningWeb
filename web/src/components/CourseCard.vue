@@ -67,7 +67,7 @@
         </h3>
         <div class="flex items-center text-xs text-gray-500 mb-1">
           <StarRating :rating="course.average_rating || 0" />
-          <span class="ml-1 font-semibold">{{ (course.average_rating || 0).toFixed(1) }}</span>
+          <span class="ml-1 font-semibold">{{ Number(course.average_rating || 0).toFixed(1) }}</span>
           <span class="ml-1">({{ course.number_of_reviews || 0 }})</span>
         </div>
 

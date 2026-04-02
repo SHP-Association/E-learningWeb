@@ -50,18 +50,29 @@ export function transformUser(user: any): User {
 
 /**
  * Transform paginated API response
+ * Handles both old and new API formats
  */
 export function transformPaginatedResponse<T>(
     response: any,
     transformer: (item: any) => T
 ): T[] {
-    if (response.results && Array.isArray(response.results)) {
-        // Paginated response
+    // New standardized format: {ci_environment, data: {items, total}}
+    if (response.data && response.data.items && Array.isArray(response.data.items)) {
+        return response.data.items.map(transformer);
+    }
+    // Old paginated format: {results: [...]}
+    else if (response.results && Array.isArray(response.results)) {
         return response.results.map(transformer);
-    } else if (Array.isArray(response)) {
-        // Non-paginated response
+    }
+    // Direct array response
+    else if (Array.isArray(response)) {
         return response.map(transformer);
-    } else {
+    }
+    // Single object in new format: {ci_environment, data: {...}}
+    else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+        return [transformer(response.data)];
+    }
+    else {
         console.error('Unexpected API response format:', response);
         return [];
     }
