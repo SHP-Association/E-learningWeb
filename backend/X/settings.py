@@ -187,12 +187,16 @@ if DEBUG:
     CSRF_TRUSTED_ORIGINS += [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
+        "http://localhost:8001",
+        "http://127.0.0.1:8001",
+        "http://localhost:80",
+        "http://127.0.0.1:80",
+        "http://localhost",
+        "http://127.0.0.1"
     ]
 
 # CORS Settings - CRITICAL: Must allow credentials for session authentication
-CORS_ALLOWED_ORIGINS = [os.environ.get("VITE_API_URL", "http://localhost:5173")]
+CORS_ALLOWED_ORIGINS = [os.environ.get("VITE_API_URL", "http://localhost:")]
 CORS_ALLOW_CREDENTIALS = True  # Required for session auth with credentials: 'include'
 
 # Add development origins if in DEBUG mode
@@ -200,6 +204,10 @@ if DEBUG:
     CORS_ALLOWED_ORIGINS += [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:80",
+        "http://127.0.0.1:80",
+        "http://localhost",
+        "http://127.0.0.1",
     ]
 
 # =========================
@@ -220,7 +228,7 @@ JAZZMIN_SETTINGS = {
     "search_model": ["courses.Course", "Account.CustomUser"],
     "topmenu_links": [
         {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "View Live Site", "url": os.environ.get("VITE_API_URL", "http://localhost:8000"), "new_window": True},
+        {"name": "View Live Site", "url": os.environ.get("VITE_API_URL", "http://localhost:8001"), "new_window": True},
         {"name": "Support & Docs", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
     ],
     "usermenu_links": [

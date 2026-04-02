@@ -47,15 +47,16 @@ export const useUserStore = defineStore('user', () => {
 
     try {
       // Call backend login API
-      const response = await apiService.post<{ detail: string }>('/api/login/', credentials);
+      const response = await apiService.post<any>('/api/login/', credentials);
 
-      if (response.detail === 'Login successful') {
+      // Handle new standardized response format
+      if (response.success || response.message === 'Login successful') {
         // Fetch user profile after successful login
         await fetchUserProfile();
         return true;
       }
 
-      error.value = 'Login failed';
+      error.value = response.message || 'Login failed';
       return false;
     } catch (err: any) {
       error.value = err.message || 'Login failed';
@@ -71,9 +72,10 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      const response = await apiService.post<{ message: string }>('/api/register/', data);
+      const response = await apiService.post<any>('/api/register/', data);
 
-      if (response.message === 'Registration successful!') {
+      // Handle new standardized response format
+      if (response.success || response.message === 'Registration successful!') {
         // Auto-login after registration
         return await login({
           username: data.username,
@@ -111,24 +113,14 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      // Fetch current user profile
-      const response = await apiService.get<any>('/api/users/');
+      // Fetch current user profile using /me endpoint
+      const response = await apiService.get<any>('/api/users/me/');
 
-      // Handle paginated response
-      let users: User[];
-      if (response.results && Array.isArray(response.results)) {
-        users = response.results;
-      } else if (Array.isArray(response)) {
-        users = response;
+      // Handle new standardized response format
+      if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+        saveUser(response.data);
       } else {
-        // Single user object
         saveUser(response);
-        return;
-      }
-
-      // Get first user (should be current user)
-      if (users.length > 0) {
-        saveUser(users[0]);
       }
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch user profile';
@@ -138,7 +130,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function updateProfile(updates: Partial<User>): Promise<boolean> {
+  async function updateProfile(updates: Partial<User> | FormData): Promise<boolean> {
     if (!user.value) {
       error.value = 'No user logged in';
       return false;
@@ -148,10 +140,16 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      const updatedUser = await apiService.patch<User>(
-        `/api/users/${user.value.id}/`,
-        updates
-      );
+      const response = await apiService.updateUser(user.value.id, updates);
+
+      // Handle new standardized response format or direct object
+      let updatedUser: User;
+      if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+        updatedUser = response.data;
+      } else {
+        updatedUser = response;
+      }
+
       saveUser(updatedUser);
       return true;
     } catch (err: any) {
