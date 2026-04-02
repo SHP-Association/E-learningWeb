@@ -42,7 +42,7 @@ class CustomUser(AbstractUser):
     
     def save(self, *args, **kwargs):
         """Auto-assign staff status based on user role"""
-        if self.role in ['instructor', 'admin']:
+        if self.is_superuser or self.role in ['instructor', 'admin']:
             self.is_staff = True
         else:
             self.is_staff = False

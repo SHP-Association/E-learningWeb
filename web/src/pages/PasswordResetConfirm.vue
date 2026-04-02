@@ -97,8 +97,6 @@ const handleSubmit = async () => {
   } catch (err: any) {
     error.value = err.message || 'Password reset failed. The link may be invalid or expired.';
   } finally {
-    error.value = 'An unexpected error occurred. Please try again.';
-  } finally {
     isSubmitting.value = false;
   }
 };

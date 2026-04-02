@@ -91,8 +91,6 @@ const handleSubmit = async () => {
   } catch (err: any) {
     error.value = err.message || 'Failed to send password reset email. Please try again.';
   } finally {
-    error.value = 'An error occurred. Please try again later.';
-  } finally {
     isSubmitting.value = false;
   }
 };

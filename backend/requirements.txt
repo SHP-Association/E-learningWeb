@@ -25,7 +25,7 @@ lxml==5.4.0
 markdown==3.4.1
 markupsafe==2.1.5
 more-itertools==10.7.0
-mysqlclient==2.2.7
+# mysqlclient removed due to missing system dependencies and no sudo access
 packaging==24.0
 pillow==11.2.1
 premailer==3.10.0
