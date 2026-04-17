@@ -27,12 +27,14 @@
             <p class="text-lg text-gray-600 italic">{{ userStore.user.role === 'instructor' ? 'Instructor' : 'Student' }}</p>
             <p class="text-gray-500 text-sm mt-1">Joined: {{ formatDate(userStore.user.date_joined) }}</p>
             
-            <button 
+            <AppButton
               @click="editing = !editing" 
-              :class="['mt-3 px-4 py-2 rounded-lg font-semibold transition', editing ? 'bg-gray-300 text-gray-800 hover:bg-gray-400' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md']"
+              :variant="editing ? 'outline' : 'solid'"
+              tone="primary"
+              class="mt-3"
             >
               {{ editing ? 'Cancel Edit' : 'Edit Profile' }}
-            </button>
+            </AppButton>
           </div>
         </div>
 
@@ -66,30 +68,33 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div v-for="field in editableFields" :key="field.key">
                 <div v-if="editing">
-                  <label :for="field.key" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
-                  
-                  <input
+                  <AppInput
                     v-if="['text', 'date', 'url', 'email'].includes(field.type)"
-                    :type="field.type"
                     :id="field.key"
                     v-model="form[field.key]"
-                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
+                    :type="field.type"
+                    :label="field.label"
+                    :name="field.key"
+                    tone="primary"
                   />
-                  <textarea
+                  <AppTextarea
                     v-else-if="field.type === 'textarea'"
                     :id="field.key"
                     v-model="form[field.key]"
-                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800 resize-y h-24"
-                  ></textarea>
-                  <select
+                    :label="field.label"
+                    :name="field.key"
+                    tone="primary"
+                  />
+                  <AppSelect
                     v-else-if="field.type === 'select' && field.options"
                     :id="field.key"
                     v-model="form[field.key]"
-                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800"
-                  >
-                    <option value="" disabled>Select {{ field.label }}</option>
-                    <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
-                  </select>
+                    :label="field.label"
+                    :name="field.key"
+                    :options="field.options"
+                    :placeholder="`Select ${field.label}`"
+                    tone="primary"
+                  />
                 </div>
                 <div v-else>
                   <div class="flex items-start mb-3">
@@ -102,13 +107,15 @@
           </section>
 
           <div v-if="editing" class="pt-4 border-t border-gray-100 flex justify-end">
-            <button
+            <AppButton
               type="submit"
-              class="bg-green-600 text-white hover:bg-green-700 px-6 py-3 rounded-lg font-semibold shadow-md transition"
+              tone="success"
+              :loading="isSubmitting"
+              loading-label="Saving..."
               :disabled="isSubmitting"
             >
-              {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
-            </button>
+              Save Changes
+            </AppButton>
           </div>
         </form>
 
@@ -146,6 +153,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
+import AppButton from '../components/ui/AppButton.vue';
+import AppInput from '../components/ui/AppInput.vue';
+import AppSelect from '../components/ui/AppSelect.vue';
+import AppTextarea from '../components/ui/AppTextarea.vue';
 import { useUserStore } from '../stores/userStore';
 import { useEnrollmentStore } from '../stores/enrollmentStore';
 

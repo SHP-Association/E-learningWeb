@@ -136,17 +136,17 @@
             </p>
             <p class="text-sm text-gray-700"><strong>Progress:</strong> {{ enrollment?.progress ?? 0 }}%</p>
           </div>
-          <button disabled class="bg-green-600 text-white px-6 py-2 rounded-lg opacity-80 cursor-not-allowed font-semibold">
+          <AppButton disabled tone="success">
             Enrolled
-          </button>
+          </AppButton>
         </div>
-        <button v-else @click="navigate(`/enroll/${course.slug}`)" class="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg transition duration-300 shadow">
+        <AppButton v-else tone="primary" @click="navigate(`/enroll/${course.slug}`)">
           Enroll Now
-        </button>
+        </AppButton>
       </template>
       <p v-else class="text-gray-700">
         Please
-        <button @click="navigate('/login')" class="text-blue-600 font-medium hover:underline">log in</button>
+        <AppButton variant="ghost" tone="primary" @click="navigate('/login')">log in</AppButton>
         to enroll in this course.
       </p>
     </div>
@@ -199,6 +199,7 @@
 <script lang="ts">
 import { defineComponent, computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AppButton from '../components/ui/AppButton.vue';
 import { useCourseStore } from '../stores/courseStore';
 import { useEnrollmentStore } from '../stores/enrollmentStore';
 import { useUserStore } from '../stores/userStore';
@@ -206,6 +207,9 @@ import { useCourseSEO } from '../composables/useSEO';
 
 export default defineComponent({
   name: 'CourseDetail',
+  components: {
+    AppButton,
+  },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -278,5 +282,4 @@ export default defineComponent({
   },
 });
 </script>
-
 

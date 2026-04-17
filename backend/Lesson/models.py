@@ -12,7 +12,7 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField(help_text="Order of the lesson within the course.")
     is_preview = models.BooleanField(default=False, help_text="Can this lesson be previewed by non-enrolled users?")
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

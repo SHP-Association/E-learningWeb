@@ -22,15 +22,15 @@ class Course(models.Model):
 
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_free = models.BooleanField(default=False)
-    is_published = models.BooleanField(default=False, help_text="Set to true to make the course visible to users.")
-    level = models.CharField(max_length=50, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('advanced', 'Advanced')], default='beginner')
+    is_published = models.BooleanField(default=False, db_index=True, help_text="Set to true to make the course visible to users.")
+    level = models.CharField(max_length=50, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('advanced', 'Advanced')], default='beginner', db_index=True)
 
     duration = models.CharField(max_length=50, blank=True, null=True, help_text="E.g., '10 hours', '3 weeks'")
     total_lectures = models.PositiveIntegerField(default=0)
     average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00, validators=[MinValueValidator(0), MaxValueValidator(5)])
     number_of_reviews = models.PositiveIntegerField(default=0)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):

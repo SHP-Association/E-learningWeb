@@ -2,36 +2,39 @@
   <div class="min-h-screen flex items-start justify-center bg-gray-100 p-4">
     <p v-if="!user" class="text-center text-xl mt-10">Please log in to enroll in courses.</p>
     <p v-else-if="!course" class="text-center text-xl mt-10">Course not found.</p>
-    <div v-else class="bg-white p-8 rounded-lg shadow-xl border border-gray-200 w-full max-w-md mt-10">
-      <h1 class="text-3xl font-bold mb-4 text-blue-800">Enroll in {{ course.title }}</h1>
-      <p class="text-gray-700 mb-4">
+    <AppCard v-else size="md" padding="lg" elevated centered class="mt-10">
+      <h1 class="mb-4 text-3xl font-bold text-blue-800">Enroll in {{ course.title }}</h1>
+      <p class="mb-4 text-gray-700">
         You are about to enroll in <strong class="font-semibold">{{ course.title }}</strong>.
       </p>
-      <p class="text-gray-700 mb-6">
+      <p class="mb-6 text-gray-700">
         <strong class="font-semibold">Price:</strong>
         <span class="ml-1">{{ course.is_free ? 'Free' : `₹${course.price}` }}</span>
       </p>
 
       <form @submit.prevent="handleConfirmEnrollment">
         <div class="flex justify-between space-x-4">
-          <button type="submit" class="bg-blue-900 text-white hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold shadow transition flex-1">
+          <AppButton type="submit" tone="primary" class="flex-1">
             Confirm Enrollment
-          </button>
-          <button
+          </AppButton>
+          <AppButton
             type="button"
+            variant="outline"
+            tone="primary"
+            class="flex-1"
             @click="navigate(`/course/${course.slug}`)"
-            class="bg-gray-300 text-gray-800 hover:bg-gray-400 px-6 py-3 rounded-lg font-semibold transition flex-1"
           >
             Cancel
-          </button>
+          </AppButton>
         </div>
       </form>
-    </div>
+    </AppCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue';
+import AppButton from '../components/ui/AppButton.vue';
+import AppCard from '../components/ui/AppCard.vue';
 
 // Define placeholder types
 interface User {

@@ -24,6 +24,9 @@ from .serializers import (
     LessonSerializer, EnrollmentSerializer, QuizSerializer, FAQSerializer,
     CertificateSerializer, QuestionSerializer, AnswerChoiceSerializer, ReviewSerializer
 )
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 import os
 import logging
@@ -154,6 +157,8 @@ class CategoryListCreateAPIView(generics.ListCreateAPIView):
             return [IsAuthenticated()]
         return [AllowAny()]
 
+    @method_decorator(cache_page(60 * 15)) # Cache for 15 minutes
+    @method_decorator(vary_on_cookie)
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
@@ -225,6 +230,8 @@ class CourseListCreateAPIView(generics.ListCreateAPIView):
             return [IsAuthenticated()]
         return [AllowAny()]
 
+    @method_decorator(cache_page(60 * 5)) # Cache for 5 minutes
+    @method_decorator(vary_on_cookie)
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
@@ -365,7 +372,7 @@ class EnrollmentListCreateAPIView(generics.ListCreateAPIView):
             return Enrollment.objects.all().order_by('-enrolled_at')
         
         # Regular users only see their own enrollments
-        return Enrollment.objects.filter(student=user).order_by('-enrolled_at')
+        return Enrollment.objects.select_related('course', 'student').filter(student=user).order_by('-enrolled_at')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -482,6 +489,7 @@ class FAQListCreateAPIView(generics.ListCreateAPIView):
             return [AllowAny()]  # Anyone can submit questions
         return [AllowAny()]
 
+    @method_decorator(cache_page(60 * 15)) # Cache for 15 minutes
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
@@ -593,29 +601,9 @@ class RegisterAPIView(APIView):
 
         logger.info(f"New user registered: {username} with role: {role}")
 
-        # --- Send Welcome Email ---
-        try:
-            welcome_context = {
-                'user': user,
-                'imgLogo': os.getenv('EMAIL_LOGO_URL'),
-                'VITE_APP_BACKEND_URL': os.getenv('FRONTEND_URL'),
-                'ADDRESS': os.getenv('ADDRESS'),
-                'SUPPORT_MAIL': os.getenv('SUPPORT_MAIL'),
-            }
-
-            email_error = trigger_email(
-                context=welcome_context,
-                template='welcome_email.html',
-                subject=f'Welcome to SHP-Learner, {user.username}!',
-                recipients=[user.email],
-                message=f"Welcome to SHP-Learner, {user.username}! We're excited to have you."
-            )
-
-            if email_error:
-                logger.error(f"Failed to send welcome email to {user.email}: {email_error}")
-
-        except Exception as e:
-            logger.exception(f"Unexpected error when trying to send welcome email to {user.email}")
+        # --- Send Welcome Email (Asynchronous) ---
+        from .tasks import send_welcome_email_task
+        send_welcome_email_task.delay(user.id, user.username, user.email)
 
         return api_success_response(
             message='Registration successful!',
@@ -640,7 +628,7 @@ class CertificateListCreateAPIView(generics.ListCreateAPIView):
         if user.is_staff:
             return Certificate.objects.all().order_by('-issue_date')
         # Students can only see their own certificates
-        return Certificate.objects.filter(enrollment__student=user).order_by('-issue_date')
+        return Certificate.objects.select_related('enrollment', 'enrollment__student', 'enrollment__course').filter(enrollment__student=user).order_by('-issue_date')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -689,7 +677,7 @@ class QuestionListCreateAPIView(generics.ListCreateAPIView):
     """
     API view to list all Questions or create a new Question.
     """
-    queryset = Question.objects.all().order_by('quiz', 'order')
+    queryset = Question.objects.prefetch_related('choices').all().order_by('quiz', 'order')
     serializer_class = QuestionSerializer
 
     def get_permissions(self):
@@ -756,8 +744,8 @@ class ReviewListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return Review.objects.all().order_by('-created_at')
-        return Review.objects.filter(is_approved=True).order_by('-created_at')
+            return Review.objects.select_related('course', 'student').all().order_by('-created_at')
+        return Review.objects.select_related('course', 'student').filter(is_approved=True).order_by('-created_at')
 
     def get_permissions(self):
         if self.request.method == 'POST':
