@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'),
     )
 
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student', db_index=True)
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
     date_of_birth = models.DateField(null=True, blank=True)
@@ -28,8 +28,8 @@ class CustomUser(AbstractUser):
     quiz_scores = models.JSONField(blank=True, null=True, help_text="Store quiz scores or progress data")
     instructor_rating = models.FloatField(default=0.0)
     total_reviews = models.PositiveIntegerField(default=0)
-    is_active_user = models.BooleanField(default=True)
-    last_activity = models.DateTimeField(null=True, blank=True)
+    is_active_user = models.BooleanField(default=True, db_index=True)
+    last_activity = models.DateTimeField(null=True, blank=True, db_index=True)
     login_ip = models.GenericIPAddressField(null=True, blank=True)
     two_factor_enabled = models.BooleanField(default=False)
     class Meta:

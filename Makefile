@@ -1,6 +1,6 @@
 .PHONY: all help setup git-setup check-git \
         docker-up docker-down docker-logs \
-        backend-setup backend-run backend-superuser backend-migrate backend-makemigrations \
+        backend-setup backend-run backend-worker backend-beat backend-superuser backend-migrate backend-makemigrations \
         frontend-setup frontend-dev frontend-build frontend-preview \
         clean
 
@@ -31,6 +31,8 @@ help:
 	@echo "git-setup          - Configure local Git identity"
 	@echo "backend-setup      - Optimized Python environment setup"
 	@echo "backend-run        - Start backend Django server (uv)"
+	@echo "backend-worker     - Start Celery worker (uv)"
+	@echo "backend-beat       - Start Celery beat (uv)"
 	@echo "backend-superuser  - Create a Django superuser (uv)"
 	@echo "frontend-setup     - Optimized Node environment setup"
 	@echo "frontend-dev       - Start frontend development"
@@ -67,6 +69,12 @@ backend-run:
 
 backend-superuser:
 	cd $(BACKEND_DIR) && uv run manage.py createsuperuser
+
+backend-worker:
+	cd $(BACKEND_DIR) && uv run celery -A X worker -l info
+
+backend-beat:
+	cd $(BACKEND_DIR) && uv run celery -A X beat -l info
 
 # --- Frontend Optimization (File-based dependencies) ---
 frontend-setup: $(FRONTEND_DIR)/node_modules/.bin

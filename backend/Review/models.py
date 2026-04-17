@@ -8,8 +8,8 @@ class Review(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reviews_given', limit_choices_to={'role': 'student'})
     rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], help_text="Rating out of 5 stars.")
     comment = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_approved = models.BooleanField(default=False, help_text="Admin approval for review visibility.")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    is_approved = models.BooleanField(default=False, db_index=True, help_text="Admin approval for review visibility.")
 
     class Meta:
         unique_together = ('course', 'student')
