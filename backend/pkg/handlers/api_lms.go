@@ -122,7 +122,7 @@ func (h *LMSAPI) enroll(ctx echo.Context) error {
 			enrollment.HasStudentWith(user.ID(u.ID)),
 			enrollment.HasCourseWith(course.ID(c.ID)),
 		).
-		Exists(ctx.Request().Context())
+		Exist(ctx.Request().Context())
 
 	if err != nil {
 		return fail(err, "error checking enrollment")

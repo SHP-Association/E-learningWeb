@@ -68,7 +68,9 @@ func CreateUser(orm *ent.Client) (*ent.User, error) {
 	return orm.User.
 		Create().
 		SetEmail(fmt.Sprintf("testuser-%s@localhost.localhost", seed)).
+		SetUsername(fmt.Sprintf("testuser-%s", seed)).
+		SetFirstName("Test").
+		SetLastName("User").
 		SetPassword("password").
-		SetName(fmt.Sprintf("Test User %s", seed)).
 		Save(context.Background())
 }

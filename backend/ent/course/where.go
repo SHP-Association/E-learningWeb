@@ -95,9 +95,9 @@ func Thumbnail(v string) predicate.Course {
 	return predicate.Course(sql.FieldEQ(FieldThumbnail, v))
 }
 
-// PromoVideoURL applies equality check predicate on the "promo_video_url" field. It's identical to PromoVideoURLEQ.
-func PromoVideoURL(v string) predicate.Course {
-	return predicate.Course(sql.FieldEQ(FieldPromoVideoURL, v))
+// PromoVideoLink applies equality check predicate on the "promo_video_link" field. It's identical to PromoVideoLinkEQ.
+func PromoVideoLink(v string) predicate.Course {
+	return predicate.Course(sql.FieldEQ(FieldPromoVideoLink, v))
 }
 
 // Price applies equality check predicate on the "price" field. It's identical to PriceEQ.
@@ -710,79 +710,79 @@ func ThumbnailContainsFold(v string) predicate.Course {
 	return predicate.Course(sql.FieldContainsFold(FieldThumbnail, v))
 }
 
-// PromoVideoURLEQ applies the EQ predicate on the "promo_video_url" field.
-func PromoVideoURLEQ(v string) predicate.Course {
-	return predicate.Course(sql.FieldEQ(FieldPromoVideoURL, v))
+// PromoVideoLinkEQ applies the EQ predicate on the "promo_video_link" field.
+func PromoVideoLinkEQ(v string) predicate.Course {
+	return predicate.Course(sql.FieldEQ(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLNEQ applies the NEQ predicate on the "promo_video_url" field.
-func PromoVideoURLNEQ(v string) predicate.Course {
-	return predicate.Course(sql.FieldNEQ(FieldPromoVideoURL, v))
+// PromoVideoLinkNEQ applies the NEQ predicate on the "promo_video_link" field.
+func PromoVideoLinkNEQ(v string) predicate.Course {
+	return predicate.Course(sql.FieldNEQ(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLIn applies the In predicate on the "promo_video_url" field.
-func PromoVideoURLIn(vs ...string) predicate.Course {
-	return predicate.Course(sql.FieldIn(FieldPromoVideoURL, vs...))
+// PromoVideoLinkIn applies the In predicate on the "promo_video_link" field.
+func PromoVideoLinkIn(vs ...string) predicate.Course {
+	return predicate.Course(sql.FieldIn(FieldPromoVideoLink, vs...))
 }
 
-// PromoVideoURLNotIn applies the NotIn predicate on the "promo_video_url" field.
-func PromoVideoURLNotIn(vs ...string) predicate.Course {
-	return predicate.Course(sql.FieldNotIn(FieldPromoVideoURL, vs...))
+// PromoVideoLinkNotIn applies the NotIn predicate on the "promo_video_link" field.
+func PromoVideoLinkNotIn(vs ...string) predicate.Course {
+	return predicate.Course(sql.FieldNotIn(FieldPromoVideoLink, vs...))
 }
 
-// PromoVideoURLGT applies the GT predicate on the "promo_video_url" field.
-func PromoVideoURLGT(v string) predicate.Course {
-	return predicate.Course(sql.FieldGT(FieldPromoVideoURL, v))
+// PromoVideoLinkGT applies the GT predicate on the "promo_video_link" field.
+func PromoVideoLinkGT(v string) predicate.Course {
+	return predicate.Course(sql.FieldGT(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLGTE applies the GTE predicate on the "promo_video_url" field.
-func PromoVideoURLGTE(v string) predicate.Course {
-	return predicate.Course(sql.FieldGTE(FieldPromoVideoURL, v))
+// PromoVideoLinkGTE applies the GTE predicate on the "promo_video_link" field.
+func PromoVideoLinkGTE(v string) predicate.Course {
+	return predicate.Course(sql.FieldGTE(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLLT applies the LT predicate on the "promo_video_url" field.
-func PromoVideoURLLT(v string) predicate.Course {
-	return predicate.Course(sql.FieldLT(FieldPromoVideoURL, v))
+// PromoVideoLinkLT applies the LT predicate on the "promo_video_link" field.
+func PromoVideoLinkLT(v string) predicate.Course {
+	return predicate.Course(sql.FieldLT(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLLTE applies the LTE predicate on the "promo_video_url" field.
-func PromoVideoURLLTE(v string) predicate.Course {
-	return predicate.Course(sql.FieldLTE(FieldPromoVideoURL, v))
+// PromoVideoLinkLTE applies the LTE predicate on the "promo_video_link" field.
+func PromoVideoLinkLTE(v string) predicate.Course {
+	return predicate.Course(sql.FieldLTE(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLContains applies the Contains predicate on the "promo_video_url" field.
-func PromoVideoURLContains(v string) predicate.Course {
-	return predicate.Course(sql.FieldContains(FieldPromoVideoURL, v))
+// PromoVideoLinkContains applies the Contains predicate on the "promo_video_link" field.
+func PromoVideoLinkContains(v string) predicate.Course {
+	return predicate.Course(sql.FieldContains(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLHasPrefix applies the HasPrefix predicate on the "promo_video_url" field.
-func PromoVideoURLHasPrefix(v string) predicate.Course {
-	return predicate.Course(sql.FieldHasPrefix(FieldPromoVideoURL, v))
+// PromoVideoLinkHasPrefix applies the HasPrefix predicate on the "promo_video_link" field.
+func PromoVideoLinkHasPrefix(v string) predicate.Course {
+	return predicate.Course(sql.FieldHasPrefix(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLHasSuffix applies the HasSuffix predicate on the "promo_video_url" field.
-func PromoVideoURLHasSuffix(v string) predicate.Course {
-	return predicate.Course(sql.FieldHasSuffix(FieldPromoVideoURL, v))
+// PromoVideoLinkHasSuffix applies the HasSuffix predicate on the "promo_video_link" field.
+func PromoVideoLinkHasSuffix(v string) predicate.Course {
+	return predicate.Course(sql.FieldHasSuffix(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLIsNil applies the IsNil predicate on the "promo_video_url" field.
-func PromoVideoURLIsNil() predicate.Course {
-	return predicate.Course(sql.FieldIsNull(FieldPromoVideoURL))
+// PromoVideoLinkIsNil applies the IsNil predicate on the "promo_video_link" field.
+func PromoVideoLinkIsNil() predicate.Course {
+	return predicate.Course(sql.FieldIsNull(FieldPromoVideoLink))
 }
 
-// PromoVideoURLNotNil applies the NotNil predicate on the "promo_video_url" field.
-func PromoVideoURLNotNil() predicate.Course {
-	return predicate.Course(sql.FieldNotNull(FieldPromoVideoURL))
+// PromoVideoLinkNotNil applies the NotNil predicate on the "promo_video_link" field.
+func PromoVideoLinkNotNil() predicate.Course {
+	return predicate.Course(sql.FieldNotNull(FieldPromoVideoLink))
 }
 
-// PromoVideoURLEqualFold applies the EqualFold predicate on the "promo_video_url" field.
-func PromoVideoURLEqualFold(v string) predicate.Course {
-	return predicate.Course(sql.FieldEqualFold(FieldPromoVideoURL, v))
+// PromoVideoLinkEqualFold applies the EqualFold predicate on the "promo_video_link" field.
+func PromoVideoLinkEqualFold(v string) predicate.Course {
+	return predicate.Course(sql.FieldEqualFold(FieldPromoVideoLink, v))
 }
 
-// PromoVideoURLContainsFold applies the ContainsFold predicate on the "promo_video_url" field.
-func PromoVideoURLContainsFold(v string) predicate.Course {
-	return predicate.Course(sql.FieldContainsFold(FieldPromoVideoURL, v))
+// PromoVideoLinkContainsFold applies the ContainsFold predicate on the "promo_video_link" field.
+func PromoVideoLinkContainsFold(v string) predicate.Course {
+	return predicate.Course(sql.FieldContainsFold(FieldPromoVideoLink, v))
 }
 
 // PriceEQ applies the EQ predicate on the "price" field.

@@ -70,9 +70,9 @@ func Content(v string) predicate.Lesson {
 	return predicate.Lesson(sql.FieldEQ(FieldContent, v))
 }
 
-// VideoURL applies equality check predicate on the "video_url" field. It's identical to VideoURLEQ.
-func VideoURL(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldEQ(FieldVideoURL, v))
+// VideoLink applies equality check predicate on the "video_link" field. It's identical to VideoLinkEQ.
+func VideoLink(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldEQ(FieldVideoLink, v))
 }
 
 // Order applies equality check predicate on the "order" field. It's identical to OrderEQ.
@@ -300,79 +300,79 @@ func ContentContainsFold(v string) predicate.Lesson {
 	return predicate.Lesson(sql.FieldContainsFold(FieldContent, v))
 }
 
-// VideoURLEQ applies the EQ predicate on the "video_url" field.
-func VideoURLEQ(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldEQ(FieldVideoURL, v))
+// VideoLinkEQ applies the EQ predicate on the "video_link" field.
+func VideoLinkEQ(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldEQ(FieldVideoLink, v))
 }
 
-// VideoURLNEQ applies the NEQ predicate on the "video_url" field.
-func VideoURLNEQ(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldNEQ(FieldVideoURL, v))
+// VideoLinkNEQ applies the NEQ predicate on the "video_link" field.
+func VideoLinkNEQ(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldNEQ(FieldVideoLink, v))
 }
 
-// VideoURLIn applies the In predicate on the "video_url" field.
-func VideoURLIn(vs ...string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldIn(FieldVideoURL, vs...))
+// VideoLinkIn applies the In predicate on the "video_link" field.
+func VideoLinkIn(vs ...string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldIn(FieldVideoLink, vs...))
 }
 
-// VideoURLNotIn applies the NotIn predicate on the "video_url" field.
-func VideoURLNotIn(vs ...string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldNotIn(FieldVideoURL, vs...))
+// VideoLinkNotIn applies the NotIn predicate on the "video_link" field.
+func VideoLinkNotIn(vs ...string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldNotIn(FieldVideoLink, vs...))
 }
 
-// VideoURLGT applies the GT predicate on the "video_url" field.
-func VideoURLGT(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldGT(FieldVideoURL, v))
+// VideoLinkGT applies the GT predicate on the "video_link" field.
+func VideoLinkGT(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldGT(FieldVideoLink, v))
 }
 
-// VideoURLGTE applies the GTE predicate on the "video_url" field.
-func VideoURLGTE(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldGTE(FieldVideoURL, v))
+// VideoLinkGTE applies the GTE predicate on the "video_link" field.
+func VideoLinkGTE(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldGTE(FieldVideoLink, v))
 }
 
-// VideoURLLT applies the LT predicate on the "video_url" field.
-func VideoURLLT(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldLT(FieldVideoURL, v))
+// VideoLinkLT applies the LT predicate on the "video_link" field.
+func VideoLinkLT(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldLT(FieldVideoLink, v))
 }
 
-// VideoURLLTE applies the LTE predicate on the "video_url" field.
-func VideoURLLTE(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldLTE(FieldVideoURL, v))
+// VideoLinkLTE applies the LTE predicate on the "video_link" field.
+func VideoLinkLTE(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldLTE(FieldVideoLink, v))
 }
 
-// VideoURLContains applies the Contains predicate on the "video_url" field.
-func VideoURLContains(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldContains(FieldVideoURL, v))
+// VideoLinkContains applies the Contains predicate on the "video_link" field.
+func VideoLinkContains(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldContains(FieldVideoLink, v))
 }
 
-// VideoURLHasPrefix applies the HasPrefix predicate on the "video_url" field.
-func VideoURLHasPrefix(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldHasPrefix(FieldVideoURL, v))
+// VideoLinkHasPrefix applies the HasPrefix predicate on the "video_link" field.
+func VideoLinkHasPrefix(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldHasPrefix(FieldVideoLink, v))
 }
 
-// VideoURLHasSuffix applies the HasSuffix predicate on the "video_url" field.
-func VideoURLHasSuffix(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldHasSuffix(FieldVideoURL, v))
+// VideoLinkHasSuffix applies the HasSuffix predicate on the "video_link" field.
+func VideoLinkHasSuffix(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldHasSuffix(FieldVideoLink, v))
 }
 
-// VideoURLIsNil applies the IsNil predicate on the "video_url" field.
-func VideoURLIsNil() predicate.Lesson {
-	return predicate.Lesson(sql.FieldIsNull(FieldVideoURL))
+// VideoLinkIsNil applies the IsNil predicate on the "video_link" field.
+func VideoLinkIsNil() predicate.Lesson {
+	return predicate.Lesson(sql.FieldIsNull(FieldVideoLink))
 }
 
-// VideoURLNotNil applies the NotNil predicate on the "video_url" field.
-func VideoURLNotNil() predicate.Lesson {
-	return predicate.Lesson(sql.FieldNotNull(FieldVideoURL))
+// VideoLinkNotNil applies the NotNil predicate on the "video_link" field.
+func VideoLinkNotNil() predicate.Lesson {
+	return predicate.Lesson(sql.FieldNotNull(FieldVideoLink))
 }
 
-// VideoURLEqualFold applies the EqualFold predicate on the "video_url" field.
-func VideoURLEqualFold(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldEqualFold(FieldVideoURL, v))
+// VideoLinkEqualFold applies the EqualFold predicate on the "video_link" field.
+func VideoLinkEqualFold(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldEqualFold(FieldVideoLink, v))
 }
 
-// VideoURLContainsFold applies the ContainsFold predicate on the "video_url" field.
-func VideoURLContainsFold(v string) predicate.Lesson {
-	return predicate.Lesson(sql.FieldContainsFold(FieldVideoURL, v))
+// VideoLinkContainsFold applies the ContainsFold predicate on the "video_link" field.
+func VideoLinkContainsFold(v string) predicate.Lesson {
+	return predicate.Lesson(sql.FieldContainsFold(FieldVideoLink, v))
 }
 
 // OrderEQ applies the EQ predicate on the "order" field.

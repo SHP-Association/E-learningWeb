@@ -18,18 +18,42 @@ func Auth(r *ui.Request, content Node) Node {
 				JS(),
 			),
 			Body(
+				Class("bg-base-100 font-sans selection:bg-primary/30"),
 				Div(
-					Class("hero flex items-center justify-center min-h-screen"),
+					Class("hero min-h-screen premium-gradient relative overflow-hidden"),
+					// Animated background blobs
+					Div(Class("absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px]")),
+					Div(Class("absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 rounded-full blur-[120px]")),
+					
 					Div(
-						Class("flex-col hero-content"),
+						Class("hero-content flex-col w-full max-w-md page-transition"),
+						// logo / Brand
+						A(
+							Href("/"),
+							Class("mb-8 transition-transform active:scale-95"),
+							Img(
+								Class("h-16 w-16 drop-shadow-2xl"),
+								Src(ui.StaticFile("logo.png")),
+							),
+						),
+						
 						Div(
-							Class("card shadow-md bg-base-200 w-96"),
+							Class("glass-card w-full rounded-3xl overflow-hidden"),
 							Div(
-								Class("card-body"),
-								If(len(r.Title) > 0, H1(Class("text-2xl font-bold"), Text(r.Title))),
+								Class("p-8 md:p-10"),
+								If(len(r.Title) > 0, H1(Class("text-3xl font-serif font-bold tracking-tight text-white mb-2 text-center"), Text(r.Title))),
+								P(Class("text-base-content/60 text-sm text-center mb-8"), Text("Welcome back to SHP E-learning Platform")),
+								
 								FlashMessages(r),
 								content,
 							),
+						),
+						
+						// Footer Links
+						Div(
+							Class("mt-8 flex gap-4 text-xs text-base-content/40"),
+							A(Href("#"), Class("hover:text-primary transition-colors"), Text("Terms of Service")),
+							A(Href("#"), Class("hover:text-primary transition-colors"), Text("Privacy Policy")),
 						),
 					),
 				),

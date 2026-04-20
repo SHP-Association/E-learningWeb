@@ -22,6 +22,7 @@ func Primary(r *ui.Request, content Node) Node {
 				JS(),
 			),
 			Body(
+				Class("bg-[#0a1520] font-inter text-[#ffffff] selection:bg-primary/30"),
 				Div(
 					Class("drawer lg:drawer-open"),
 					Input(
@@ -30,14 +31,29 @@ func Primary(r *ui.Request, content Node) Node {
 						Class("drawer-toggle"),
 					),
 					Div(
-						Class("drawer-content flex flex-col p-7 prose-base"),
-						If(len(r.Title) > 0, H1(Text(r.Title))),
-						FlashMessages(r),
-						content,
+						Class("drawer-content flex flex-col min-h-screen"),
+						// Fixed Navbar
+						navbar(r),
+						
+						// Main Content responsive container
+						Main(
+							Class("flex-1 p-8 sm:p-12 page-transition prose-base flex flex-col"),
+							If(len(r.Title) > 0, H1(
+								Class("text-4xl font-black tracking-tight mb-10 text-white border-b border-white/5 pb-6"), 
+								Text(r.Title),
+							)),
+							FlashMessages(r),
+							content,
+						),
+						
+						// Mobile Overlay button
 						Label(
 							For("sidebar"),
-							Class("btn btn-primary drawer-button lg:hidden"),
-							Text("Open drawer"),
+							Class("btn btn-teal fixed bottom-6 right-6 lg:hidden shadow-2xl z-50 px-6"),
+							Group{
+								icons.MagnifyingGlass(),
+								Span(Class("ml-2"), Text("Menu")),
+							},
 						),
 					),
 					sidebarMenu(r),
@@ -49,22 +65,58 @@ func Primary(r *ui.Request, content Node) Node {
 	)
 }
 
+func navbar(r *ui.Request) Node {
+	return Nav(
+		Class("sticky top-0 z-30 flex h-16 w-full justify-center bg-base-100/60 backdrop-blur-xl border-b border-white/5 px-4"),
+		Div(
+			Class("navbar w-full max-w-7xl"),
+			Div(
+				Class("flex-1"),
+			),
+			Div(
+				Class("flex-none gap-4"),
+				search(),
+				// User Profile
+				If(r.IsAuth, Div(
+					Class("dropdown dropdown-end"),
+					Div(
+						TabIndex("0"),
+						Role("button"),
+						Class("flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"),
+						Div(
+							Class("w-8 h-8 rounded-xl overflow-hidden shadow-glow"),
+							Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed="+r.AuthUser.Username)),
+						),
+						Span(Class("text-xs font-bold text-white"), Text(r.AuthUser.Username)),
+					),
+					Ul(
+						TabIndex("0"),
+						Class("mt-3 z-[1] p-2 shadow-2xl menu menu-sm dropdown-content bg-base-200 rounded-2xl w-52 border border-white/10"),
+						Li(A(Class("rounded-xl"), Href(r.Path(routenames.Home)), Text("Profile"))),
+						Li(A(Class("rounded-xl text-error"), Href(r.Path(routenames.Logout)), Text("Logout"))),
+					),
+				)),
+			),
+		),
+	)
+}
+
 func search() Node {
 	return cache.SetIfNotExists("layout.search", func() Node {
 		return Div(
-			Class("ml-2"),
+			Class("hidden md:flex"),
 			Attr("x-data", ""),
 			Label(
-				Class("input"),
+				Class("input input-bordered flex items-center gap-2 bg-white/5 border-white/10 rounded-xl focus-within:border-primary/50 transition-all cursor-pointer"),
 				icons.MagnifyingGlass(),
 				Input(
 					Type("search"),
-					Class("grow"),
-					Placeholder("Search"),
+					Class("grow text-xs font-medium"),
+					Placeholder("Type to search..."),
 					Attr("@click", "search_modal.showModal();"),
 				),
+				Kbd(Class("kbd kbd-sm bg-base-300 text-[10px]"), Text("⌘K")),
 			),
-
 		)
 	})
 }
@@ -75,38 +127,36 @@ func searchModal(r *ui.Request) Node {
 			ID("search_modal"),
 			Class("modal"),
 			Div(
-				Class("modal-box"),
+				Class("modal-box bg-base-200 border border-white/10 shadow-3xl p-8 rounded-3xl"),
 				Form(
 					Method("dialog"),
 					Button(
-						Class("btn btn-sm btn-circle btn-ghost absolute right-2 top-2"),
+						Class("btn btn-sm btn-circle btn-ghost absolute right-4 top-4"),
 						Text("✕"),
 					),
 				),
 				H3(
-					Class("text-lg font-bold mb-2"),
-					Text("Search"),
+					Class("text-xs font-black uppercase tracking-ultra text-primary mb-6"),
+					Text("Global Search"),
 				),
 				Input(
 					Attr("hx-get", r.Path(routenames.Search)),
 					Attr("hx-trigger", "keyup changed delay:500ms"),
 					Attr("hx-target", "#results"),
 					Name("query"),
-					Class("input w-full"),
+					Class("input input-bordered w-full bg-base-100 rounded-xl border-white/10 focus:border-primary transition-all"),
 					Type("search"),
-					Placeholder("Search..."),
+					Placeholder("Search courses, lessons, topics..."),
 				),
 				Ul(
 					ID("results"),
-					Class("list"),
+					Class("menu w-full mt-6 p-0 gap-1"),
 				),
 			),
 			Form(
 				Method("dialog"),
 				Class("modal-backdrop"),
-				Button(
-					Text("close"),
-				),
+				Button(Text("close")),
 			),
 		)
 	})
@@ -115,66 +165,97 @@ func searchModal(r *ui.Request) Node {
 func sidebarMenu(r *ui.Request) Node {
 	header := func(text string) Node {
 		return Li(
-			Class("menu-title mt-3 uppercase"),
+			Class("menu-title mt-8 first:mt-0 px-4 text-[11px] font-black text-[#94a3b8] tracking-ultra uppercase opacity-50"),
 			Span(Text(text)),
 		)
 	}
 
 	adminSubMenu := func() Node {
-		entityTypeLinks := make(Group, len(admin.GetEntityTypes()))
+		entityTypeLinks := make(Group, 0)
+		// var isAnyEntityActive bool
 		for _, n := range admin.GetEntityTypes() {
+			routeName := routenames.AdminEntityList(n.GetName())
 			entityTypeLinks = append(
 				entityTypeLinks,
-				MenuLink(r, icons.PencilSquare(), n.GetName(), routenames.AdminEntityList(n.GetName())),
+				MenuLink(r, icons.PencilSquare(), n.GetName(), routeName),
 			)
+			// Check if active (we can't easily check isPathActive here without more logic, but for now we'll pass false)
 		}
 
-		return Group{
-			header("Entities"),
+		return NavGroup(r, icons.CircleStack(), "Resources & CMS", false,
 			entityTypeLinks,
-			header("Monitoring"),
-			Li(
-				A(
-					icons.CircleStack(),
-					Href(r.Path(routenames.AdminTasks)),
-					Text("Tasks"),
-					Target("_blank"),
-				),
-			),
-		}
+			MenuLink(r, icons.CircleStack(), "Task Monitor", routenames.AdminTasks),
+		)
 	}
 
 	return Div(
-		Class("drawer-side"),
+		Class("drawer-side z-40"),
 		Label(
 			For("sidebar"),
 			Aria("label", "close sidebar"),
 			Class("drawer-overlay"),
 		),
 		Div(
-			Class("menu bg-base-200 text-base-content min-h-full w-80 p-4"),
-			Div(
-				Class("w-2/3 mx-auto mt-3 mb-10"),
+			Class("flex flex-col h-full w-80 glass-modern p-8"),
+			// Brand Section
+			A(
+				Href(r.Path(routenames.Home)),
+				Class("flex items-center gap-3 px-2 mb-12 transition-transform active:scale-95 group"),
 				Img(
+					Class("h-10 w-10 drop-shadow-glow transition-transform group-hover:rotate-6"),
 					Src(ui.StaticFile("logo.png")),
 				),
+				Span(Class("text-xl font-black tracking-tight text-white"), Text("SHP LMS")),
 			),
-			search(),
-			Ul(
-				HxBoost(),
-				header("General"),
-				MenuLink(r, icons.Home(), "Dashboard", routenames.Home),
-				MenuLink(r, icons.Info(), "About", routenames.About),
-				MenuLink(r, icons.Mail(), "Contact", routenames.Contact),
-				MenuLink(r, icons.Archive(), "Cache", routenames.Cache),
-				MenuLink(r, icons.CircleStack(), "Task", routenames.Task),
-				MenuLink(r, icons.Document(), "Files", routenames.Files),
-				header("Account"),
-				If(r.IsAuth, MenuLink(r, icons.Exit(), "Logout", routenames.Logout)),
-				If(!r.IsAuth, MenuLink(r, icons.Enter(), "Login", routenames.Login)),
-				If(!r.IsAuth, MenuLink(r, icons.UserPlus(), "Register", routenames.Register)),
-				If(!r.IsAuth, MenuLink(r, icons.QuestionCircle(), "Forgot password", routenames.ForgotPasswordSubmit)),
-				Iff(r.IsAdmin, adminSubMenu),
+			
+			// Main Navigation
+			Div(
+				Class("flex-1 overflow-y-auto custom-scrollbar"),
+				Ul(
+					Class("menu p-0 gap-1.5"),
+					HxBoost(),
+					header("Dashboard"),
+					MenuLink(r, icons.Home(), "Main Dashboard", routenames.Home),
+					
+					NavGroup(r, icons.AcademicCap(), "Learning", false,
+						MenuLink(r, icons.PencilSquare(), "Explore Catalog", routenames.Home), 
+						MenuLink(r, icons.Document(), "My Learning Paths", routenames.Home), 
+					),
+					
+					header("Community"),
+					NavGroup(r, icons.Info(), "Service & Info", false,
+						MenuLink(r, icons.Info(), "Help & Support", routenames.About),
+						MenuLink(r, icons.Mail(), "Contact Center", routenames.Contact),
+					),
+					
+					Iff(r.IsAdmin, adminSubMenu),
+				),
+			),
+			
+			// Footer Section
+			Div(
+				Class("mt-auto pt-8 border-t border-white/5 flex flex-col gap-4"),
+				If(r.IsAuth, Div(
+					Class("flex items-center gap-3 px-2"),
+					Div(
+						Class("avatar"),
+						Div(Class("w-10 h-10 rounded-2xl bg-primary/20 p-0.5"), Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed="+r.AuthUser.Username))),
+					),
+					Div(
+						Class("flex-1"),
+						P(Class("text-[13px] font-black text-white truncate"), Text(r.AuthUser.Username)),
+						P(Class("text-[10px] font-bold text-primary tracking-widest uppercase"), Text(func() string {
+							if r.IsAdmin {
+								return "Administrator"
+							}
+							return "Student"
+						}())),
+					),
+				)),
+				If(!r.IsAuth, Group{
+					ButtonLink(ColorPrimary, r.Path(routenames.Login), "Student Login"),
+					ButtonLink(ColorNeutral, r.Path(routenames.Register), "Create Account"),
+				}),
 			),
 		),
 	)

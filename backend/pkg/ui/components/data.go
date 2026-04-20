@@ -27,65 +27,45 @@ func Badge(color Color, text string) Node {
 
 	switch color {
 	case ColorSuccess:
-		class = "badge-success"
+		class = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
 	case ColorWarning:
-		class = "badge-warning"
+		class = "bg-amber-500/10 text-amber-500 border-amber-500/20"
+	case ColorPrimary:
+		class = "bg-accent/10 text-accent border-accent/20"
+	default:
+		class = "bg-white/5 text-white border-white/10"
 	}
 
-	return Div(
-		Class("badge "+class),
+	return Span(
+		Class("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border "+class),
 		Text(text),
 	)
 }
 
 func Divider(text string) Node {
 	return Div(
-		Class("divider"),
-		Text(text),
+		Class("flex items-center gap-4 my-8"),
+		Div(Class("h-px flex-1 bg-white/5")),
+		Span(Class("text-[10px] font-black uppercase tracking-ultra text-secondary-text"), Text(text)),
+		Div(Class("h-px flex-1 bg-white/5")),
 	)
 }
 
 func Card(params CardParams) Node {
-	var colorClass, sizeClass string
-
-	switch params.Color {
-	case ColorSuccess:
-		colorClass = "bg-success text-success-content"
-	case ColorPrimary:
-		colorClass = "bg-primary text-primary-content"
-	case ColorAccent:
-		colorClass = "bg-accent text-accent-content"
-	case ColorNeutral:
-		colorClass = "bg-neutral text-neutral-content"
-	case ColorWarning:
-		colorClass = "bg-warning text-warning-content"
-	case ColorInfo:
-		colorClass = "bg-info text-info-content"
-	}
-
-	switch params.Size {
-	case SizeSmall:
-		sizeClass = "card-sm"
-	case SizeMedium:
-		sizeClass = "card-md"
-	case SizeLarge:
-		sizeClass = "card-lg"
-	}
-
 	return Div(
-		Class("cards mb-2 "+colorClass+" "+sizeClass),
-		Div(
-			Class("card-body"),
-			If(len(params.Title) > 0, Span(
-				Class("card-title"),
+		Class("admin-card p-8 flex flex-col gap-6"),
+		If(len(params.Title) > 0, Div(
+			Class("flex items-center justify-between"),
+			H3(
+				Class("text-xs font-black uppercase tracking-ultra text-primary"),
 				Text(params.Title),
-			)),
-			params.Body,
-			If(params.Footer != nil, Div(
-				Class("card-actions justify-end"),
-				params.Footer,
-			)),
-		),
+			),
+		)),
+		Div(Class("flex-1 text-sm text-secondary-text leading-relaxed"), params.Body),
+		If(params.Footer != nil, Div(
+			Class("pt-6 border-t border-white/5 flex justify-end gap-3"),
+			params.Footer,
+		)),
 	)
 }
 
@@ -93,29 +73,23 @@ func Stats(stats ...Stat) Node {
 	g := make(Group, 0, len(stats))
 	for _, stat := range stats {
 		g = append(g, Div(
-			Class("stat"),
+			Class("admin-card p-8 flex items-center justify-between group"),
+			Div(
+				Class("flex flex-col gap-1"),
+				P(Class("text-[10px] font-black uppercase tracking-ultra text-secondary-text opacity-60"), Text(stat.Title)),
+				H3(Class("text-3xl font-black text-white tracking-tight"), Text(stat.Value)),
+				If(stat.Description != "", P(Class("text-[11px] text-secondary-text/60 mt-1"), Text(stat.Description))),
+			),
 			Iff(stat.Icon != nil, func() Node {
 				return Div(
-					Class("stat-figure text-secondary"),
+					Class("w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary transition-all group-hover:scale-110 group-hover:bg-primary/10"),
 					stat.Icon,
 				)
 			}),
-			Div(
-				Class("stat-title"),
-				Text(stat.Title),
-			),
-			Div(
-				Class("stat-value"),
-				Text(stat.Value),
-			),
-			Div(
-				Class("stat-desc"),
-				Text(stat.Description),
-			),
 		))
 	}
 	return Div(
-		Class("stats shadow"),
+		Class("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12"),
 		g,
 	)
 }

@@ -20,8 +20,8 @@ const (
 	FieldSlug = "slug"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
-	// FieldVideoURL holds the string denoting the video_url field in the database.
-	FieldVideoURL = "video_url"
+	// FieldVideoLink holds the string denoting the video_link field in the database.
+	FieldVideoLink = "video_url"
 	// FieldOrder holds the string denoting the order field in the database.
 	FieldOrder = "order"
 	// FieldIsPreview holds the string denoting the is_preview field in the database.
@@ -58,7 +58,7 @@ var Columns = []string{
 	FieldTitle,
 	FieldSlug,
 	FieldContent,
-	FieldVideoURL,
+	FieldVideoLink,
 	FieldOrder,
 	FieldIsPreview,
 	FieldCreatedAt,
@@ -124,9 +124,9 @@ func ByContent(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldContent, opts...).ToFunc()
 }
 
-// ByVideoURL orders the results by the video_url field.
-func ByVideoURL(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldVideoURL, opts...).ToFunc()
+// ByVideoLink orders the results by the video_link field.
+func ByVideoLink(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVideoLink, opts...).ToFunc()
 }
 
 // ByOrder orders the results by the order field.

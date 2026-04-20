@@ -14,93 +14,98 @@ import (
 
 func Home(ctx echo.Context, posts *models.Posts) error {
 	r := ui.NewRequest(ctx)
-	r.Metatags.Description = "This is the home page."
-	r.Metatags.Keywords = []string{"Software", "Coding", "Go"}
+	r.Title = "Student Dashboard"
+	r.Metatags.Description = "SHP E-learning Platform Dashboard - Manage your courses and progress."
 
-	// This pages helps to illustrate the different options you can take when using HTMX to introduce interactivity
-	// to your web application. The following three options are available, but here, we're opting for the first one.
-	// 1) Highly-optimized and progressive enhancement:
-	//    This is highly-optimized because the server is doing the least amount of work possible, only rendering
-	//    the least amount possible based on the incoming request. It's possible that even your route handler would
-	//    want to check the HTMX request in order to limit what it does. With HTMX, it's possible to still return a
-	//    normal, full page, but use hx-select to pluck out only the part you want to re-render. It requires some extra
-	//    condition checks and code but performance is improved. Progressive enhancement refers to having a fully
-	//    functional web app, even if JS was disabled, but providing the enhancement if JS is enabled. All of these
-	//    examples should continue to work fine without JS.
-	// 2) Not optimized and progressive enhancement:
-	//    As mentioned previously, you can remove all of these conditions, re-render the entire page for every request,
-	//    and rely on HTMX's hx-select to only replace what you want to (ie, the posts).
-	// 3) Optimized and partial renderings:
-	//    You could have a separate route that is only for fetching posts while paging, and that would render only
-	//    that partial HTML, which HTMX would then use to inject in to this page.
-
-	headerMsg := func() Node {
-		return Group{
+	// Dashboard Header with High-Fidelity Stats
+	dashboardHeader := func() Node {
+		userName := "Learner"
+		if r.IsAuth {
+			userName = r.AuthUser.Username
+		}
+		
+		return Div(
+			Class("mb-16"),
+			Div(
+				Class("flex flex-col gap-2 mb-10"),
+				H1(Class("text-5xl font-black text-white tracking-tight"), Text("Welcome, "+userName)),
+				P(Class("text-secondary-text font-medium"), Text("Track your academic progress and resume your learning journey.")),
+			),
 			Stats(
 				Stat{
-					Title: "User name",
-					Value: func() string {
-						if r.IsAuth {
-							return r.AuthUser.Name
-						}
-						return "(not logged in)"
-					}(),
-					Description: "The logged in user's name",
-					Icon:        icons.UserCircle(),
+					Title: "Enrolled Courses",
+					Value: "12",
+					Description: "3 Active now",
+					Icon: icons.PencilSquare(),
 				},
 				Stat{
-					Title: "Admin status",
-					Value: func() string {
-						if r.IsAdmin {
-							return "Administrator"
-						}
-						return "Non-administrator"
-					}(),
-					Description: "Use `make admin` to create an admin account",
-					Icon:        icons.LockClosed(),
+					Title: "Engagement Score",
+					Value: "92%",
+					Description: "+5% this week",
+					Icon: icons.Info(),
 				},
 				Stat{
-					Title:       "GitHub Stars",
-					Value:       "2,500+",
-					Description: "Star if you like Pagoda",
-					Icon:        icons.Star(),
+					Title: "Study Hours",
+					Value: "48.5",
+					Description: "Lifetime total",
+					Icon: icons.Clock(),
+				},
+				Stat{
+					Title: "Certificates",
+					Value: "04",
+					Description: "2 pending review",
+					Icon: icons.CheckCircle(),
 				},
 			),
-			H2(Text("Recent posts")),
-			Span(Text("Below is an example of both paging and AJAX fetching using HTMX")),
-		}
+		)
 	}
 
-	cards := func() Node {
+	// High-Fidelity CTA Section
+	featuredContent := func() Node {
 		return Div(
-			Class("flex w-full gap-2 mt-5"),
+			Class("grid lg:grid-cols-2 gap-8 mb-16"),
 			Card(CardParams{
-				Title: "Serving files",
+				Title: "Resume Progress",
 				Body: Group{
-					Text("In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted. "),
-					Text("Static files also contain cache-control headers which are configured via middleware."),
-				},
-				Color: ColorWarning,
-				Size:  SizeSmall,
-			}),
-			Card(CardParams{
-				Title: "Documentation",
-				Body: Group{
-					Text("Have you read through the entire documentation? If not, you may be missing functionality or have questions. "),
+					P(Class("text-secondary-text text-sm leading-relaxed mb-4"), Text("Continue your progress in 'Advanced Go Backend Development'. You're 65% through the course and have 4 lessons left.")),
+					Div(
+						Class("w-full bg-white/5 h-2 rounded-full overflow-hidden mt-6"),
+						Div(Class("bg-primary h-full w-[65%] shadow-glow-sm")),
+					),
 				},
 				Footer: Group{
-					ButtonLink(ColorNeutral, "https://github.com/SHP-Association/E-learningWeb/backend?tab=readme-ov-file#table-of-contents", "Learn more"),
+					ButtonLink(ColorPrimary, "#", "Jump Back In"),
 				},
-				Color: ColorNeutral,
-				Size:  SizeSmall,
+			}),
+			Card(CardParams{
+				Title: "Learning Insights",
+				Body: Group{
+					P(Class("text-secondary-text text-sm leading-relaxed"), Text("Your most active study time is between 8 PM and 10 PM. You've completed 12 lessons during this window this month.")),
+				},
+				Footer: Group{
+					ButtonLink(ColorNeutral, "#", "View Full Report"),
+				},
 			}),
 		)
 	}
 
+	// Main Section: Recent Activity
+	mainContent := func() Node {
+		return Div(
+			Class("space-y-8 flex-1"),
+			Div(
+				Class("flex items-center justify-between mb-2"),
+				H2(Class("text-2xl font-black text-white tracking-tight"), Text("Platform Updates")),
+				A(Href("#"), Class("text-[10px] font-black uppercase tracking-ultra text-primary hover:text-white transition-colors"), Text("View All Announcements")),
+			),
+			posts.Render(r.Path(routenames.Home)),
+		)
+	}
+
 	g := Group{
-		Iff(r.Htmx.Target != "posts", headerMsg),
-		posts.Render(r.Path(routenames.Home)),
-		Iff(r.Htmx.Target != "posts", cards),
+		Iff(r.Htmx.Target != "posts", dashboardHeader),
+		Iff(r.Htmx.Target != "posts", featuredContent),
+		mainContent(),
 	}
 
 	return r.Render(layouts.Primary, g)

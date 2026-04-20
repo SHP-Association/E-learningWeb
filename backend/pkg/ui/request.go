@@ -61,6 +61,12 @@ type (
 	// with only the page content and not the entire layout.
 	// See Request.Render().
 	LayoutFunc func(*Request, gomponents.Node) gomponents.Node
+
+	// Choice represents a select list choice.
+	Choice struct {
+		Label string
+		Value string
+	}
 )
 
 // NewRequest generates a new Request using the Echo context of a given HTTP request.

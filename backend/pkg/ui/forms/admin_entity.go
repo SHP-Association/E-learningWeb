@@ -83,15 +83,15 @@ func AdminEntity(r *ui.Request, entityType admin.EntityType, values url.Values) 
 			}))
 
 		case field.TypeEnum:
-			options := make([]Choice, 0, len(f.Enums)+1)
+			options := make([]ui.Choice, 0, len(f.Enums)+1)
 			if f.Optional {
-				options = append(options, Choice{
+				options = append(options, ui.Choice{
 					Label: "-",
 					Value: "",
 				})
 			}
 			for _, enum := range f.Enums {
-				options = append(options, Choice{
+				options = append(options, ui.Choice{
 					Label: enum,
 					Value: enum,
 				})

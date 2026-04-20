@@ -1,14 +1,8 @@
 package schema
 
 import (
-	"context"
 	"net/mail"
-	"strings"
 	"time"
-
-	ge "github.com/SHP-Association/E-learningWeb/backend/ent"
-	"github.com/SHP-Association/E-learningWeb/backend/ent/hook"
-	"golang.org/x/crypto/bcrypt"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
@@ -90,8 +84,9 @@ func (User) Fields() []ent.Field {
 		field.Time("last_activity").
 			Optional().
 			Nillable(),
-		field.String("login_ip").
-			Optional(),
+		field.String("login_address").
+			Optional().
+			StorageKey("login_ip"),
 		field.Bool("two_factor_enabled").
 			Default(false),
 		field.Bool("is_staff").
@@ -133,26 +128,5 @@ func (User) Edges() []ent.Edge {
 
 // Hooks of the User.
 func (User) Hooks() []ent.Hook {
-	return []ent.Hook{
-		hook.On(
-			func(next ent.Mutator) ent.Mutator {
-				return hook.UserFunc(func(ctx context.Context, m *ge.UserMutation) (ent.Value, error) {
-					if v, exists := m.Email(); exists {
-						m.SetEmail(strings.ToLower(v))
-					}
-
-					if v, exists := m.Password(); exists {
-						hash, err := bcrypt.GenerateFromPassword([]byte(v), bcrypt.DefaultCost)
-						if err != nil {
-							return "", err
-						}
-						m.SetPassword(string(hash))
-					}
-					return next.Mutate(ctx, m)
-				})
-			},
-			// Limit the hook only for these operations.
-			ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
-		),
-	}
+	return nil
 }

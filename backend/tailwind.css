@@ -3,7 +3,101 @@
 @source "./pkg/ui/**/*.{go}";
 @plugin "./daisyui.js";
 
-/* Optional for custom themes – Docs: https://daisyui.com/docs/themes/#how-to-add-a-new-custom-theme */
-@plugin "./daisyui-theme.js"{
-  /* custom theme here */
+/* High-Fidelity Design tokens from Sling System */
+:root {
+  --color-page-bg: #0a1520;
+  --color-card-bg: #112132;
+  --color-card-border: #1a2c3f;
+  --color-accent: #00c4a0;
+  --color-accent-hover: #00e0b8;
+  --color-accent-muted: rgba(0, 196, 160, 0.1);
+  --color-primary-text: #ffffff;
+  --color-secondary-text: #94a3b8;
+  --color-tertiary-text: #64748b;
+  --color-divider: rgba(255, 255, 255, 0.08);
+  --color-zebra: rgba(255, 255, 255, 0.02);
+  --color-hover: rgba(255, 255, 255, 0.04);
+  --color-warning: #ffb432;
+  --color-danger: #ff5a5a;
+  --color-success: #00c4a0;
+  --color-info: #3b82f6;
+
+  --font-main: "Inter", sans-serif;
+  --font-display: "Outfit", sans-serif;
+}
+
+@theme {
+  --font-inter: var(--font-main);
+  --font-outfit: var(--font-display);
+
+  --color-primary: var(--color-accent);
+  --color-primary-content: #0f172a;
+  --color-base-100: var(--color-page-bg);
+  --color-base-200: var(--color-card-bg);
+  --color-base-300: var(--color-card-border);
+  
+  --tracking-widest: 0.15em;
+  --tracking-ultra: 0.25em;
+}
+
+@layer components {
+  .admin-card {
+    background-color: var(--color-card-bg) !important;
+    border: 1.5px solid var(--color-card-border) !important;
+    border-radius: 20px !important;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
+  }
+  .admin-card:hover {
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+    transform: translateY(-4px) !important;
+  }
+  .btn-teal {
+    background: var(--color-accent) !important;
+    color: #ffffff !important;
+    font-family: var(--font-display) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    border: none !important;
+    border-radius: 14px !important;
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+    box-shadow: 0 4px 12px var(--color-accent-muted) !important;
+  }
+  .btn-teal:hover {
+    filter: brightness(1.1) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 24px -8px var(--color-accent) !important;
+  }
+  .btn-teal:active { transform: translateY(0) scale(0.96) !important; }
+
+  .glass-modern {
+    background: color-mix(in srgb, var(--color-card-bg) 85%, transparent) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--color-divider) !important;
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-main);
+    background-color: var(--color-page-bg);
+    color: var(--color-primary-text);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+}
+
+.page-transition {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
