@@ -30,8 +30,8 @@ const (
 	FieldTargetAudience = "target_audience"
 	// FieldThumbnail holds the string denoting the thumbnail field in the database.
 	FieldThumbnail = "thumbnail"
-	// FieldPromoVideoURL holds the string denoting the promo_video_url field in the database.
-	FieldPromoVideoURL = "promo_video_url"
+	// FieldPromoVideoLink holds the string denoting the promo_video_link field in the database.
+	FieldPromoVideoLink = "promo_video_url"
 	// FieldPrice holds the string denoting the price field in the database.
 	FieldPrice = "price"
 	// FieldIsFree holds the string denoting the is_free field in the database.
@@ -126,7 +126,7 @@ var Columns = []string{
 	FieldRequirements,
 	FieldTargetAudience,
 	FieldThumbnail,
-	FieldPromoVideoURL,
+	FieldPromoVideoLink,
 	FieldPrice,
 	FieldIsFree,
 	FieldIsPublished,
@@ -247,9 +247,9 @@ func ByThumbnail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldThumbnail, opts...).ToFunc()
 }
 
-// ByPromoVideoURL orders the results by the promo_video_url field.
-func ByPromoVideoURL(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPromoVideoURL, opts...).ToFunc()
+// ByPromoVideoLink orders the results by the promo_video_link field.
+func ByPromoVideoLink(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPromoVideoLink, opts...).ToFunc()
 }
 
 // ByPrice orders the results by the price field.

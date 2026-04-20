@@ -174,7 +174,7 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 		return fail(err, "unable to log in user")
 	}
 
-	msg.Success(ctx, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Name))
+	msg.Success(ctx, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Username))
 
 	return redirect.New(ctx).
 		Route(routenames.Home).
@@ -212,7 +212,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 	// Attempt creating the user.
 	u, err := h.orm.User.
 		Create().
-		SetName(input.Name).
+		SetUsername(input.Name). // Using Name input as Username for compatibility
 		SetEmail(input.Email).
 		SetPassword(input.Password).
 		Save(ctx.Request().Context())
@@ -220,7 +220,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 	switch err.(type) {
 	case nil:
 		log.Ctx(ctx).Info("user created",
-			"user_name", u.Name,
+			"user_name", u.Username,
 			"user_id", u.ID,
 		)
 	case *ent.ConstraintError:
@@ -271,7 +271,7 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		Compose().
 		To(usr.Email).
 		Subject("Confirm your email address").
-		Component(emails.ConfirmEmailAddress(ctx, usr.Name, token)).
+		Component(emails.ConfirmEmailAddress(ctx, usr.Username, token)).
 		Send(ctx)
 
 	if err != nil {

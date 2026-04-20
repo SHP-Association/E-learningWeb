@@ -193,6 +193,41 @@ func Star() Node {
 	)
 }
 
+func Clock() Node {
+	return icon("Clock",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"),
+		),
+	)
+}
+
+func CheckCircle() Node {
+	return icon("CheckCircle",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"),
+		),
+	)
+}
+
+func AcademicCap() Node {
+	return icon("AcademicCap",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M4.26 10.174L12 14.5l7.74-4.326a1.125 1.125 0 0 0 0-1.956L12 3.826a1.125 1.125 0 0 0 0 1.956z"),
+		),
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M4.5 18.847V10.5m15 8.347V10.5M8.25 13.5v3.313a2.25 2.25 0 0 0 1.082 1.942l2.25 1.35a2.25 2.25 0 0 0 2.426-1.942l2.228-1.35a2.25 2.25 0 0 0 1.082-1.942V13.5"),
+		),
+	)
+}
+
 func icon(id string, els ...Node) Node {
 	return cache.SetIfNotExists(fmt.Sprintf("icon.%s", id), func() Node {
 		return SVG(

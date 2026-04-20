@@ -5,7 +5,6 @@ package user
 import (
 	"time"
 
-	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -61,8 +60,8 @@ const (
 	FieldIsActiveUser = "is_active_user"
 	// FieldLastActivity holds the string denoting the last_activity field in the database.
 	FieldLastActivity = "last_activity"
-	// FieldLoginIP holds the string denoting the login_ip field in the database.
-	FieldLoginIP = "login_ip"
+	// FieldLoginAddress holds the string denoting the login_address field in the database.
+	FieldLoginAddress = "login_ip"
 	// FieldTwoFactorEnabled holds the string denoting the two_factor_enabled field in the database.
 	FieldTwoFactorEnabled = "two_factor_enabled"
 	// FieldIsStaff holds the string denoting the is_staff field in the database.
@@ -170,7 +169,7 @@ var Columns = []string{
 	FieldTotalReviews,
 	FieldIsActiveUser,
 	FieldLastActivity,
-	FieldLoginIP,
+	FieldLoginAddress,
 	FieldTwoFactorEnabled,
 	FieldIsStaff,
 	FieldIsActive,
@@ -201,13 +200,7 @@ func ValidColumn(column string) bool {
 	return false
 }
 
-// Note that the variables below are initialized by the runtime
-// package on the initialization of the application. Therefore,
-// it should be imported in the main as follows:
-//
-//	import _ "github.com/SHP-Association/E-learningWeb/backend/ent/runtime"
 var (
-	Hooks [1]ent.Hook
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
@@ -365,9 +358,9 @@ func ByLastActivity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastActivity, opts...).ToFunc()
 }
 
-// ByLoginIP orders the results by the login_ip field.
-func ByLoginIP(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLoginIP, opts...).ToFunc()
+// ByLoginAddress orders the results by the login_address field.
+func ByLoginAddress(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLoginAddress, opts...).ToFunc()
 }
 
 // ByTwoFactorEnabled orders the results by the two_factor_enabled field.

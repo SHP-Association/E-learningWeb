@@ -19,6 +19,9 @@ import (
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/log"
 	"github.com/spf13/afero"
 
+	"github.com/SHP-Association/E-learningWeb/backend/ent/hook"
+	"golang.org/x/crypto/bcrypt"
+
 	// Required by ent.
 	_ "github.com/SHP-Association/E-learningWeb/backend/ent/runtime"
 )
@@ -181,6 +184,44 @@ func (c *Container) initORM() {
 	drv := entsql.OpenDB(c.Config.Database.Driver, c.Database)
 	c.ORM = ent.NewClient(ent.Driver(drv))
 
+	// Apply runtime hooks to solve import cycles in schema definitions.
+	// User hooks: Normalize email and hash password.
+	c.ORM.User.Use(hook.On(
+		func(next ent.Mutator) ent.Mutator {
+			return hook.UserFunc(func(ctx context.Context, m *ent.UserMutation) (ent.Value, error) {
+				if v, exists := m.Email(); exists {
+					m.SetEmail(strings.ToLower(v))
+				}
+				if v, exists := m.Password(); exists {
+					hash, err := bcrypt.GenerateFromPassword([]byte(v), bcrypt.DefaultCost)
+					if err != nil {
+						return "", err
+					}
+					m.SetPassword(string(hash))
+				}
+				return next.Mutate(ctx, m)
+			})
+		},
+		ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
+	))
+
+	// PasswordToken hooks: Hash token.
+	c.ORM.PasswordToken.Use(hook.On(
+		func(next ent.Mutator) ent.Mutator {
+			return hook.PasswordTokenFunc(func(ctx context.Context, m *ent.PasswordTokenMutation) (ent.Value, error) {
+				if v, exists := m.Token(); exists {
+					hash, err := bcrypt.GenerateFromPassword([]byte(v), bcrypt.DefaultCost)
+					if err != nil {
+						return "", err
+					}
+					m.SetToken(string(hash))
+				}
+				return next.Mutate(ctx, m)
+			})
+		},
+		ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
+	))
+
 	// Run the auto migration tool.
 	if err := c.ORM.Schema.Create(context.Background()); err != nil {
 		panic(err)
@@ -204,10 +245,16 @@ func (c *Container) initMail() {
 // initTasks initializes the task client.
 func (c *Container) initTasks() {
 	var err error
-	// You could use a separate database for tasks, if you'd like, but using one
-	// makes transaction support easier.
+
+	// Backlite currently only supports SQLite and uses SQLite-specific syntax (STRICT tables).
+	// We use a separate SQLite database for tasks to allow the main database to be Postgres.
+	taskDB, err := openDB("sqlite3", "tasks.sqlite?cache=shared&_fk=true")
+	if err != nil {
+		panic(fmt.Sprintf("failed to open task database: %v", err))
+	}
+
 	c.Tasks, err = backlite.NewClient(backlite.ClientConfig{
-		DB:              c.Database,
+		DB:              taskDB,
 		Logger:          log.Default(),
 		NumWorkers:      c.Config.Tasks.Goroutines,
 		ReleaseAfter:    c.Config.Tasks.ReleaseAfter,

@@ -51,6 +51,12 @@ ent-gen: ## Generate Ent code
 ent-new: ## Create a new Ent entity (ie, make ent-new name=MyEntity)
 	go run entgo.io/ent/cmd/ent new $(name)
 
+.PHONY: ent-clean
+ent-clean: ## Clean all generated Ent files
+	rm -f ent/*.go ! ent/entc.go ! ent/generate.go
+	find ent -mindepth 1 -maxdepth 1 -type d ! -name "schema" ! -name "admin" ! -name "enttest" ! -name "hook" ! -name "migrate" ! -name "predicate" ! -name "runtime" -exec rm -rf {} +
+	rm -f ent/admin/handler.go
+
 .PHONY: admin
 admin: ## Create a new admin user (ie, make admin email=myemail@web.com)
 	go run cmd/admin/main.go --email=$(email)

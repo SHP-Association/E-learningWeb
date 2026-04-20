@@ -16,19 +16,29 @@ func JS() Node {
 }
 
 func CSS() Node {
-	return Link(
-		Href(ui.StaticFile("main.css")),
-		Rel("stylesheet"),
-		Type("text/css"),
-	)
+	return Group{
+		Link(Rel("preconnect"), Href("https://fonts.googleapis.com")),
+		Link(Rel("preconnect"), Href("https://fonts.gstatic.com"), Attr("crossorigin", "true")),
+		Link(Rel("stylesheet"), Href("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap")),
+		Link(
+			Href(ui.StaticFile("main.css")),
+			Rel("stylesheet"),
+			Type("text/css"),
+		),
+	}
 }
 
 func Metatags(r *ui.Request) Node {
+	appName := "LMS"
+	if r.Config != nil && r.Config.App.Name != "" {
+		appName = r.Config.App.Name
+	}
+	
 	return Group{
 		Meta(Charset("utf-8")),
 		Meta(Name("viewport"), Content("width=device-width, initial-scale=1")),
 		Link(Rel("icon"), Href(ui.StaticFile("favicon.png"))),
-		TitleEl(Text(r.Config.App.Name), If(r.Title != "", Text(" | "+r.Title))),
+		TitleEl(Text(appName), If(r.Title != "", Text(" | "+r.Title))),
 		If(r.Metatags.Description != "", Meta(Name("description"), Content(r.Metatags.Description))),
 		If(len(r.Metatags.Keywords) > 0, Meta(Name("keywords"), Content(strings.Join(r.Metatags.Keywords, ", ")))),
 	}

@@ -37,7 +37,7 @@ func (f *Contact) Render(r *ui.Request) Node {
 			Name:      "department",
 			Label:     "Department",
 			Value:     f.Department,
-			Options: []Choice{
+			Options: []ui.Choice{
 				{Value: "sales", Label: "Sales"},
 				{Value: "marketing", Label: "Marketing"},
 				{Value: "hr", Label: "HR"},
