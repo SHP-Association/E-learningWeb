@@ -1,18 +1,17 @@
 package handlers
 
 import (
-	"github.com/labstack/echo/v4"
+	"time"
+
 	"github.com/SHP-Association/E-learningWeb/backend/ent"
-	"github.com/SHP-Association/E-learningWeb/backend/ent/certificate"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/enrollment"
-	"github.com/SHP-Association/E-learningWeb/backend/ent/user"
-	"github.com/SHP-Association/E-learningWeb/backend/pkg/context"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/pager"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/models"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/pages"
+	"github.com/labstack/echo/v4"
 )
 
 type Pages struct {
@@ -71,69 +70,22 @@ func (h *Pages) fetchPosts(ctx echo.Context, pgr *pager.Pager) []models.Post {
 }
 
 func (h *Pages) fetchDashboardStats(ctx echo.Context) *models.DashboardStats {
-	stats := &models.DashboardStats{
-		EnrolledCourses:   0,
-		ActiveCourses:     0,
-		CompletedCourses:  0,
-		CertificatesCount: 0,
-		EngagementScore:   0,
-		StudyHours:        0,
-	}
+	stats := &models.DashboardStats{}
 
-	u := ctx.Get(context.AuthenticatedUserKey)
-	if u == nil {
-		return stats
-	}
-	usr := u.(*ent.User)
+	// Total Users
+	stats.TotalUsers, _ = h.container.ORM.User.Query().Count(ctx.Request().Context())
 
-	// Fetch enrollment counts
-	enrollments, err := h.container.ORM.Enrollment.
+	// Total Courses
+	stats.TotalCourses, _ = h.container.ORM.Course.Query().Count(ctx.Request().Context())
+
+	// Total Enrollments
+	stats.TotalEnrollments, _ = h.container.ORM.Enrollment.Query().Count(ctx.Request().Context())
+
+	// Recent Enrollments (Last 24h)
+	stats.RecentActivity, _ = h.container.ORM.Enrollment.
 		Query().
-		Where(enrollment.HasStudentWith(user.ID(usr.ID))).
-		WithCourse().
-		All(ctx.Request().Context())
-
-	if err != nil {
-		return stats
-	}
-
-	stats.EnrolledCourses = len(enrollments)
-	for _, e := range enrollments {
-		if e.IsCompleted {
-			stats.CompletedCourses++
-		} else if e.Progress > 0 {
-			stats.ActiveCourses++
-		}
-	}
-
-	// Fetch certificate count
-	stats.CertificatesCount, _ = h.container.ORM.Certificate.
-		Query().
-		Where(certificate.HasEnrollmentWith(enrollment.HasStudentWith(user.ID(usr.ID)))).
+		Where(enrollment.EnrolledAtGTE(time.Now().Add(-24 * time.Hour))).
 		Count(ctx.Request().Context())
-
-	// Fetch most recent progress
-	recent, err := h.container.ORM.Enrollment.
-		Query().
-		Where(enrollment.HasStudentWith(user.ID(usr.ID))).
-		Where(enrollment.IsCompleted(false)).
-		WithCourse(func(q *ent.CourseQuery) {
-			q.WithLessons()
-		}).
-		Order(ent.Desc(enrollment.FieldEnrolledAt)). // Should ideally be updated_at but schema doesn't have it yet
-		First(ctx.Request().Context())
-
-	if err == nil && recent != nil && recent.Edges.Course != nil {
-		stats.RecentProgress = &models.EnrollmentProgress{
-			CourseTitle: recent.Edges.Course.Title,
-			Progress:    recent.Progress,
-			Remaining:   len(recent.Edges.Course.Edges.Lessons), // Simplified
-		}
-	}
-
-	// Mock engagement and study hours for now as they aren't in schema
-	stats.EngagementScore = 85.0
-	stats.StudyHours = 24.5
 
 	return stats
 }

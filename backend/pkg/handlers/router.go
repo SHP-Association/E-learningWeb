@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo/v4"
-	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/context"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	files "github.com/SHP-Association/E-learningWeb/backend/public"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo/v4"
+	echomw "github.com/labstack/echo/v4/middleware"
 )
 
 // BuildRouter builds the router.
@@ -70,7 +70,7 @@ func BuildRouter(c *services.Container) error {
 		middleware.Session(cookieStore),
 		middleware.LoadAuthenticatedUser(c.Auth),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
-			TokenLookup:    "form:csrf",
+			TokenLookup:    "header:X-CSRF-Token,form:csrf",
 			CookieHTTPOnly: true,
 			CookieSameSite: http.SameSiteStrictMode,
 			ContextKey:     context.CSRFKey,

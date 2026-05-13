@@ -39,55 +39,27 @@ func Auth(r *ui.Request, content Node) Node {
 				Div(
 					Class("min-h-screen flex flex-col items-center justify-center p-6 relative z-10"),
 					
+					// Ultra-Premium Compact Auth Card
 					Div(
-						Class("w-full max-w-[460px] animate-fadeIn"),
+						Class("admin-card glass-modern relative p-10 md:p-12 overflow-hidden w-full max-w-[400px] mx-auto"),
+						// Subtle inner glow
+						Div(Class("absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent")),
 						
-						// Brand Identity
-						A(
-							Href("/"),
-							Class("flex flex-col items-center gap-6 mb-12 group"),
+						// Minimalist Branding Section (Logo Only)
+						Div(
+							Class("flex flex-col items-center mb-8 group"),
 							Div(
 								Class("relative"),
-								Div(Class("absolute inset-0 bg-accent/30 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700")),
+								Div(Class("absolute inset-0 bg-accent/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000")),
 								Img(
-									Class("h-20 w-20 relative z-10 drop-shadow-glow transform group-hover:scale-110 group-active:scale-95 transition-all duration-500 ease-out"),
+									Class("h-16 w-16 relative z-10 drop-shadow-glow transform group-hover:scale-105 transition-all duration-700 ease-out"),
 									Src(ui.StaticFile("logo.png")),
 								),
 							),
-							Div(
-								Class("text-center"),
-								H2(Class("text-2xl font-black uppercase tracking-[0.3em] text-white"), Text("SHP")),
-								P(Class("text-[10px] font-black uppercase tracking-[0.5em] text-accent mt-1 opacity-80"), Text("Admin Control Center")),
-							),
 						),
 						
-						// Ultra-Premium Auth Card
-						Div(
-							Class("admin-card glass-modern relative p-10 md:p-14 overflow-hidden"),
-							// Subtle inner glow
-							Div(Class("absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent")),
-							
-							If(len(r.Title) > 0, H1(Class("text-3xl font-black text-white tracking-tight mb-3 text-center"), Text(r.Title))),
-							P(Class("text-secondary-text text-sm text-center mb-10 font-medium"), Text("Authorized personnel only. Please sign in.")),
-							
-							FlashMessages(r),
-							Div(Class("relative z-10"), content),
-						),
-						
-						// Footer Navigation
-						Div(
-							Class("mt-12 flex flex-col items-center gap-6"),
-							Div(
-								Class("flex justify-center gap-10"),
-								A(Href("#"), Class("text-[11px] font-bold uppercase tracking-widest text-secondary-text hover:text-white transition-all hover:translate-y-[-1px]"), Text("Support")),
-								A(Href("#"), Class("text-[11px] font-bold uppercase tracking-widest text-secondary-text hover:text-white transition-all hover:translate-y-[-1px]"), Text("Privacy Policy")),
-								A(Href("#"), Class("text-[11px] font-bold uppercase tracking-widest text-secondary-text hover:text-white transition-all hover:translate-y-[-1px]"), Text("Terms")),
-							),
-							Div(
-								Class("h-px w-12 bg-white/10"),
-							),
-							P(Class("text-[10px] font-medium text-tertiary-text uppercase tracking-widest"), Text("© 2024 SHP Association. All rights reserved.")),
-						),
+						FlashMessages(r),
+						Div(Class("relative z-10"), content),
 					),
 				),
 				AlertJS(),

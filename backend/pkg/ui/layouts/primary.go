@@ -1,7 +1,6 @@
 package layouts
 
 import (
-	"github.com/SHP-Association/E-learningWeb/backend/ent/admin"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/cache"
@@ -195,31 +194,6 @@ func searchModal(r *ui.Request) Node {
 }
 
 func sidebarMenu(r *ui.Request) Node {
-	header := func(text string) Node {
-		return Li(
-			Class("menu-title mt-8 first:mt-0 px-4 text-[11px] font-black text-[#94a3b8] tracking-ultra uppercase opacity-50"),
-			Span(Text(text)),
-		)
-	}
-
-	adminSubMenu := func() Node {
-		entityTypeLinks := make(Group, 0)
-		// var isAnyEntityActive bool
-		for _, n := range admin.GetEntityTypes() {
-			routeName := routenames.AdminEntityList(n.GetName())
-			entityTypeLinks = append(
-				entityTypeLinks,
-				MenuLink(r, icons.PencilSquare(), n.GetName(), routeName),
-			)
-			// Check if active (we can't easily check isPathActive here without more logic, but for now we'll pass false)
-		}
-
-		return NavGroup(r, icons.CircleStack(), "Resources & CMS", false,
-			entityTypeLinks,
-			MenuLink(r, icons.CircleStack(), "Task Monitor", routenames.AdminTasks),
-		)
-	}
-
 	return Div(
 		Class("drawer-side z-40"),
 		Label(
@@ -230,72 +204,73 @@ func sidebarMenu(r *ui.Request) Node {
 		Div(
 			Class("flex flex-col h-full w-80 glass-modern p-8"),
 			// Brand Section
-			A(
-				Href(r.Path(routenames.Home)),
-				Class("flex items-center gap-3 px-2 mb-12 transition-transform active:scale-95 group"),
-				Img(
-					Class("h-10 w-10 drop-shadow-glow transition-transform group-hover:rotate-6"),
-					Src(ui.StaticFile("logo.png")),
+			Div(
+				Class("flex items-center justify-between px-2 mb-12"),
+				A(
+					Href(r.Path(routenames.Home)),
+					Class("flex items-center gap-3 transition-transform active:scale-95 group"),
+					Img(
+						Class("h-10 w-auto drop-shadow-glow transition-transform group-hover:rotate-6"),
+						Src(ui.StaticFile("logo.png")),
+					),
+					Span(Class("text-2xl font-black tracking-tighter text-white"), Text("SHP")),
 				),
-				Div(
-					Class("flex flex-col"),
-					Span(Class("text-xl font-black tracking-tight text-white leading-none"), Text("SHP")),
-					Span(Class("text-[9px] font-black tracking-[0.2em] text-accent uppercase mt-1"), Text("LMS Admin")),
-				),
+				ThemeToggle(),
 			),
 			
 			// Main Navigation
 			Div(
-				Class("flex-1 overflow-y-auto custom-scrollbar"),
-				Ul(
-					Class("menu p-0 gap-1.5"),
-					HxBoost(),
-					header("Dashboard"),
+				Class("flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6"),
+				
+				// Dashboard - Direct Link
+				Div(
+					Class("flex flex-col gap-1"),
 					MenuLink(r, icons.Home(), "Main Dashboard", routenames.Home),
-					
-					NavGroup(r, icons.AcademicCap(), "Learning", false,
-						MenuLink(r, icons.PencilSquare(), "Explore Catalog", routenames.Home), 
-						MenuLink(r, icons.Document(), "My Learning Paths", routenames.Home), 
-					),
-					
-					header("Community"),
-					NavGroup(r, icons.Info(), "Service & Info", false,
-						MenuLink(r, icons.Info(), "Help & Support", routenames.About),
-						MenuLink(r, icons.Mail(), "Contact Center", routenames.Contact),
-					),
-					
-					Iff(r.IsAdmin, adminSubMenu),
+				),
+
+				// Academy Hub Group
+				NavGroup(r, icons.AcademicCap(), "Academy Hub", true,
+					MenuLink(r, icons.BookOpen(), "Course Builder", routenames.AdminEntityList("Course")),
+					MenuLink(r, icons.Document(), "Lesson Library", routenames.AdminEntityList("Lesson")),
+					MenuLink(r, icons.Folder(), "Categories", routenames.AdminEntityList("Category")),
+					MenuLink(r, icons.Star(), "Student Reviews", routenames.AdminEntityList("Review")),
+				),
+
+				// Student Center Group
+				NavGroup(r, icons.Users(), "Student Center", false,
+					MenuLink(r, icons.DocumentCheck(), "Enrollments", routenames.AdminEntityList("Enrollment")),
+					MenuLink(r, icons.UserCircle(), "User Directory", routenames.AdminEntityList("User")),
+					MenuLink(r, icons.AcademicCap(), "Certificate Registry", routenames.AdminEntityList("Certificate")),
+				),
+
+				// Exam Center Group
+				NavGroup(r, icons.DocumentCheck(), "Exam Center", false,
+					MenuLink(r, icons.PencilSquare(), "Quiz Designer", routenames.AdminEntityList("Quiz")),
+					MenuLink(r, icons.QuestionCircle(), "Question Bank", routenames.AdminEntityList("Question")),
+					MenuLink(r, icons.Clock(), "Quiz Attempts", routenames.AdminEntityList("UserQuizAttempt")),
+				),
+
+				// Operations Group
+				NavGroup(r, icons.Cog6Tooth(), "System Operations", false,
+					MenuLink(r, icons.CircleStack(), "Task Monitor", routenames.AdminTasks),
+					MenuLink(r, icons.Folder(), "File Assets", routenames.Files),
+					MenuLink(r, icons.CircleStack(), "Cache Manager", routenames.Cache),
+					MenuLink(r, icons.Info(), "Support & FAQ", routenames.AdminEntityList("Faq")),
 				),
 			),
 			
-			// Footer Section
+			// Footer Section with User Profile & Logout
 			Div(
-				Class("mt-auto pt-8 border-t border-white/5 flex flex-col gap-4"),
+				Class("mt-auto pt-8 border-t border-white/5 flex flex-col gap-6"),
 				If(r.IsAuth, Div(
-					Class("flex items-center gap-3 px-2"),
-					Div(
-						Class("avatar"),
-						Div(Class("w-10 h-10 rounded-2xl bg-primary/20 p-0.5"), func() Node {
-							if r.AuthUser != nil {
-								return Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed=" + r.AuthUser.Username))
-							}
-							return nil
-						}()),
-					),
-					Div(
-						Class("flex-1"),
-						func() Node {
-							if r.AuthUser != nil {
-								return P(Class("text-[13px] font-black text-white truncate"), Text(r.AuthUser.Username))
-							}
-							return nil
-						}(),
-						P(Class("text-[10px] font-black text-accent tracking-[0.1em] uppercase"), Text(func() string {
-							if r.IsAdmin {
-								return "Administrator"
-							}
-							return "Student"
-						}())),
+					Class("flex flex-col gap-4"),
+					// Exact Logout Matching
+					A(
+						Href("/user/logout"),
+						Attr("onclick", "return confirm('Are you sure you want to logout?')"),
+						Class("logout-btn flex items-center gap-3 px-4 py-3 rounded-lg font-bold text-[13px] active:scale-95"),
+						icons.Icon("ArrowLeftOnRectangle", "w-5 h-5"),
+						Span(Text("Logout")),
 					),
 				)),
 				If(!r.IsAuth, Group{

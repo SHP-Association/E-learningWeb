@@ -44,16 +44,14 @@ func MenuLink(r *ui.Request, icon Node, title, routeName string, routeParams ...
 		Class("list-none px-2"),
 		A(
 			Href(href),
-			Class("sidebar-link group/item flex items-center gap-3 p-3 rounded-xl transition-all duration-300 active:scale-95 relative overflow-hidden"),
+			Class("sidebar-link flex items-center gap-3 p-2.5 rounded-lg transition-all active:scale-95"),
 			Classes{
-				"bg-primary/10 text-white font-black": isActive,
-				"hover:bg-white/5 text-secondary-text hover:text-white font-semibold": !isActive,
+				"active": isActive,
+				"text-secondary-text hover:text-white": !isActive,
 			},
-			// Active Stripe
-			If(isActive, Div(Class("absolute left-0 top-0 bottom-0 w-1 bg-primary shadow-[0_0_12px_rgba(0,196,160,0.8)]"))),
 			
 			Span(Class("flex items-center justify-center w-5"), icon),
-			Span(Class("text-sm"), Text(title)),
+			Span(Class("text-[13px] font-medium"), Text(title)),
 		),
 	)
 }
@@ -63,16 +61,16 @@ func NavGroup(r *ui.Request, icon Node, title string, isOpen bool, links ...Node
 		Class("group/nav mb-1 px-2"),
 		If(isOpen, Attr("open", "true")),
 		Summary(
-			Class("flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-all select-none list-none"),
+			Class("flex items-center justify-between p-2.5 rounded-lg cursor-pointer hover:bg-white/5 transition-all select-none list-none"),
 			Div(
 				Class("flex items-center gap-3"),
-				Span(Class("flex items-center justify-center w-5 text-secondary-text group-hover:text-white transition-colors"), icon),
+				Span(Class("flex items-center justify-center w-5 text-secondary-text group-hover:text-accent transition-colors"), icon),
 				Span(Class("text-[11px] font-black uppercase tracking-ultra text-secondary-text group-hover:text-primary-text transition-colors"), Text(title)),
 			),
-			Span(Class("text-secondary-text/30 group-hover:text-secondary-text/60 transition-transform duration-300 group-open/nav:rotate-90 text-[10px] font-bold"), Text("›")),
+			Span(Class("text-secondary-text/30 group-hover:text-secondary-text/60 transition-transform duration-300 group-open/nav:rotate-180 text-[10px] font-bold"), Icon("ChevronDown", "w-3 h-3")),
 		),
-		Ul(
-			Class("ml-[22px] mt-1 border-l border-white/5 pl-2 gap-1 flex flex-col mb-4"),
+		Div(
+			Class("nav-group-border flex flex-col gap-1 mt-1"),
 			Group(links),
 		),
 	)

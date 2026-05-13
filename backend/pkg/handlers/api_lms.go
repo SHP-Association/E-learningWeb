@@ -3,9 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
-	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/ent"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/course"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/enrollment"
@@ -17,6 +15,7 @@ import (
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/context"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
+	"github.com/labstack/echo/v4"
 )
 
 type LMSAPI struct {
@@ -56,7 +55,10 @@ func (h *LMSAPI) Routes(g *echo.Group) {
 }
 
 func (h *LMSAPI) getLesson(ctx echo.Context) error {
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	id, err := parseIntParam(ctx, "id")
+	if err != nil {
+		return err
+	}
 	l, err := h.orm.Lesson.
 		Query().
 		Where(lesson.ID(id)).
@@ -71,7 +73,10 @@ func (h *LMSAPI) getLesson(ctx echo.Context) error {
 }
 
 func (h *LMSAPI) getQuiz(ctx echo.Context) error {
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	id, err := parseIntParam(ctx, "id")
+	if err != nil {
+		return err
+	}
 	q, err := h.orm.Quiz.
 		Query().
 		Where(quiz.ID(id)).
@@ -95,7 +100,7 @@ func (h *LMSAPI) listFAQs(ctx echo.Context) error {
 		All(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "unable to list FAQs")
+		return jsonInternalError(ctx, "unable to list FAQs")
 	}
 
 	return ctx.JSON(http.StatusOK, faqs)
@@ -125,7 +130,7 @@ func (h *LMSAPI) enroll(ctx echo.Context) error {
 		Exist(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "error checking enrollment")
+		return jsonInternalError(ctx, "error checking enrollment")
 	}
 
 	if exists {
@@ -140,7 +145,7 @@ func (h *LMSAPI) enroll(ctx echo.Context) error {
 		Save(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "failed to enroll")
+		return jsonInternalError(ctx, "failed to enroll")
 	}
 
 	return ctx.JSON(http.StatusCreated, echo.Map{
@@ -162,14 +167,17 @@ func (h *LMSAPI) getProfile(ctx echo.Context) error {
 		Only(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "unable to load profile")
+		return jsonInternalError(ctx, "unable to load profile")
 	}
 
 	return ctx.JSON(http.StatusOK, userWithData)
 }
 
 func (h *LMSAPI) submitReview(ctx echo.Context) error {
-	courseID, _ := strconv.Atoi(ctx.Param("id"))
+	courseID, err := parseIntParam(ctx, "id")
+	if err != nil {
+		return err
+	}
 	u := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
 
 	type reviewInput struct {
@@ -193,14 +201,17 @@ func (h *LMSAPI) submitReview(ctx echo.Context) error {
 		Save(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "failed to submit review")
+		return jsonInternalError(ctx, "failed to submit review")
 	}
 
 	return ctx.JSON(http.StatusCreated, rev)
 }
 
 func (h *LMSAPI) listReviews(ctx echo.Context) error {
-	courseID, _ := strconv.Atoi(ctx.Param("id"))
+	courseID, err := parseIntParam(ctx, "id")
+	if err != nil {
+		return err
+	}
 	reviews, err := h.orm.Review.
 		Query().
 		Where(
@@ -212,14 +223,17 @@ func (h *LMSAPI) listReviews(ctx echo.Context) error {
 		All(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "unable to list reviews")
+		return jsonInternalError(ctx, "unable to list reviews")
 	}
 
 	return ctx.JSON(http.StatusOK, reviews)
 }
 
 func (h *LMSAPI) submitQuiz(ctx echo.Context) error {
-	quizID, _ := strconv.Atoi(ctx.Param("id"))
+	quizID, err := parseIntParam(ctx, "id")
+	if err != nil {
+		return err
+	}
 	u := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
 
 	type attemptInput struct {
@@ -242,7 +256,7 @@ func (h *LMSAPI) submitQuiz(ctx echo.Context) error {
 		Save(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "failed to record quiz attempt")
+		return jsonInternalError(ctx, "failed to record quiz attempt")
 	}
 
 	return ctx.JSON(http.StatusCreated, attempt)

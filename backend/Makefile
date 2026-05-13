@@ -66,18 +66,55 @@ run: ## Run the application
 	clear
 	go run cmd/web/main.go
 
+.PHONY: run-sqlite
+run-sqlite: ## Run the application with local SQLite DB (no Postgres required)
+	clear
+	DATABASE_DRIVER=sqlite3 DATABASE_CONNECTION='file:dev.sqlite?_fk=true' go run cmd/web/main.go
+
 .PHONY: watch
 watch: ## Run the application and watch for changes with air to automatically rebuild
 	clear
 	air
 
+.PHONY: fmt
+fmt: ## Format Go code
+	go fmt ./...
+
+.PHONY: vet
+vet: ## Run go vet
+	go vet ./...
+
+.PHONY: tidy
+tidy: ## Tidy and verify Go modules
+	go mod tidy
+	go mod verify
+
 .PHONY: test
 test: ## Run all tests
 	go test ./...
 
+.PHONY: test-short
+test-short: ## Run tests in short mode
+	go test -short ./...
+
+.PHONY: test-handlers
+test-handlers: ## Run handler package tests
+	go test ./pkg/handlers/...
+
 .PHONY: check-updates
 check-updates: ## Check for direct dependency updates
 	go list -u -m -f '{{if not .Indirect}}{{.}}{{end}}' all | grep "\["
+
+.PHONY: curl-health
+curl-health: ## Curl health endpoint (assumes server is already running)
+	curl -i http://localhost:8000/api/health
+
+.PHONY: curl-api-smoke
+curl-api-smoke: ## Smoke-check public API endpoints (assumes server is already running)
+	curl -s -o /dev/null -w 'GET /api/health -> %{http_code}\n' http://localhost:8000/api/health
+	curl -s -o /dev/null -w 'GET /api/categories -> %{http_code}\n' http://localhost:8000/api/categories
+	curl -s -o /dev/null -w 'GET /api/courses -> %{http_code}\n' http://localhost:8000/api/courses
+	curl -s -o /dev/null -w 'GET /api/faqs -> %{http_code}\n' http://localhost:8000/api/faqs
 
 .PHONY: css
 css: ## Build and minify Tailwind CSS
@@ -86,3 +123,6 @@ css: ## Build and minify Tailwind CSS
 .PHONY: build
 build: css ## Build CSS and compile the application binary
 	go build -o ./tmp/main ./cmd/web
+
+.PHONY: ci
+ci: fmt vet test ## Run common local CI checks

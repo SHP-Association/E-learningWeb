@@ -8,46 +8,37 @@ import (
 )
 
 type DashboardStats struct {
-	EnrolledCourses    int
-	ActiveCourses      int
-	CompletedCourses   int
-	CertificatesCount  int
-	EngagementScore    float64
-	StudyHours         float64
-	RecentProgress     *EnrollmentProgress
-}
-
-type EnrollmentProgress struct {
-	CourseTitle string
-	Progress    float64
-	Remaining   int
+	TotalUsers       int
+	TotalCourses     int
+	TotalEnrollments int
+	RecentActivity   int
 }
 
 func (s *DashboardStats) Render() Node {
 	return Stats(
 		Stat{
-			Title:       "Enrolled Courses",
-			Value:       fmt.Sprintf("%d", s.EnrolledCourses),
-			Description: fmt.Sprintf("%d Active now", s.ActiveCourses),
-			Icon:        Icon("PencilSquare", "w-6 h-6"),
+			Title:       "Total Platform Users",
+			Value:       fmt.Sprintf("%d", s.TotalUsers),
+			Description: "Active user accounts",
+			Icon:        Icon("Users", "w-6 h-6"),
 		},
 		Stat{
-			Title:       "Engagement Score",
-			Value:       fmt.Sprintf("%.0f%%", s.EngagementScore),
-			Description: "Based on activity",
-			Icon:        Icon("Info", "w-6 h-6"),
+			Title:       "Course Inventory",
+			Value:       fmt.Sprintf("%d", s.TotalCourses),
+			Description: "Published courses",
+			Icon:        Icon("BookOpen", "w-6 h-6"),
 		},
 		Stat{
-			Title:       "Study Hours",
-			Value:       fmt.Sprintf("%.1f", s.StudyHours),
-			Description: "Lifetime total",
-			Icon:        Icon("Clock", "w-6 h-6"),
+			Title:       "Total Enrollments",
+			Value:       fmt.Sprintf("%d", s.TotalEnrollments),
+			Description: "Lifetime student signups",
+			Icon:        Icon("AcademicCap", "w-6 h-6"),
 		},
 		Stat{
-			Title:       "Certificates",
-			Value:       fmt.Sprintf("%02d", s.CertificatesCount),
-			Description: "Earned so far",
-			Icon:        Icon("CheckCircle", "w-6 h-6"),
+			Title:       "Recent Activity",
+			Value:       fmt.Sprintf("%d", s.RecentActivity),
+			Description: "New signups (Last 24h)",
+			Icon:        Icon("ChartBar", "w-6 h-6"),
 		},
 	)
 }

@@ -32,23 +32,27 @@ func (f *Login) Render(r *ui.Request) Node {
 			Label:     "Email address",
 			Value:     f.Email,
 		}),
-		InputField(InputFieldParams{
-			Form:        f,
-			FormField:   "Password",
-			Name:        "password",
-			InputType:   "password",
-			Label:       "Password",
-			Placeholder: "******",
-		}),
-		Div(
-			Class("flex justify-between items-center mt-2 mb-6"),
-			A(
-				Href(r.Path(routenames.ForgotPassword)),
-				Class("text-[11px] font-bold text-accent hover:text-white transition-colors"),
-				Text("Forgot password?"),
+		Div(Class("relative mt-4"),
+			InputField(InputFieldParams{
+				Form:        f,
+				FormField:   "Password",
+				Name:        "password",
+				InputType:   "password",
+				Label:       "Password",
+				Placeholder: "******",
+			}),
+			Div(
+				Class("flex justify-end mt-2"),
+				A(
+					Href(r.Path(routenames.ForgotPassword)),
+					Class("text-[13px] font-semibold text-secondary-text hover:text-white transition-colors"),
+					Text("Forgot password?"),
+				),
 			),
 		),
-		FormButton(ColorPrimary, "Sign In"),
+		Div(Class("mt-8"),
+			FormButton(ColorPrimary, "Sign In"),
+		),
 		CSRF(r),
 	)
 }

@@ -1,25 +1,22 @@
-version: "3.9"
-
 services:
   db:
-    image: timescale/timescaledb:2.9.1-pg14
+    image: postgres:16-alpine
     container_name: shp-postgres
-    restart: always
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DJANGO_DB_USER}
-      POSTGRES_PASSWORD: ${DJANGO_DB_PASSWORD}
-      POSTGRES_DB: ${DJANGO_DB_NAME}
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTGRES_DB: ${DATABASE_NAME:-shp_db}
     ports:
-      - "5434:5432"
+      - "${DB_PORT:-5434}:5432"
     env_file:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/db-init:/docker-entrypoint-initdb.d:ro
     networks:
       - e-learning-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DJANGO_DB_USER} -d ${DJANGO_DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres} -d ${DATABASE_NAME:-shp_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,9 +24,12 @@ services:
   redis:
     image: redis:7.2-alpine
     container_name: shp-redis
-    restart: always
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
     networks:
       - e-learning-net
     healthcheck:
@@ -43,22 +43,31 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: shp-backend
-    restart: always
-    volumes:
-      - backend_static:/app/staticfiles
-      - backend_media:/app/media
-      - backend_data:/data
+    restart: unless-stopped
     env_file:
       - .env
+    environment:
+      HTTP_PORT: 8000
+      DATABASE_DRIVER: ${DATABASE_DRIVER:-postgres}
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      DATABASE_NAME: ${DATABASE_NAME:-shp_db}
+      DATABASE_CONNECTION: ${DATABASE_CONNECTION:-host=db port=5432 user=postgres password=postgres dbname=shp_db sslmode=disable}
     ports:
-      - "8001:8001"
+      - "${BACKEND_PORT:-8001}:8000"
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - e-learning-net
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/api/health/"]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -69,13 +78,21 @@ services:
       context: ./web
       dockerfile: Dockerfile
     container_name: shp-frontend
-    restart: always
+    restart: unless-stopped
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT:-80}:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - e-learning-net
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
@@ -84,9 +101,7 @@ services:
 
 volumes:
   postgres_data:
-  backend_static:
-  backend_media:
-  backend_data:
+  redis_data:
 
 networks:
   e-learning-net:

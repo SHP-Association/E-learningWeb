@@ -1,23 +1,24 @@
 package components
 
 import (
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/icons"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
 
 func ThemeToggle() Node {
 	return Label(
-		Class("swap swap-rotate btn btn-ghost btn-circle btn-md hover:bg-card-bg transition-all duration-300 ease-in-out"),
+		Class("swap swap-rotate text-secondary-text hover:text-white transition-colors cursor-pointer"),
 		Input(
 			Type("checkbox"),
 			Class("theme-controller"),
 			Attr("onchange", "(function(e) { const theme = e.target.checked ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); })(event)"),
 			ID("theme-toggle-checkbox"),
 		),
-		// Sun icon (for dark mode)
-		Span(Class("swap-on fill-none stroke-current transition-transform duration-500 hover:rotate-45"), Icon("Sun", "w-5 h-5")),
-		// Moon icon (for light mode)
-		Span(Class("swap-off fill-none stroke-current transition-transform duration-500 -rotate-12 hover:rotate-0"), Icon("Moon", "w-5 h-5")),
+		// Sun icon (for light mode)
+		Span(Class("swap-on fill-none stroke-current transition-transform duration-500"), icons.Icon("Sun", "w-4 h-4")),
+		// Moon icon (for dark mode)
+		Span(Class("swap-off fill-none stroke-current transition-transform duration-500"), icons.Icon("Moon", "w-4 h-4")),
 		Script(Raw(`
 			(function() {
 				const theme = localStorage.getItem('theme') || 'dark';
@@ -33,130 +34,131 @@ func ThemeToggle() Node {
 func ThemeStyles() Node {
 	return Raw(`
 	<style>
-		@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+		@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 		:root {
-			/* Zenith Premium Design System - Indigo & Slate */
-			--color-page-bg: #0b0f1a;
-			--color-card-bg: #161f31;
-			--color-card-border: rgba(255, 255, 255, 0.08);
+			/* SlingSight-inspired Premium Palette */
+			--color-page-bg: #070c14;
+			--color-card-bg: #0d1622;
+			--color-card-border: rgba(255, 255, 255, 0.05);
 			
-			/* Accents & Tones */
-			--color-accent: #6366f1;           /* Indigo 500 */
-			--color-accent-hover: #4f46e5;     /* Indigo 600 */
-			--color-accent-muted: rgba(99, 102, 241, 0.15);
+			/* Accents: Teal & Cyan */
+			--color-accent: #2ec4b6;           /* Primary Teal */
+			--color-accent-hover: #26a69a;
+			--color-accent-muted: rgba(46, 196, 182, 0.1);
 			
-			--color-brand-yellow: #f59e0b;     /* Amber 500 (Refined) */
-			--color-brand-blue: #4f46e5;       /* Indigo 600 */
-			
-			--color-primary-text: #f1f5f9;     /* Slate 100 */
+			--color-primary-text: #f8fafc;     /* Slate 50 */
 			--color-secondary-text: #94a3b8;   /* Slate 400 */
 			--color-tertiary-text: #64748b;    /* Slate 500 */
 			
-			--color-divider: rgba(255, 255, 255, 0.06);
-			--color-zebra: rgba(255, 255, 255, 0.02);
-			--color-hover: rgba(255, 255, 255, 0.04);
+			--color-divider: rgba(255, 255, 255, 0.04);
+			--color-hover: rgba(255, 255, 255, 0.03);
 			
 			/* Semantic */
-			--color-warning: #f59e0b;
-			--color-danger: #ef4444;
-			--color-success: #10b981;
-			--color-info: #0ea5e9;
+			--color-danger: #ff4d4d;
+			--color-success: #2ec4b6;
 			
-			/* Shell Gradients */
-			--ui-shell-start: #0b0f1a;
-			--ui-shell-end: #1e1b4b;           /* Deep Indigo */
+			/* Shell Gradients - Exact matching */
+			--ui-shell-start: #0a1622;
+			--ui-shell-end: #070c14;
 
 			/* Shadows */
-			--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-			--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-			--shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-			--shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+			--shadow-premium: 0 0 50px -12px rgba(0, 0, 0, 0.5);
+			--shadow-glow: 0 0 15px -3px rgba(46, 196, 182, 0.4);
 			
-			/* Border Radius */
-			--radius-sm: 0.375rem;
-			--radius: 0.5rem;
-			--radius-md: 0.75rem;
-			--radius-lg: 1rem;
-			--radius-xl: 1.5rem;
-
-			--font-main: 'Inter', sans-serif;
-			--font-display: 'Outfit', sans-serif;
+			--font-main: 'Poppins', sans-serif;
+			--font-display: 'Poppins', sans-serif;
 		}
 
 		[data-theme=light] {
-			/* SHP Light Brand Palette */
 			--color-page-bg: #f8fafc;
 			--color-card-bg: #ffffff;
 			--color-card-border: #e2e8f0;
-			--color-accent: #3b82f6;
-			--color-accent-hover: #2563eb;
-			--color-accent-muted: rgba(59, 130, 246, 0.1);
-			--color-brand-yellow: #facc15;
-			--color-brand-blue: #1e3a8a;
+			--color-accent: #0d9488;
 			--color-primary-text: #0f172a;
 			--color-secondary-text: #475569;
 			--color-tertiary-text: #94a3b8;
 			--color-divider: rgba(15, 23, 42, 0.08);
-			--color-zebra: rgba(15, 23, 42, 0.02); 
-			--color-hover: rgba(15, 23, 42, 0.04);
-			--color-warning: #facc15;
-			--color-danger: #ef4444;
-			--color-success: #10b981;
-			--color-info: #3b82f6;
-
-			/* Refined Soft UI Shadows */
-			--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-			--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-			--shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-			--shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+			--ui-shell-start: #ffffff;
+			--ui-shell-end: #f8fafc;
 		}
 
 		body {
 			background-color: var(--color-page-bg) !important;
 			color: var(--color-primary-text) !important;
 			font-family: var(--font-main);
-			transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
+			overflow-x: hidden;
 		}
 
-		h1, h2, h3, h4, h5, h6 {
-			font-family: var(--font-display);
-			font-weight: 700;
-			letter-spacing: -0.02em;
+		/* Premium Glassmorphism */
+		.glass-modern {
+			background: linear-gradient(180deg, var(--ui-shell-start), var(--ui-shell-end));
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+			border-right: 1px solid var(--color-card-border);
+			box-shadow: var(--shadow-premium);
 		}
 
-		.card {
-			background-color: var(--color-card-bg);
-			border: 1px solid var(--color-card-border);
-			border-radius: var(--radius-lg);
-			box-shadow: var(--shadow);
-			transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+		/* Sidebar Link Overhaul - Exact Matching */
+		.sidebar-link {
+			position: relative;
+			transition: all 0.2s ease;
 		}
 
-		.btn {
-			border-radius: var(--radius);
-			font-weight: 600;
-			text-transform: none;
-			letter-spacing: 0.01em;
-			transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+		.sidebar-link.active {
+			background: rgba(46, 196, 182, 0.08);
+			color: var(--color-accent) !important;
+		}
+		
+		.sidebar-link.active Span {
+			color: var(--color-accent) !important;
 		}
 
-		::-webkit-scrollbar {
-			width: 10px;
-			height: 10px;
+		.sidebar-link:hover:not(.active) {
+			background: var(--color-hover);
+			color: var(--color-primary-text);
 		}
-		::-webkit-scrollbar-track {
-			background: var(--color-page-bg);
+
+		/* NavGroup Vertical Line */
+		.nav-group-border {
+			border-left: 1px solid rgba(255, 255, 255, 0.1);
+			margin-left: 20px;
+			padding-left: 10px;
 		}
-		::-webkit-scrollbar-thumb {
+
+		/* Typography Utilities */
+		.tracking-ultra {
+			letter-spacing: 0.15em;
+		}
+
+		/* Ultra-thin Scrollbar */
+		.custom-scrollbar::-webkit-scrollbar {
+			width: 3px;
+		}
+		.custom-scrollbar::-webkit-scrollbar-track {
+			background: transparent;
+		}
+		.custom-scrollbar::-webkit-scrollbar-thumb {
 			background: var(--color-divider);
-			border-radius: 5px;
-			border: 2px solid var(--color-page-bg);
+			border-radius: 10px;
 		}
-		::-webkit-scrollbar-thumb:hover {
-			background: var(--color-tertiary-text);
+
+		/* Interactive Elements */
+		.drop-shadow-glow {
+			filter: drop-shadow(0 0 5px var(--color-accent));
+		}
+
+		/* Logout Special Case */
+		.logout-btn {
+			color: var(--color-danger);
+			opacity: 0.8;
+			transition: all 0.3s ease;
+		}
+		.logout-btn:hover {
+			opacity: 1;
+			background: rgba(255, 77, 77, 0.05);
+			transform: translateX(4px);
 		}
 	</style>
 	`)

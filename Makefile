@@ -1,19 +1,13 @@
 .PHONY: all help setup git-setup check-git \
-        docker-up docker-down docker-logs \
-        backend-setup backend-run backend-worker backend-beat backend-superuser backend-migrate backend-makemigrations \
-        frontend-setup frontend-dev frontend-build frontend-preview \
+        docker-up docker-down docker-logs docker-ps docker-build docker-pull docker-restart \
+        deploy-all deploy-db deploy-redis deploy-backend deploy-frontend stop-db stop-redis stop-backend stop-frontend \
+        backend-run frontend-setup frontend-dev frontend-build frontend-preview \
         clean
 
 # --- OS Detection ---
 ifeq ($(OS),Windows_NT)
-    PYTHON = python
-    UV_INSTALL = pip install uv
-    VENV_ACTIVATE = backend\.venv\Scripts\activate
     RM = rmdir /s /q
 else
-    PYTHON = python3
-    UV_INSTALL = pip3 install uv --break-system-packages
-    VENV_ACTIVATE = . backend/.venv/bin/activate
     RM = rm -rf
 endif
 
@@ -29,19 +23,23 @@ help:
 	@echo "-------------------------------"
 	@echo "setup              - Full optimized setup (Parallel)"
 	@echo "git-setup          - Configure local Git identity"
-	@echo "backend-setup      - Optimized Python environment setup"
-	@echo "backend-run        - Start backend Django server (uv)"
-	@echo "backend-worker     - Start Celery worker (uv)"
-	@echo "backend-beat       - Start Celery beat (uv)"
-	@echo "backend-superuser  - Create a Django superuser (uv)"
+	@echo "backend-run        - Start Go backend server"
 	@echo "frontend-setup     - Optimized Node environment setup"
 	@echo "frontend-dev       - Start frontend development"
 	@echo "docker-up          - Spin up Docker services"
+	@echo "deploy-all         - Build and deploy all containers"
+	@echo "deploy-db          - Deploy only database container"
+	@echo "deploy-redis       - Deploy only redis container"
+	@echo "deploy-backend     - Build and deploy only backend container"
+	@echo "deploy-frontend    - Build and deploy only frontend container"
+	@echo "docker-ps          - Show running compose services"
+	@echo "docker-logs        - Tail compose logs"
+	@echo "docker-restart     - Restart all compose services"
 	@echo "clean              - Remove build artifacts and environments"
 
 # --- Main Setup (Optimized for Parallel Execution) ---
 setup: git-setup
-	@$(MAKE) -j 2 backend-setup frontend-setup
+	@$(MAKE) -j 1 frontend-setup
 	@echo "✅ All systems ready."
 
 git-setup:
@@ -52,29 +50,8 @@ git-setup:
 	git config user.email "$$email"
 	@echo "Git configured as: $$(git config user.name) <$$(git config user.email)>"
 
-# --- Backend Optimization ---
-backend-setup: $(BACKEND_DIR)/.venv/touchfile
-
-$(BACKEND_DIR)/.venv/touchfile: $(BACKEND_DIR)/requirements.txt
-	@echo "🐍 Setting up Backend Environment..."
-	@$(UV_INSTALL) || true
-	@cd $(BACKEND_DIR) && if [ ! -d .venv ]; then uv venv; else echo "venv already exists, skipping creation."; fi
-	cd $(BACKEND_DIR) && uv pip install -r requirements.txt
-	@touch $@
-
 backend-run:
-	cd $(BACKEND_DIR) && uv run manage.py makemigrations
-	cd $(BACKEND_DIR) && uv run manage.py migrate
-	cd $(BACKEND_DIR) && uv run manage.py runserver 8001
-
-backend-superuser:
-	cd $(BACKEND_DIR) && uv run manage.py createsuperuser
-
-backend-worker:
-	cd $(BACKEND_DIR) && uv run celery -A X worker -l info
-
-backend-beat:
-	cd $(BACKEND_DIR) && uv run celery -A X beat -l info
+	cd $(BACKEND_DIR) && go run ./cmd/web
 
 # --- Frontend Optimization (File-based dependencies) ---
 frontend-setup: $(FRONTEND_DIR)/node_modules/.bin
@@ -101,18 +78,53 @@ docker-up:
 docker-down:
 	docker compose down
 
-backend-migrate:
-	docker exec -it shp-backend python manage.py migrate
+docker-build:
+	docker compose build
 
-backend-makemigrations:
-	docker exec -it shp-backend python manage.py makemigrations
+docker-pull:
+	docker compose pull
+
+docker-ps:
+	docker compose ps
+
+docker-logs:
+	docker compose logs -f --tail=200
+
+docker-restart:
+	docker compose restart
+
+deploy-all:
+	docker compose up -d --build
+
+deploy-db:
+	docker compose up -d db
+
+deploy-redis:
+	docker compose up -d redis
+
+deploy-backend:
+	docker compose up -d --build backend
+
+deploy-frontend:
+	docker compose up -d --build frontend
+
+stop-db:
+	docker compose stop db
+
+stop-redis:
+	docker compose stop redis
+
+stop-backend:
+	docker compose stop backend
+
+stop-frontend:
+	docker compose stop frontend
 
 db-shell:
-	docker exec -it shp-postgres psql -U postgres -d postgres
+	docker exec -it shp-postgres psql -U $${DATABASE_USER:-postgres} -d $${DATABASE_NAME:-shp_db}
 
 # --- Cleanup ---
 clean:
 	@echo "🧹 Cleaning up..."
-	@$(RM) $(BACKEND_DIR)/.venv
 	@$(RM) $(FRONTEND_DIR)/node_modules
 	@$(RM) $(FRONTEND_DIR)/dist

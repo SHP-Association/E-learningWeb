@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/SHP-Association/E-learningWeb/backend/ent"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/context"
@@ -86,6 +87,11 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 func RequireAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if u := c.Get(context.AuthenticatedUserKey); u == nil {
+			if strings.HasPrefix(c.Path(), "/api") {
+				return c.JSON(http.StatusUnauthorized, echo.Map{
+					"error": "authentication required",
+				})
+			}
 			// If it's an HTMX request, we should use the HX-Redirect header
 			if c.Request().Header.Get("HX-Request") != "" {
 				c.Response().Header().Set("HX-Redirect", c.Echo().Reverse(routenames.Login))

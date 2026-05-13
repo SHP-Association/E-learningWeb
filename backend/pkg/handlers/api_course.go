@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
-	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/ent"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/category"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/course"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
+	"github.com/labstack/echo/v4"
 )
 
 type CourseAPI struct {
@@ -43,14 +42,17 @@ func (h *CourseAPI) listCategories(ctx echo.Context) error {
 		All(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "unable to list categories")
+		return jsonInternalError(ctx, "unable to list categories")
 	}
 
 	return ctx.JSON(http.StatusOK, categories)
 }
 
 func (h *CourseAPI) getCategory(ctx echo.Context) error {
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	id, err := parseIntParam(ctx, "id")
+	if err != nil {
+		return err
+	}
 	cat, err := h.orm.Category.
 		Get(ctx.Request().Context(), id)
 
@@ -70,14 +72,17 @@ func (h *CourseAPI) listCourses(ctx echo.Context) error {
 		All(ctx.Request().Context())
 
 	if err != nil {
-		return fail(err, "unable to list courses")
+		return jsonInternalError(ctx, "unable to list courses")
 	}
 
 	return ctx.JSON(http.StatusOK, courses)
 }
 
 func (h *CourseAPI) getCourse(ctx echo.Context) error {
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	id, err := parseIntParam(ctx, "id")
+	if err != nil {
+		return err
+	}
 	c, err := h.orm.Course.
 		Query().
 		Where(course.ID(id)).

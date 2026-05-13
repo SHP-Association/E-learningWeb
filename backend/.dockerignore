@@ -1,0 +1,11 @@
+.git
+.gitignore
+tmp
+dbs
+uploads
+*.sqlite
+*.sqlite3
+tasks.sqlite
+api_verify.sqlite
+node_modules
+README.md

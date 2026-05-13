@@ -377,7 +377,7 @@ func Help(text string) Node {
 
 func FormGroup(label string, required bool, els ...Node) Node {
 	return Div(
-		Class("flex flex-col gap-2"),
+		Class("flex flex-col gap-1.5"),
 		If(len(label) > 0, Label(
 			Class("flex items-center text-[13px] font-[600] text-secondary-text"),
 			Text(label),

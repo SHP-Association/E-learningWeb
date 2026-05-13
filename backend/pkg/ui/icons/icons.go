@@ -228,6 +228,111 @@ func AcademicCap() Node {
 	)
 }
 
+func BookOpen() Node {
+	return icon("BookOpen",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25"),
+		),
+	)
+}
+
+func Users() Node {
+	return icon("Users",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"),
+		),
+	)
+}
+
+func DocumentCheck() Node {
+	return icon("DocumentCheck",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5a3.375 3.375 0 0 0 3.375 3.375h1.5a1.125 1.125 0 0 1 1.125 1.125m-10.125-3.75h.008v.008h-.008V8.25Zm0 3.75h.008v.008h-.008v-.008Zm3.75-3.75h.008v.008h-.008V8.25Zm0 3.75h.008v.008h-.008v-.008Z"),
+		),
+	)
+}
+
+func ChatBubbleLeftRight() Node {
+	return icon("ChatBubbleLeftRight",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"),
+		),
+	)
+}
+
+func Cog6Tooth() Node {
+	return icon("Cog6Tooth",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M4.5 12a7.5 7.5 0 1 1 15 0 7.5 7.5 0 0 1-15 0Z"),
+		),
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M12 9v6m3-3H9"),
+		),
+	)
+}
+
+func Folder() Node {
+	return icon("Folder",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-19.5 0A2.25 2.25 0 0 0 4.5 15h15a2.25 2.25 0 0 0 2.25-2.25m-19.5 0v.25A2.25 2.25 0 0 0 4.5 17.5h15a2.25 2.25 0 0 0 2.25-2.25v-.25m-19.5 0V12a2.25 2.25 0 0 1 2.25-2.25h15A2.25 2.25 0 0 1 21.75 12v.75m-19.5 0V7.5A2.25 2.25 0 0 1 4.5 5.25h4.875c.621 0 1.125.504 1.125 1.125v1.5a2.25 2.25 0 0 0 2.25 2.25h5.25A2.25 2.25 0 0 1 21.75 12.375V12.75"),
+		),
+	)
+}
+
+func ArrowLeftOnRectangle() Node {
+	return icon("ArrowLeftOnRectangle",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"),
+		),
+	)
+}
+
+func ChevronDown() Node {
+	return icon("ChevronDown",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "m19.5 8.25-7.5 7.5-7.5-7.5"),
+		),
+	)
+}
+
+func Sun() Node {
+	return icon("Sun",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M12 3v2.25m0 13.5V21m8.966-8.966h-2.25m-13.5 0h-2.25m15.364-6.364l-1.591 1.591M6.756 17.244l-1.591 1.591m12.728 0l-1.591-1.591M6.756 6.756L5.165 5.165M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"),
+		),
+	)
+}
+
+func Moon() Node {
+	return icon("Moon",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"),
+		),
+	)
+}
+
 func icon(id string, els ...Node) Node {
 	return cache.SetIfNotExists(fmt.Sprintf("icon.%s", id), func() Node {
 		return SVG(
@@ -288,6 +393,26 @@ func Icon(name, class string) Node {
 		node = CheckCircle()
 	case "AcademicCap":
 		node = AcademicCap()
+	case "BookOpen":
+		node = BookOpen()
+	case "Users":
+		node = Users()
+	case "DocumentCheck":
+		node = DocumentCheck()
+	case "ChatBubbleLeftRight":
+		node = ChatBubbleLeftRight()
+	case "Cog6Tooth":
+		node = Cog6Tooth()
+	case "Folder":
+		node = Folder()
+	case "ArrowLeftOnRectangle":
+		node = ArrowLeftOnRectangle()
+	case "ChevronDown":
+		node = ChevronDown()
+	case "Sun":
+		node = Sun()
+	case "Moon":
+		node = Moon()
 	default:
 		return nil
 	}

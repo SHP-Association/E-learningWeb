@@ -29,16 +29,21 @@ func CSS() Node {
 }
 
 func Metatags(r *ui.Request) Node {
-	appName := "LMS"
+	appName := "SHP"
 	if r.Config != nil && r.Config.App.Name != "" {
 		appName = r.Config.App.Name
+	}
+	
+	title := appName
+	if r.Title != "" {
+		title = r.Title + " | " + appName
 	}
 	
 	return Group{
 		Meta(Charset("utf-8")),
 		Meta(Name("viewport"), Content("width=device-width, initial-scale=1")),
-		Link(Rel("icon"), Href(ui.StaticFile("favicon.png"))),
-		TitleEl(Text(appName), If(r.Title != "", Text(" | "+r.Title))),
+		Link(Rel("icon"), Href(ui.StaticFile("favicon.ico"))),
+		TitleEl(Text(title)),
 		If(r.Metatags.Description != "", Meta(Name("description"), Content(r.Metatags.Description))),
 		If(len(r.Metatags.Keywords) > 0, Meta(Name("keywords"), Content(strings.Join(r.Metatags.Keywords, ", ")))),
 	}

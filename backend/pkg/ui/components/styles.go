@@ -86,21 +86,35 @@ func PremiumStyles() Node {
 		.btn-brand {
 			background: var(--color-accent) !important;
 			color: #ffffff !important;
-			font-family: 'Outfit', sans-serif !important;
+			font-family: 'Inter', sans-serif !important;
 			font-weight: 700 !important;
-			text-transform: uppercase !important;
-			letter-spacing: 0.1em !important;
 			border: none !important;
-			border-radius: 14px !important;
+			border-radius: 9999px !important;
 			transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
 			box-shadow: 0 4px 12px var(--color-accent-muted) !important;
 		}
 		.btn-brand:hover {
 			filter: brightness(1.1) !important;
-			transform: translateY(-2px) !important;
-			box-shadow: 0 12px 24px -8px var(--color-accent) !important;
+			transform: translateY(-1px) !important;
+			box-shadow: 0 8px 20px -5px var(--color-accent-muted) !important;
 		}
-		.btn-brand:active { transform: translateY(0) scale(0.96) !important; }
+		.btn-brand:active { transform: translateY(0) scale(0.98) !important; }
+
+		.admin-form-input {
+			background: rgba(255, 255, 255, 0.03) !important;
+			border: 1px solid rgba(255, 255, 255, 0.08) !important;
+			border-radius: 12px !important;
+			color: #ffffff !important;
+			padding: 0.75rem 1rem !important;
+			width: 100% !important;
+			transition: all 0.3s ease !important;
+		}
+		.admin-form-input:focus {
+			border-color: var(--color-accent) !important;
+			background: rgba(255, 255, 255, 0.05) !important;
+			outline: none !important;
+			box-shadow: 0 0 0 4px var(--color-accent-muted) !important;
+		}
 
 		.btn-teal {
 			background: var(--color-accent) !important;

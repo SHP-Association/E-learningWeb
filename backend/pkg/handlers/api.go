@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/ent"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/user"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/tasks"
+	"github.com/labstack/echo/v4"
 )
 
 type API struct {
@@ -38,6 +38,11 @@ func (h *API) Routes(g *echo.Group) {
 	auth.POST("/login", h.login)
 	auth.POST("/register", h.register)
 	auth.POST("/logout", h.logout)
+
+	// Backward-compatible auth aliases under /api/*
+	api.POST("/login", h.login)
+	api.POST("/register", h.register)
+	api.POST("/logout", h.logout)
 }
 
 func (h *API) health(ctx echo.Context) error {
