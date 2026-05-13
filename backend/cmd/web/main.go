@@ -13,6 +13,9 @@ import (
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/log"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/tasks"
+	"net"
+	"os/exec"
+	"time"
 )
 
 func main() {
@@ -34,6 +37,9 @@ func main() {
 	// Start the task runner to execute queued tasks.
 	c.Tasks.Start(context.Background())
 
+	// Clear the port if it's already in use.
+	clearPort(c.Config.HTTP.Hostname, c.Config.HTTP.Port)
+
 	// Start the server.
 	go func() {
 		srv := http.Server{
@@ -44,8 +50,8 @@ func main() {
 			IdleTimeout:  c.Config.HTTP.IdleTimeout,
 		}
 
-		if c.Config.HTTP.TLS.Enabled {
-			certs, err := tls.LoadX509KeyPair(c.Config.HTTP.TLS.Certificate, c.Config.HTTP.TLS.Key)
+		if c.Config.HTTP.TLSEnabled {
+			certs, err := tls.LoadX509KeyPair(c.Config.HTTP.TLSCertificate, c.Config.HTTP.TLSKey)
 			fatal("cannot load TLS certificate", err)
 
 			srv.TLSConfig = &tls.Config{
@@ -71,4 +77,28 @@ func fatal(msg string, err error) {
 		log.Default().Error(msg, "error", err)
 		os.Exit(1)
 	}
+}
+
+// clearPort checks if a port is in use and kills the process using it after a countdown.
+func clearPort(hostname string, port uint16) {
+	addr := fmt.Sprintf("%s:%d", hostname, port)
+	ln, err := net.Listen("tcp", addr)
+	if err == nil {
+		_ = ln.Close()
+		return
+	}
+
+	fmt.Printf("\n⚠️  Port %d is already in use. Automatically clearing in 10 seconds...\n", port)
+	for i := 10; i > 0; i-- {
+		fmt.Printf("🔥 Clearing in %d seconds...\r", i)
+		time.Sleep(time.Second)
+	}
+	fmt.Printf("\n🚀 Clearing port %d now!\n", port)
+
+	// Execute fuser -k to kill the process on the port
+	cmd := exec.Command("fuser", "-k", fmt.Sprintf("%d/tcp", port))
+	_ = cmd.Run()
+
+	// Give the OS a moment to fully release the port
+	time.Sleep(time.Second * 2)
 }

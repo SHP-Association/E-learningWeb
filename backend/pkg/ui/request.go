@@ -84,9 +84,11 @@ func NewRequest(ctx echo.Context) *Request {
 	}
 
 	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
-		p.IsAuth = true
-		p.AuthUser = u.(*ent.User)
-		p.IsAdmin = p.AuthUser.Admin
+		if usr, ok := u.(*ent.User); ok && usr != nil {
+			p.IsAuth = true
+			p.AuthUser = usr
+			p.IsAdmin = usr.Admin
+		}
 	}
 
 	if cfg := ctx.Get(context.ConfigKey); cfg != nil {

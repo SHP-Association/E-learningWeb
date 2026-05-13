@@ -21,6 +21,7 @@ type Contact struct {
 func (f *Contact) Render(r *ui.Request) Node {
 	return Form(
 		ID("contact"),
+		Class("flex flex-col gap-6"),
 		Method(http.MethodPost),
 		Attr("hx-post", r.Path(routenames.ContactSubmit)),
 		InputField(InputFieldParams{
@@ -28,15 +29,17 @@ func (f *Contact) Render(r *ui.Request) Node {
 			FormField: "Email",
 			Name:      "email",
 			InputType: "email",
-			Label:     "Email address",
+			Label:     "Email Address",
 			Value:     f.Email,
+			Required:  true,
 		}),
-		Radios(OptionsParams{
+		CustomSelect(OptionsParams{
 			Form:      f,
 			FormField: "Department",
 			Name:      "department",
 			Label:     "Department",
 			Value:     f.Department,
+			Required:  true,
 			Options: []ui.Choice{
 				{Value: "sales", Label: "Sales"},
 				{Value: "marketing", Label: "Marketing"},
@@ -47,11 +50,17 @@ func (f *Contact) Render(r *ui.Request) Node {
 			Form:      f,
 			FormField: "Message",
 			Name:      "message",
-			Label:     "Message",
+			Label:     "Your Message",
 			Value:     f.Message,
+			Required:  true,
 		}),
-		ControlGroup(
-			FormButton(ColorPrimary, "Submit"),
+		Div(
+			Class("flex justify-end pt-4"),
+			Button(
+				Type("submit"),
+				Class("btn btn-teal px-10 h-12 rounded-xl text-xs font-black uppercase tracking-ultra"),
+				Text("Send Message"),
+			),
 		),
 		CSRF(r),
 	)
