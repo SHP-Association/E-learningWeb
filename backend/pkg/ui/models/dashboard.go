@@ -8,10 +8,12 @@ import (
 )
 
 type DashboardStats struct {
-	TotalUsers       int
-	TotalCourses     int
-	TotalEnrollments int
-	RecentActivity   int
+	TotalUsers         int
+	TotalCourses       int
+	TotalEnrollments   int
+	CertificatesIssued int
+	RecentActivity     int
+	SystemTasks        int
 }
 
 func (s *DashboardStats) Render() Node {
@@ -19,13 +21,13 @@ func (s *DashboardStats) Render() Node {
 		Stat{
 			Title:       "Total Platform Users",
 			Value:       fmt.Sprintf("%d", s.TotalUsers),
-			Description: "Active user accounts",
+			Description: "Active learner accounts",
 			Icon:        Icon("Users", "w-6 h-6"),
 		},
 		Stat{
-			Title:       "Course Inventory",
+			Title:       "Curriculum Inventory",
 			Value:       fmt.Sprintf("%d", s.TotalCourses),
-			Description: "Published courses",
+			Description: "Active published courses",
 			Icon:        Icon("BookOpen", "w-6 h-6"),
 		},
 		Stat{
@@ -35,10 +37,10 @@ func (s *DashboardStats) Render() Node {
 			Icon:        Icon("AcademicCap", "w-6 h-6"),
 		},
 		Stat{
-			Title:       "Recent Activity",
-			Value:       fmt.Sprintf("%d", s.RecentActivity),
-			Description: "New signups (Last 24h)",
-			Icon:        Icon("ChartBar", "w-6 h-6"),
+			Title:       "Certificates Issued",
+			Value:       fmt.Sprintf("%d", s.CertificatesIssued),
+			Description: "Validated completions",
+			Icon:        Icon("DocumentCheck", "w-6 h-6"),
 		},
 	)
 }

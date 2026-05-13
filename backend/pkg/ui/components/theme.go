@@ -149,6 +149,24 @@ func ThemeStyles() Node {
 			filter: drop-shadow(0 0 5px var(--color-accent));
 		}
 
+		.teal-lume {
+			box-shadow: 0 0 20px -5px rgba(46, 196, 182, 0.2);
+			border-color: rgba(46, 196, 182, 0.2) !important;
+		}
+
+		/* Admin Dashboard Specifics */
+		.admin-card {
+			background: var(--color-card-bg);
+			border: 1px solid var(--color-card-border);
+			border-radius: var(--radius-lg);
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		.admin-card:hover {
+			border-color: rgba(255, 255, 255, 0.1);
+			transform: translateY(-2px);
+			box-shadow: var(--shadow-premium);
+		}
+
 		/* Logout Special Case */
 		.logout-btn {
 			color: var(--color-danger);
@@ -159,6 +177,38 @@ func ThemeStyles() Node {
 			opacity: 1;
 			background: rgba(255, 77, 77, 0.05);
 			transform: translateX(4px);
+		}
+
+		/* Top Bar Components */
+		.search-pill {
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.05);
+			border-radius: 9999px;
+			padding: 0.5rem 1rem;
+			color: var(--color-secondary-text);
+			font-size: 0.875rem;
+			transition: all 0.3s ease;
+		}
+		.search-pill:focus-within {
+			background: rgba(255, 255, 255, 0.05);
+			border-color: var(--color-accent);
+			box-shadow: 0 0 0 2px var(--color-accent-muted);
+		}
+
+		.profile-pill {
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.05);
+			border-radius: 9999px;
+			padding: 0.4rem 0.8rem;
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			transition: all 0.3s ease;
+			cursor: pointer;
+		}
+		.profile-pill:hover {
+			background: rgba(255, 255, 255, 0.06);
+			border-color: rgba(255, 255, 255, 0.1);
 		}
 	</style>
 	`)

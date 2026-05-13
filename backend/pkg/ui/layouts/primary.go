@@ -86,70 +86,49 @@ func Primary(r *ui.Request, content Node) Node {
 }
 
 func navbar(r *ui.Request) Node {
-	return Nav(
-		Class("sticky top-0 z-30 flex h-16 w-full justify-center bg-base-100/60 backdrop-blur-xl border-b border-white/5 px-4"),
-		Div(
-			Class("navbar w-full max-w-7xl"),
-			Div(
-				Class("flex-1"),
-			),
-			Div(
-				Class("flex-none gap-4"),
-				ThemeToggle(),
-				search(),
-				// User Profile
-				If(r.IsAuth, Div(
-					Class("dropdown dropdown-end"),
-					Div(
-						TabIndex("0"),
-						Role("button"),
-						Class("flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"),
-						Div(
-							Class("w-8 h-8 rounded-xl overflow-hidden shadow-glow"),
-							func() Node {
-								if r.AuthUser != nil {
-									return Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed=" + r.AuthUser.Username))
-								}
-								return nil
-							}(),
-						),
-						func() Node {
-							if r.AuthUser != nil {
-								return Span(Class("text-xs font-bold text-white"), Text(r.AuthUser.Username))
-							}
-							return nil
-						}(),
-					),
-					Ul(
-						TabIndex("0"),
-						Class("mt-3 z-[1] p-2 shadow-2xl menu menu-sm dropdown-content bg-base-200 rounded-2xl w-52 border border-white/10"),
-						Li(A(Class("rounded-xl"), Href(r.Path(routenames.Home)), Text("Profile"))),
-						Li(A(Class("rounded-xl text-error"), Href(r.Path(routenames.Logout)), Text("Logout"))),
-					),
-				)),
-			),
-		),
-	)
-}
+	userName := "Administrator"
+	if r.IsAuth && r.AuthUser != nil {
+		userName = r.AuthUser.Username
+	}
 
-func search() Node {
-	return cache.SetIfNotExists("layout.search", func() Node {
-		return Div(
-			Class("hidden md:flex"),
-			Attr("x-data", ""),
-			Label(
-				Class("input input-bordered flex items-center gap-2 bg-white/5 border-white/10 rounded-xl focus-within:border-primary/50 transition-all cursor-pointer"),
-				icons.MagnifyingGlass(),
+	return Nav(
+		Class("sticky top-0 z-30 flex h-20 w-full justify-end items-center bg-transparent px-8"),
+		Div(
+			Class("flex items-center gap-4"),
+			// Search Pill
+			Div(
+				Class("search-pill flex items-center gap-3 w-64"),
+				icons.Icon("MagnifyingGlass", "w-4 h-4 opacity-40"),
 				Input(
-					Type("search"),
-					Class("grow text-xs font-medium"),
+					Type("text"),
 					Placeholder("Type to search..."),
+					Class("bg-transparent border-none outline-none flex-1 text-sm"),
 					Attr("@click", "search_modal.showModal();"),
 				),
-				Kbd(Class("kbd kbd-sm bg-base-300 text-[10px]"), Text("⌘K")),
+				Span(Class("text-[10px] font-bold opacity-30 px-1.5 py-0.5 rounded border border-white/10 uppercase"), Text("⌘K")),
 			),
-		)
-	})
+			// Profile Pill
+			If(r.IsAuth, Div(
+				Class("dropdown dropdown-end"),
+				Div(
+					TabIndex("0"),
+					Role("button"),
+					Class("profile-pill"),
+					Div(
+						Class("w-7 h-7 rounded-lg bg-accent/20 p-0.5 border border-accent/30"),
+						Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed="+userName), Class("w-full h-full rounded")),
+					),
+					Span(Class("text-[12px] font-bold text-white"), Text(userName)),
+				),
+				Ul(
+					TabIndex("0"),
+					Class("mt-4 z-[1] p-2 shadow-2xl menu menu-sm dropdown-content bg-card-bg rounded-2xl w-52 border border-white/5"),
+					Li(A(Class("rounded-xl"), Href(r.Path(routenames.Home)), Text("Account Settings"))),
+					Li(A(Class("rounded-xl text-danger"), Href(r.Path(routenames.Logout)), Text("Logout"))),
+				),
+			)),
+		),
+	)
 }
 
 func searchModal(r *ui.Request) Node {

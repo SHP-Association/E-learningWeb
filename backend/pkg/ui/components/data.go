@@ -53,17 +53,17 @@ func Divider(text string) Node {
 
 func Card(params CardParams) Node {
 	return Div(
-		Class("admin-card p-8 flex flex-col gap-6"),
+		Class("admin-card p-8 flex flex-col gap-8 h-full"),
 		If(len(params.Title) > 0, Div(
 			Class("flex items-center justify-between"),
 			H3(
-				Class("text-xs font-black uppercase tracking-ultra text-primary"),
+				Class("text-[11px] font-black uppercase tracking-ultra text-accent"),
 				Text(params.Title),
 			),
 		)),
-		Div(Class("flex-1 text-sm text-secondary-text leading-relaxed"), params.Body),
+		Div(Class("flex-1 text-sm text-secondary-text leading-relaxed font-medium"), params.Body),
 		If(params.Footer != nil, Div(
-			Class("pt-6 border-t border-white/5 flex justify-end gap-3"),
+			Class("pt-6 flex justify-end gap-3"),
 			params.Footer,
 		)),
 	)
@@ -75,22 +75,48 @@ func Stats(stats ...Stat) Node {
 		g = append(g, Div(
 			Class("admin-card p-8 flex items-center justify-between group hover:teal-lume"),
 			Div(
-				Class("flex flex-col gap-1"),
-				P(Class("text-[10px] font-black uppercase tracking-ultra text-secondary-text opacity-60"), Text(stat.Title)),
-				H3(Class("text-3xl font-black text-white tracking-tight"), Text(stat.Value)),
-				If(stat.Description != "", P(Class("text-[11px] text-secondary-text/60 mt-1"), Text(stat.Description))),
+				Class("flex flex-col gap-1.5"),
+				P(Class("text-[10px] font-black uppercase tracking-ultra text-secondary-text/60"), Text(stat.Title)),
+				H3(Class("text-4xl font-black text-white tracking-tight"), Text(stat.Value)),
+				If(stat.Description != "", P(Class("text-[11px] text-secondary-text/40 font-medium mt-1"), Text(stat.Description))),
 			),
 			Iff(stat.Icon != nil, func() Node {
 				return Div(
-					Class("w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary transition-all group-hover:scale-110 group-hover:bg-primary/10"),
+					Class("w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-accent/80 transition-all group-hover:scale-110 group-hover:bg-accent/10 group-hover:text-accent"),
 					stat.Icon,
 				)
 			}),
 		))
 	}
 	return Div(
-		Class("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12"),
+		Class("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"),
 		g,
+	)
+}
+
+func TopBar(userName string) Node {
+	return Div(
+		Class("flex items-center justify-between mb-12"),
+		// Search Pill
+		Div(
+			Class("search-pill flex items-center gap-3 w-80"),
+			Icon("MagnifyingGlass", "w-4 h-4 opacity-40"),
+			Input(
+				Type("text"),
+				Placeholder("Type to search..."),
+				Class("bg-transparent border-none outline-none flex-1 text-sm"),
+			),
+			Span(Class("text-[10px] font-bold opacity-30 px-1.5 py-0.5 rounded border border-white/10 uppercase"), Text("⌘K")),
+		),
+		// Profile Pill
+		Div(
+			Class("profile-pill"),
+			Div(
+				Class("w-7 h-7 rounded-lg bg-accent/20 p-0.5 border border-accent/30"),
+				Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed="+userName), Class("w-full h-full rounded")),
+			),
+			Span(Class("text-[12px] font-bold text-white"), Text(userName)),
+		),
 	)
 }
 
