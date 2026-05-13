@@ -16,12 +16,6 @@ func Login(ctx echo.Context, form *forms.Login) error {
 	return r.Render(layouts.Auth, form.Render(r))
 }
 
-func Register(ctx echo.Context, form *forms.Register) error {
-	r := ui.NewRequest(ctx)
-	r.Title = "Register"
-
-	return r.Render(layouts.Auth, form.Render(r))
-}
 
 func ForgotPassword(ctx echo.Context, form *forms.ForgotPassword) error {
 	r := ui.NewRequest(ctx)

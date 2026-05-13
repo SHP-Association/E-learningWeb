@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/ent"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/certificate"
@@ -38,24 +36,37 @@ func (h *Pages) Home(ctx echo.Context) error {
 	pgr := pager.NewPager(ctx, 4)
 
 	return pages.Home(ctx, &models.Posts{
-		Posts: h.fetchPosts(&pgr),
+		Posts: h.fetchPosts(ctx, &pgr),
 		Pager: pgr,
 	}, h.fetchDashboardStats(ctx))
 }
 
-// fetchPosts is a mock example of fetching posts to illustrate how paging works.
-func (h *Pages) fetchPosts(pager *pager.Pager) []models.Post {
-	pager.SetItems(20)
-	posts := make([]models.Post, 20)
+func (h *Pages) fetchPosts(ctx echo.Context, pgr *pager.Pager) []models.Post {
+	count, _ := h.container.ORM.Course.Query().Count(ctx.Request().Context())
+	pgr.SetItems(count)
 
-	for k := range posts {
-		posts[k] = models.Post{
-			ID:    k + 1,
-			Title: fmt.Sprintf("Post example #%d", k+1),
-			Body:  fmt.Sprintf("Lorem ipsum example #%d ddolor sit amet, consectetur adipiscing elit. Nam elementum vulputate tristique.", k+1),
+	courses, err := h.container.ORM.Course.
+		Query().
+		Limit(pgr.ItemsPerPage).
+		Offset(pgr.GetOffset()).
+		Order(ent.Desc("created_at")).
+		All(ctx.Request().Context())
+
+	if err != nil {
+		return nil
+	}
+
+	posts := make([]models.Post, len(courses))
+	for i, c := range courses {
+		posts[i] = models.Post{
+			ID:     c.ID,
+			Title:  c.Title,
+			Body:   c.ShortDescription,
+			Author: "Platform Instructor",
+			Date:   c.CreatedAt.Format("Jan 02, 2006"),
 		}
 	}
-	return posts[pager.GetOffset() : pager.GetOffset()+pager.ItemsPerPage]
+	return posts
 }
 
 func (h *Pages) fetchDashboardStats(ctx echo.Context) *models.DashboardStats {

@@ -78,6 +78,29 @@ func PremiumStyles() Node {
 			box-shadow: var(--shadow-lume) !important;
 			border-color: var(--color-accent) !important;
 		}
+		.yellow-lume {
+			box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.4) !important;
+			border-color: var(--color-brand-yellow) !important;
+		}
+
+		.btn-brand {
+			background: var(--color-accent) !important;
+			color: #ffffff !important;
+			font-family: 'Outfit', sans-serif !important;
+			font-weight: 700 !important;
+			text-transform: uppercase !important;
+			letter-spacing: 0.1em !important;
+			border: none !important;
+			border-radius: 14px !important;
+			transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+			box-shadow: 0 4px 12px var(--color-accent-muted) !important;
+		}
+		.btn-brand:hover {
+			filter: brightness(1.1) !important;
+			transform: translateY(-2px) !important;
+			box-shadow: 0 12px 24px -8px var(--color-accent) !important;
+		}
+		.btn-brand:active { transform: translateY(0) scale(0.96) !important; }
 
 		.btn-teal {
 			background: var(--color-accent) !important;

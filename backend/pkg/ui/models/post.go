@@ -1,10 +1,7 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/pager"
-	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui"
 	. "github.com/SHP-Association/E-learningWeb/backend/pkg/ui/components"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
@@ -19,6 +16,8 @@ type (
 	Post struct {
 		ID          int
 		Title, Body string
+		Author      string
+		Date        string
 	}
 )
 
@@ -30,37 +29,35 @@ func (p *Posts) Render(path string) Node {
 
 	return Div(
 		ID("posts"),
-		Ul(
-			Class("list bg-base-100 rounded-box shadow-md not-prose"),
-			g,
-		),
-		Div(Class("mb-4")),
+		Class("flex flex-col gap-4"),
+		g,
+		Div(Class("mt-8")),
 		Pager(p.Pager.Page, path, !p.Pager.IsEnd(), "#posts"),
 	)
 }
 
 func (p *Post) Render() Node {
-	return Li(
-		Class("list-row"),
+	return Div(
+		Class("bg-card-bg/30 border border-divider/40 rounded-3xl p-6 hover:bg-card-bg/50 transition-all group"),
 		Div(
-			Class("text-4xl font-thin opacity-30 tabular-nums"),
-			Text(fmt.Sprintf("%02d", p.ID)),
-		),
-		Div(
-			Img(
-				Class("size-10 rounded-box"),
-				Src(ui.StaticFile("gopher.png")),
-				Alt("Gopher"),
-			),
-		),
-		Div(
-			Class("list-col-grow"),
+			Class("flex items-start gap-6"),
 			Div(
-				Text(p.Title),
+				Class("w-12 h-12 rounded-2xl bg-accent/5 flex items-center justify-center text-accent group-hover:scale-110 transition-transform"),
+				Icon("Megaphone", "w-6 h-6"),
 			),
 			Div(
-				Class("text-xs font-semibold opacity-60"),
-				Text(p.Body),
+				Class("flex-1 min-w-0"),
+				Div(
+					Class("flex items-center justify-between mb-1"),
+					H3(Class("text-lg font-bold text-white truncate"), Text(p.Title)),
+					Span(Class("text-[10px] font-black uppercase tracking-widest text-secondary-text opacity-40"), Text(p.Date)),
+				),
+				P(Class("text-secondary-text text-sm leading-relaxed line-clamp-2"), Text(p.Body)),
+				Div(
+					Class("mt-4 flex items-center gap-3"),
+					Div(Class("w-5 h-5 rounded-full bg-divider/40")),
+					Span(Class("text-[11px] font-bold text-secondary-text/60"), Text(p.Author)),
+				),
 			),
 		),
 	)

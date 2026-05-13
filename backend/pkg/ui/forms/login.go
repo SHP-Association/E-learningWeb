@@ -41,24 +41,14 @@ func (f *Login) Render(r *ui.Request) Node {
 			Placeholder: "******",
 		}),
 		Div(
-			Class("text-right text-primary mt-2"),
+			Class("flex justify-between items-center mt-2 mb-6"),
 			A(
 				Href(r.Path(routenames.ForgotPassword)),
+				Class("text-[11px] font-bold text-accent hover:text-white transition-colors"),
 				Text("Forgot password?"),
 			),
 		),
-		ControlGroup(
-			FormButton(ColorPrimary, "Login"),
-			ButtonLink(ColorLink, r.Path(routenames.Home), "Cancel"),
-		),
+		FormButton(ColorPrimary, "Sign In"),
 		CSRF(r),
-		Div(
-			Class("text-center text-base-content/50 mt-4"),
-			Text("Don't have an account? "),
-			A(
-				Href(r.Path(routenames.Register)),
-				Text("Register"),
-			),
-		),
 	)
 }

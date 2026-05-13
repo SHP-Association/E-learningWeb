@@ -38,8 +38,8 @@ func (f *ResetPassword) Render(r *ui.Request) Node {
 			Label:       "Confirm password",
 			Placeholder: "******",
 		}),
-		ControlGroup(
-			FormButton(ColorPrimary, "Update password"),
+		Div(Class("mt-6"),
+			FormButton(ColorPrimary, "Update Password"),
 		),
 		CSRF(r),
 	)

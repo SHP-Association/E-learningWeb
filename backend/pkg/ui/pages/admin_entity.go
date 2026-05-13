@@ -33,8 +33,8 @@ func AdminEntityDelete(ctx echo.Context, entityType admin.EntityType) error {
 					CSRF(r),
 					Div(
 						Class("flex gap-3"),
-						Button(Type("submit"), Class("btn btn-error px-8"), Text("Delete")),
-						A(Href(r.Path(routenames.AdminEntityList(entityType.GetName()))), Class("btn btn-neutral px-8"), Text("Cancel")),
+						Button(Type("submit"), Class("btn btn-danger px-8 h-12 rounded-xl"), Text("Delete")),
+						A(Href(r.Path(routenames.AdminEntityList(entityType.GetName()))), Class("btn btn-neutral px-8 h-12 rounded-xl"), Text("Cancel")),
 					),
 				),
 			},
@@ -78,7 +78,7 @@ func AdminEntityInput(ctx echo.Context, entityType admin.EntityType, values url.
 			),
 			Button(
 				Type("submit"),
-				Class("btn btn-teal px-10 rounded-xl shadow-lg shadow-accent/20"),
+				Class("btn btn-brand px-10 h-12 rounded-xl shadow-lg shadow-accent/10"),
 				Text("Save Changes"),
 			),
 		),
@@ -242,7 +242,7 @@ func AdminEntityList(
 					Class("flex items-center gap-4"),
 					Button(
 						Type("button"),
-						Class("btn btn-teal px-6 h-11 rounded-2xl shadow-xl shadow-accent/15 text-sm transition-all hover:scale-105 active:scale-95"),
+						Class("btn btn-brand px-6 h-11 rounded-2xl shadow-xl shadow-accent/10 text-sm transition-all hover:scale-105 active:scale-95"),
 						Attr("hx-get", addURL),
 						Attr("hx-target", "#modal-form-body"),
 						Attr("onclick", "document.getElementById('admin-modal-container').classList.add('modal-open')"),

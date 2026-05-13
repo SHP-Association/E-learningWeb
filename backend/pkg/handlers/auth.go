@@ -15,7 +15,6 @@ import (
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/redirect"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
-	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/emails"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/forms"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/pages"
 	"github.com/go-playground/validator/v10"
@@ -48,8 +47,6 @@ func (h *Auth) Routes(g *echo.Group) {
 	noAuth := g.Group("/user", middleware.RequireNoAuthentication)
 	noAuth.GET("/login", h.LoginPage).Name = routenames.Login
 	noAuth.POST("/login", h.LoginSubmit).Name = routenames.LoginSubmit
-	noAuth.GET("/register", h.RegisterPage).Name = routenames.Register
-	noAuth.POST("/register", h.RegisterSubmit).Name = routenames.RegisterSubmit
 	noAuth.GET("/password", h.ForgotPasswordPage).Name = routenames.ForgotPassword
 	noAuth.POST("/password", h.ForgotPasswordSubmit).Name = routenames.ForgotPasswordSubmit
 
@@ -192,98 +189,6 @@ func (h *Auth) Logout(ctx echo.Context) error {
 		Go()
 }
 
-func (h *Auth) RegisterPage(ctx echo.Context) error {
-	return pages.Register(ctx, form.Get[forms.Register](ctx))
-}
-
-func (h *Auth) RegisterSubmit(ctx echo.Context) error {
-	var input forms.Register
-
-	err := form.Submit(ctx, &input)
-
-	switch err.(type) {
-	case nil:
-	case validator.ValidationErrors:
-		return h.RegisterPage(ctx)
-	default:
-		return err
-	}
-
-	// Attempt creating the user.
-	u, err := h.orm.User.
-		Create().
-		SetUsername(input.Name). // Using Name input as Username for compatibility
-		SetEmail(input.Email).
-		SetPassword(input.Password).
-		Save(ctx.Request().Context())
-
-	switch err.(type) {
-	case nil:
-		log.Ctx(ctx).Info("user created",
-			"user_name", u.Username,
-			"user_id", u.ID,
-		)
-	case *ent.ConstraintError:
-		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
-		return redirect.New(ctx).
-			Route(routenames.Login).
-			Go()
-	default:
-		return fail(err, "unable to create user")
-	}
-
-	// Log the user in.
-	err = h.auth.Login(ctx, u.ID)
-	if err != nil {
-		log.Ctx(ctx).Error("unable to log user in",
-			"error", err,
-			"user_id", u.ID,
-		)
-		msg.Info(ctx, "Your account has been created.")
-		return redirect.New(ctx).
-			Route(routenames.Login).
-			Go()
-	}
-
-	msg.Success(ctx, "Your account has been created. You are now logged in.")
-
-	// Send the verification email.
-	h.sendVerificationEmail(ctx, u)
-
-	return redirect.New(ctx).
-		Route(routenames.Home).
-		Go()
-}
-
-func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
-	// Generate a token.
-	token, err := h.auth.GenerateEmailVerificationToken(usr.Email)
-	if err != nil {
-		log.Ctx(ctx).Error("unable to generate email verification token",
-			"user_id", usr.ID,
-			"error", err,
-		)
-		return
-	}
-
-	// Send the email.
-	err = h.mail.
-		Compose().
-		To(usr.Email).
-		Subject("Confirm your email address").
-		Component(emails.ConfirmEmailAddress(ctx, usr.Username, token)).
-		Send(ctx)
-
-	if err != nil {
-		log.Ctx(ctx).Error("unable to send email verification link",
-			"user_id", usr.ID,
-			"error", err,
-		)
-		return
-	}
-
-	msg.Info(ctx, "An email was sent to you to verify your email address.")
-}
 
 func (h *Auth) ResetPasswordPage(ctx echo.Context) error {
 	return pages.ResetPassword(ctx, form.Get[forms.ResetPassword](ctx))

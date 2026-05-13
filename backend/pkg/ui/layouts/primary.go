@@ -51,9 +51,9 @@ func Primary(r *ui.Request, content Node) Node {
 						// Mobile Overlay button
 						Label(
 							For("sidebar"),
-							Class("btn btn-teal fixed bottom-6 right-6 lg:hidden shadow-2xl z-50 px-6"),
+							Class("btn btn-brand fixed bottom-6 right-6 lg:hidden shadow-2xl z-50 px-6"),
 							Group{
-								Icon("MagnifyingGlass", "w-5 h-5"),
+								Icon("Bars3", "w-5 h-5"),
 								Span(Class("ml-2"), Text("Menu")),
 							},
 						),
@@ -237,7 +237,11 @@ func sidebarMenu(r *ui.Request) Node {
 					Class("h-10 w-10 drop-shadow-glow transition-transform group-hover:rotate-6"),
 					Src(ui.StaticFile("logo.png")),
 				),
-				Span(Class("text-xl font-black tracking-tight text-white"), Text("SHP LMS")),
+				Div(
+					Class("flex flex-col"),
+					Span(Class("text-xl font-black tracking-tight text-white leading-none"), Text("SHP")),
+					Span(Class("text-[9px] font-black tracking-[0.2em] text-accent uppercase mt-1"), Text("LMS Admin")),
+				),
 			),
 			
 			// Main Navigation
@@ -286,7 +290,7 @@ func sidebarMenu(r *ui.Request) Node {
 							}
 							return nil
 						}(),
-						P(Class("text-[10px] font-bold text-primary tracking-widest uppercase"), Text(func() string {
+						P(Class("text-[10px] font-black text-accent tracking-[0.1em] uppercase"), Text(func() string {
 							if r.IsAdmin {
 								return "Administrator"
 							}
@@ -295,8 +299,7 @@ func sidebarMenu(r *ui.Request) Node {
 					),
 				)),
 				If(!r.IsAuth, Group{
-					ButtonLink(ColorPrimary, r.Path(routenames.Login), "Student Login"),
-					ButtonLink(ColorNeutral, r.Path(routenames.Register), "Create Account"),
+					ButtonLink(ColorPrimary, r.Path(routenames.Login), "Admin Access"),
 				}),
 			),
 		),

@@ -36,23 +36,36 @@ func ThemeStyles() Node {
 		@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 		:root {
-			/* Enhanced Original Dark Theme (Deep Blue / Teal) */
-			--color-page-bg: #0a1520;
-			--color-card-bg: #112132;
-			--color-card-border: #1a2c3f;
-			--color-accent: #00c4a0;
-			--color-accent-hover: #00e0b8;
-			--color-accent-muted: rgba(0, 196, 160, 0.1);
-			--color-primary-text: #ffffff;
-			--color-secondary-text: #94a3b8;
-			--color-tertiary-text: #64748b;
-			--color-divider: rgba(255, 255, 255, 0.08);
+			/* Zenith Premium Design System - Indigo & Slate */
+			--color-page-bg: #0b0f1a;
+			--color-card-bg: #161f31;
+			--color-card-border: rgba(255, 255, 255, 0.08);
+			
+			/* Accents & Tones */
+			--color-accent: #6366f1;           /* Indigo 500 */
+			--color-accent-hover: #4f46e5;     /* Indigo 600 */
+			--color-accent-muted: rgba(99, 102, 241, 0.15);
+			
+			--color-brand-yellow: #f59e0b;     /* Amber 500 (Refined) */
+			--color-brand-blue: #4f46e5;       /* Indigo 600 */
+			
+			--color-primary-text: #f1f5f9;     /* Slate 100 */
+			--color-secondary-text: #94a3b8;   /* Slate 400 */
+			--color-tertiary-text: #64748b;    /* Slate 500 */
+			
+			--color-divider: rgba(255, 255, 255, 0.06);
 			--color-zebra: rgba(255, 255, 255, 0.02);
 			--color-hover: rgba(255, 255, 255, 0.04);
-			--color-warning: #ffb432;
-			--color-danger: #ff5a5a;
-			--color-success: #00c4a0;
-			--color-info: #3b82f6;
+			
+			/* Semantic */
+			--color-warning: #f59e0b;
+			--color-danger: #ef4444;
+			--color-success: #10b981;
+			--color-info: #0ea5e9;
+			
+			/* Shell Gradients */
+			--ui-shell-start: #0b0f1a;
+			--ui-shell-end: #1e1b4b;           /* Deep Indigo */
 
 			/* Shadows */
 			--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -72,23 +85,25 @@ func ThemeStyles() Node {
 		}
 
 		[data-theme=light] {
-			/* Modern Slate & Lucid Teal Palette (Optimized for UX) */
-			--color-page-bg: #e2e8f0;
-			--color-card-bg: #f8fafc;
-			--color-card-border: #cbd5e1;
-			--color-accent: #14b8a6;
-			--color-accent-hover: #0d9488;
-			--color-accent-muted: rgba(20, 184, 166, 0.1);
+			/* SHP Light Brand Palette */
+			--color-page-bg: #f8fafc;
+			--color-card-bg: #ffffff;
+			--color-card-border: #e2e8f0;
+			--color-accent: #3b82f6;
+			--color-accent-hover: #2563eb;
+			--color-accent-muted: rgba(59, 130, 246, 0.1);
+			--color-brand-yellow: #facc15;
+			--color-brand-blue: #1e3a8a;
 			--color-primary-text: #0f172a;
 			--color-secondary-text: #475569;
 			--color-tertiary-text: #94a3b8;
 			--color-divider: rgba(15, 23, 42, 0.08);
-			--color-zebra: rgba(15, 23, 42, 0.03); 
-			--color-hover: rgba(15, 23, 42, 0.05);
-			--color-warning: #f59e0b;
-			--color-error: #ef4444;
+			--color-zebra: rgba(15, 23, 42, 0.02); 
+			--color-hover: rgba(15, 23, 42, 0.04);
+			--color-warning: #facc15;
+			--color-danger: #ef4444;
 			--color-success: #10b981;
-			--color-info: #6366f1;
+			--color-info: #3b82f6;
 
 			/* Refined Soft UI Shadows */
 			--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

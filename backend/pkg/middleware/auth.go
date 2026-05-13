@@ -86,7 +86,12 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 func RequireAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if u := c.Get(context.AuthenticatedUserKey); u == nil {
-			return echo.NewHTTPError(http.StatusUnauthorized)
+			// If it's an HTMX request, we should use the HX-Redirect header
+			if c.Request().Header.Get("HX-Request") != "" {
+				c.Response().Header().Set("HX-Redirect", c.Echo().Reverse(routenames.Login))
+				return c.NoContent(http.StatusOK)
+			}
+			return c.Redirect(http.StatusFound, c.Echo().Reverse(routenames.Login))
 		}
 
 		return next(c)
@@ -107,14 +112,23 @@ func RequireNoAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 // RequireAdmin requires that the authenticated user be an admin in order to proceed.
 func RequireAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		if u := c.Get(context.AuthenticatedUserKey); u != nil {
-			if user, ok := u.(*ent.User); ok {
-				if user.Admin {
-					return next(c)
-				}
+		u := c.Get(context.AuthenticatedUserKey)
+		if u == nil {
+			// Not authenticated, redirect to login
+			if c.Request().Header.Get("HX-Request") != "" {
+				c.Response().Header().Set("HX-Redirect", c.Echo().Reverse(routenames.Login))
+				return c.NoContent(http.StatusOK)
 			}
+			return c.Redirect(http.StatusFound, c.Echo().Reverse(routenames.Login))
 		}
 
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		user, ok := u.(*ent.User)
+		if ok && user.Admin {
+			return next(c)
+		}
+
+		// Authenticated but not an admin, redirect to home with a message
+		msg.Warning(c, "You do not have permission to access this page.")
+		return c.Redirect(http.StatusFound, c.Echo().Reverse(routenames.Home))
 	}
 }

@@ -11,8 +11,6 @@ const (
 	ContactSubmit        = "contact.submit"
 	Login                = "login"
 	LoginSubmit          = "login.submit"
-	Register             = "register"
-	RegisterSubmit       = "register.submit"
 	ForgotPassword       = "forgot_password"
 	ForgotPasswordSubmit = "forgot_password.submit"
 	Logout               = "logout"

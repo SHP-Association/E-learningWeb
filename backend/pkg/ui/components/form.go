@@ -441,9 +441,13 @@ func CSRF(r *ui.Request) Node {
 }
 
 func FormButton(color Color, label string) Node {
+	class := "btn btn-brand w-full mt-4 h-12"
+	if color == ColorError {
+		class = "btn btn-danger w-full mt-4 h-12"
+	}
 	return Button(
 		Type("submit"),
-		Class("btn btn-teal w-full mt-4"),
+		Class(class),
 		Text(label),
 	)
 }
