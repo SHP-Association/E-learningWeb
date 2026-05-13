@@ -7,6 +7,7 @@ import (
 	"github.com/SHP-Association/E-learningWeb/backend/ent/enrollment"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/user"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/context"
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/pager"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
@@ -28,8 +29,8 @@ func (h *Pages) Init(c *services.Container) error {
 }
 
 func (h *Pages) Routes(g *echo.Group) {
-	g.GET("/", h.Home).Name = routenames.Home
-	g.GET("/about", h.About).Name = routenames.About
+	g.GET("/", h.Home, middleware.RequireAuthentication).Name = routenames.Home
+	g.GET("/about", h.About, middleware.RequireAuthentication).Name = routenames.About
 }
 
 func (h *Pages) Home(ctx echo.Context) error {

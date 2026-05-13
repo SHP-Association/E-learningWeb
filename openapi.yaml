@@ -1,0 +1,872 @@
+openapi: 3.0.3
+info:
+  title: E-learning Web API
+  version: 1.0.0
+  description: |
+    OpenAPI specification generated from the current Go handlers under `backend/pkg/handlers`.
+    Authentication uses a session cookie set by the backend.
+servers:
+  - url: http://localhost:8000
+    description: Local backend
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Catalog
+  - name: LMS
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        '200':
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created and logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email or username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current user
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/categories:
+    get:
+      tags: [Catalog]
+      summary: List all categories
+      responses:
+        '200':
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '500':
+          description: Server error
+
+  /api/categories/{id}:
+    get:
+      tags: [Catalog]
+      summary: Get category by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/courses:
+    get:
+      tags: [Catalog]
+      summary: List all courses
+      responses:
+        '200':
+          description: Course list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+        '500':
+          description: Server error
+
+  /api/courses/{id}:
+    get:
+      tags: [Catalog]
+      summary: Get course by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/lessons/{id}:
+    get:
+      tags: [LMS]
+      summary: Get lesson by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lesson
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+        '404':
+          description: Lesson not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/quizzes/{id}:
+    get:
+      tags: [LMS]
+      summary: Get quiz with questions and choices
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Quiz
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+        '404':
+          description: Quiz not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/quizzes/{id}/submit:
+    post:
+      tags: [LMS]
+      summary: Submit quiz attempt
+      security:
+        - SessionCookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizSubmissionRequest'
+      responses:
+        '201':
+          description: Attempt created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserQuizAttempt'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+        '500':
+          description: Server error
+
+  /api/faqs:
+    get:
+      tags: [LMS]
+      summary: List published FAQs
+      responses:
+        '200':
+          description: FAQ list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FAQ'
+        '500':
+          description: Server error
+
+  /api/courses/{id}/reviews:
+    get:
+      tags: [LMS]
+      summary: List approved course reviews
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Review list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        '500':
+          description: Server error
+    post:
+      tags: [LMS]
+      summary: Submit course review
+      security:
+        - SessionCookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreateRequest'
+      responses:
+        '201':
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+        '500':
+          description: Server error
+
+  /api/enroll/{slug}:
+    post:
+      tags: [LMS]
+      summary: Enroll authenticated user in a course by slug
+      security:
+        - SessionCookieAuth: []
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Enrollment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentCreateResponse'
+        '401':
+          description: Authentication required
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Already enrolled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+
+  /api/profile:
+    get:
+      tags: [LMS]
+      summary: Get authenticated user profile (with enrollments)
+      security:
+        - SessionCookieAuth: []
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication required
+        '500':
+          description: Server error
+
+components:
+  securitySchemes:
+    SessionCookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: up
+      required: [status]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [email, password]
+
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required: [username, email, password]
+
+    AuthSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/PublicUser'
+      required: [message, user]
+
+    PublicUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+      required: [id, username, email, role]
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        image:
+          type: string
+          nullable: true
+      required: [id, name, slug]
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        short_description:
+          type: string
+        description:
+          type: string
+        what_you_will_learn:
+          type: string
+          nullable: true
+        requirements:
+          type: string
+          nullable: true
+        target_audience:
+          type: string
+          nullable: true
+        thumbnail:
+          type: string
+          nullable: true
+        promo_video_url:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: float
+        is_free:
+          type: boolean
+        is_published:
+          type: boolean
+        level:
+          type: string
+        duration:
+          type: string
+          nullable: true
+        total_lectures:
+          type: integer
+        average_rating:
+          type: number
+          format: float
+        number_of_reviews:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        edges:
+          type: object
+          properties:
+            instructor:
+              $ref: '#/components/schemas/User'
+            category:
+              $ref: '#/components/schemas/Category'
+            lessons:
+              type: array
+              items:
+                $ref: '#/components/schemas/Lesson'
+      required:
+        - id
+        - title
+        - slug
+        - short_description
+        - description
+        - price
+        - is_free
+        - is_published
+        - level
+        - total_lectures
+        - average_rating
+        - number_of_reviews
+        - created_at
+        - updated_at
+
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+          nullable: true
+        video_url:
+          type: string
+          nullable: true
+        order:
+          type: integer
+        is_preview:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        edges:
+          type: object
+          properties:
+            quizzes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Quiz'
+      required: [id, title, slug, order, is_preview, created_at, updated_at]
+
+    Quiz:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        passing_score:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        edges:
+          type: object
+          properties:
+            questions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Question'
+      required: [id, title, passing_score, created_at, updated_at]
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        question_text:
+          type: string
+        question_type:
+          type: string
+        order:
+          type: integer
+        edges:
+          type: object
+          properties:
+            choices:
+              type: array
+              items:
+                $ref: '#/components/schemas/AnswerChoice'
+      required: [id, question_text, question_type, order]
+
+    AnswerChoice:
+      type: object
+      properties:
+        id:
+          type: integer
+        choice_text:
+          type: string
+        is_correct:
+          type: boolean
+      required: [id, choice_text, is_correct]
+
+    FAQ:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+        is_published:
+          type: boolean
+        order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, question, answer, is_published, order, created_at, updated_at]
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        is_approved:
+          type: boolean
+        edges:
+          type: object
+          properties:
+            student:
+              $ref: '#/components/schemas/User'
+            course:
+              $ref: '#/components/schemas/Course'
+      required: [id, rating, created_at, is_approved]
+
+    ReviewCreateRequest:
+      type: object
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+      required: [rating]
+
+    Enrollment:
+      type: object
+      properties:
+        id:
+          type: integer
+        enrolled_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        progress:
+          type: number
+          format: float
+        is_completed:
+          type: boolean
+      required: [id, enrolled_at, progress, is_completed]
+
+    EnrollmentCreateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        enrollment:
+          $ref: '#/components/schemas/Enrollment'
+      required: [message, enrollment]
+
+    QuizSubmissionRequest:
+      type: object
+      properties:
+        answers:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Map of question ID to selected choice ID.
+      required: [answers]
+
+    UserQuizAttempt:
+      type: object
+      properties:
+        id:
+          type: integer
+        score:
+          type: number
+          format: float
+        passed:
+          type: boolean
+        attempt_number:
+          type: integer
+        submitted_at:
+          type: string
+          format: date-time
+      required: [id, score, passed, attempt_number, submitted_at]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+        bio:
+          type: string
+        profile_picture:
+          type: string
+        date_of_birth:
+          type: string
+          format: date-time
+          nullable: true
+        gender:
+          type: string
+        contact_number:
+          type: string
+        address:
+          type: string
+        country:
+          type: string
+        is_email_verified:
+          type: boolean
+        highest_qualification:
+          type: string
+        institution:
+          type: string
+        skills:
+          type: string
+        linkedin_profile:
+          type: string
+        github_profile:
+          type: string
+        instructor_rating:
+          type: number
+          format: float
+        total_reviews:
+          type: integer
+        is_active_user:
+          type: boolean
+        last_activity:
+          type: string
+          format: date-time
+          nullable: true
+        login_ip:
+          type: string
+        two_factor_enabled:
+          type: boolean
+        is_staff:
+          type: boolean
+        is_active:
+          type: boolean
+        is_superuser:
+          type: boolean
+        last_login:
+          type: string
+          format: date-time
+          nullable: true
+        date_joined:
+          type: string
+          format: date-time
+        verified:
+          type: boolean
+        admin:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        edges:
+          type: object
+          properties:
+            enrollments:
+              type: array
+              items:
+                $ref: '#/components/schemas/Enrollment'
+      required: [id, username, email, role]

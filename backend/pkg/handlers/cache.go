@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/form"
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/forms"
@@ -26,8 +27,8 @@ func (h *Cache) Init(c *services.Container) error {
 }
 
 func (h *Cache) Routes(g *echo.Group) {
-	g.GET("/cache", h.Page).Name = routenames.Cache
-	g.POST("/cache", h.Submit).Name = routenames.CacheSubmit
+	g.GET("/cache", h.Page, middleware.RequireAdmin).Name = routenames.Cache
+	g.POST("/cache", h.Submit, middleware.RequireAdmin).Name = routenames.CacheSubmit
 }
 
 func (h *Cache) Page(ctx echo.Context) error {

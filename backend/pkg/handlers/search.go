@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/labstack/echo/v4"
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/models"
@@ -22,7 +23,7 @@ func (h *Search) Init(c *services.Container) error {
 }
 
 func (h *Search) Routes(g *echo.Group) {
-	g.GET("/search", h.Page).Name = routenames.Search
+	g.GET("/search", h.Page, middleware.RequireAuthentication).Name = routenames.Search
 }
 
 func (h *Search) Page(ctx echo.Context) error {

@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/form"
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/forms"
@@ -26,8 +27,8 @@ func (h *Contact) Init(c *services.Container) error {
 }
 
 func (h *Contact) Routes(g *echo.Group) {
-	g.GET("/contact", h.Page).Name = routenames.Contact
-	g.POST("/contact", h.Submit).Name = routenames.ContactSubmit
+	g.GET("/contact", h.Page, middleware.RequireAuthentication).Name = routenames.Contact
+	g.POST("/contact", h.Submit, middleware.RequireAuthentication).Name = routenames.ContactSubmit
 }
 
 func (h *Contact) Page(ctx echo.Context) error {

@@ -13,6 +13,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/form"
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/tasks"
 )
@@ -31,8 +32,8 @@ func (h *Task) Init(c *services.Container) error {
 }
 
 func (h *Task) Routes(g *echo.Group) {
-	g.GET("/task", h.Page).Name = routenames.Task
-	g.POST("/task", h.Submit).Name = routenames.TaskSubmit
+	g.GET("/task", h.Page, middleware.RequireAdmin).Name = routenames.Task
+	g.POST("/task", h.Submit, middleware.RequireAdmin).Name = routenames.TaskSubmit
 }
 
 func (h *Task) Page(ctx echo.Context) error {

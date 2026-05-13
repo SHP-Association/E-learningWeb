@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/msg"
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/middleware"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/routenames"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/services"
 	"github.com/SHP-Association/E-learningWeb/backend/pkg/ui/models"
@@ -28,8 +29,8 @@ func (h *Files) Init(c *services.Container) error {
 }
 
 func (h *Files) Routes(g *echo.Group) {
-	g.GET("/files", h.Page).Name = routenames.Files
-	g.POST("/files", h.Submit).Name = routenames.FilesSubmit
+	g.GET("/files", h.Page, middleware.RequireAdmin).Name = routenames.Files
+	g.POST("/files", h.Submit, middleware.RequireAdmin).Name = routenames.FilesSubmit
 }
 
 func (h *Files) Page(ctx echo.Context) error {
