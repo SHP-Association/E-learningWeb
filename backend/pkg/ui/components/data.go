@@ -73,7 +73,7 @@ func Stats(stats ...Stat) Node {
 	g := make(Group, 0, len(stats))
 	for _, stat := range stats {
 		g = append(g, Div(
-			Class("admin-card p-8 flex items-center justify-between group"),
+			Class("admin-card p-8 flex items-center justify-between group hover:teal-lume"),
 			Div(
 				Class("flex flex-col gap-1"),
 				P(Class("text-[10px] font-black uppercase tracking-ultra text-secondary-text opacity-60"), Text(stat.Title)),
@@ -91,5 +91,25 @@ func Stats(stats ...Stat) Node {
 	return Div(
 		Class("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12"),
 		g,
+	)
+}
+
+func AlertBox(color Color, text string) Node {
+	var class string
+	switch color {
+	case ColorWarning:
+		class = "bg-amber-500/10 text-amber-500 border-amber-500/20"
+	case ColorError:
+		class = "bg-rose-500/10 text-rose-500 border-rose-500/20"
+	case ColorSuccess:
+		class = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+	default:
+		class = "bg-blue-500/10 text-blue-500 border-blue-500/20"
+	}
+
+	return Div(
+		Class("p-4 rounded-xl border flex gap-4 items-center "+class),
+		Icon("Info", "w-5 h-5 flex-shrink-0"),
+		Span(Class("text-[13px] font-medium"), Text(text)),
 	)
 }

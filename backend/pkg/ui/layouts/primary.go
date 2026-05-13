@@ -17,12 +17,15 @@ func Primary(r *ui.Request, content Node) Node {
 			Lang("en"),
 			Data("theme", "dark"),
 			Head(
+				ThemeInitScript(),
 				Metatags(r),
 				CSS(),
 				JS(),
+				ThemeStyles(),
+				PremiumStyles(),
 			),
 			Body(
-				Class("bg-[#0a1520] font-inter text-[#ffffff] selection:bg-primary/30"),
+				Class("bg-[var(--color-page-bg)] font-inter text-[var(--color-primary-text)] selection:bg-primary/30 transition-colors duration-400"),
 				Div(
 					Class("drawer lg:drawer-open"),
 					Input(
@@ -39,10 +42,9 @@ func Primary(r *ui.Request, content Node) Node {
 						Main(
 							Class("flex-1 p-8 sm:p-12 page-transition prose-base flex flex-col"),
 							If(len(r.Title) > 0, H1(
-								Class("text-4xl font-black tracking-tight mb-10 text-white border-b border-white/5 pb-6"), 
+								Class("text-4xl font-black tracking-tight mb-10 text-white border-b border-divider pb-6"), 
 								Text(r.Title),
 							)),
-							FlashMessages(r),
 							content,
 						),
 						
@@ -51,15 +53,34 @@ func Primary(r *ui.Request, content Node) Node {
 							For("sidebar"),
 							Class("btn btn-teal fixed bottom-6 right-6 lg:hidden shadow-2xl z-50 px-6"),
 							Group{
-								icons.MagnifyingGlass(),
+								Icon("MagnifyingGlass", "w-5 h-5"),
 								Span(Class("ml-2"), Text("Menu")),
 							},
 						),
 					),
 					sidebarMenu(r),
 				),
-				searchModal(r),
+				AlertContainer(),
+				AlertJS(),
+				FormScripts(),
+				FlashMessages(r),
 				HtmxListeners(r),
+				searchModal(r),
+				
+				// Global Modal Body for Admin Forms
+				Div(
+					ID("admin-modal-container"),
+					Class("modal z-50"),
+					Div(
+						Class("modal-box max-w-2xl bg-card-bg border border-divider p-0 overflow-hidden rounded-3xl shadow-2xl"),
+						Div(
+							ID("modal-form-body"),
+							Class("max-h-[85vh] overflow-y-auto custom-scrollbar flex flex-col"),
+							Div(Class("flex justify-center py-10"), Span(Class("loading loading-spinner loading-lg text-primary"))),
+						),
+					),
+					Div(Class("modal-backdrop backdrop-blur-md bg-page-bg/40"), Attr("onclick", "document.getElementById('admin-modal-container').classList.remove('modal-open')")),
+				),
 			),
 		),
 	)
@@ -75,6 +96,7 @@ func navbar(r *ui.Request) Node {
 			),
 			Div(
 				Class("flex-none gap-4"),
+				ThemeToggle(),
 				search(),
 				// User Profile
 				If(r.IsAuth, Div(
@@ -85,9 +107,19 @@ func navbar(r *ui.Request) Node {
 						Class("flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"),
 						Div(
 							Class("w-8 h-8 rounded-xl overflow-hidden shadow-glow"),
-							Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed="+r.AuthUser.Username)),
+							func() Node {
+								if r.AuthUser != nil {
+									return Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed=" + r.AuthUser.Username))
+								}
+								return nil
+							}(),
 						),
-						Span(Class("text-xs font-bold text-white"), Text(r.AuthUser.Username)),
+						func() Node {
+							if r.AuthUser != nil {
+								return Span(Class("text-xs font-bold text-white"), Text(r.AuthUser.Username))
+							}
+							return nil
+						}(),
 					),
 					Ul(
 						TabIndex("0"),
@@ -239,11 +271,21 @@ func sidebarMenu(r *ui.Request) Node {
 					Class("flex items-center gap-3 px-2"),
 					Div(
 						Class("avatar"),
-						Div(Class("w-10 h-10 rounded-2xl bg-primary/20 p-0.5"), Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed="+r.AuthUser.Username))),
+						Div(Class("w-10 h-10 rounded-2xl bg-primary/20 p-0.5"), func() Node {
+							if r.AuthUser != nil {
+								return Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed=" + r.AuthUser.Username))
+							}
+							return nil
+						}()),
 					),
 					Div(
 						Class("flex-1"),
-						P(Class("text-[13px] font-black text-white truncate"), Text(r.AuthUser.Username)),
+						func() Node {
+							if r.AuthUser != nil {
+								return P(Class("text-[13px] font-black text-white truncate"), Text(r.AuthUser.Username))
+							}
+							return nil
+						}(),
 						P(Class("text-[10px] font-bold text-primary tracking-widest uppercase"), Text(func() string {
 							if r.IsAdmin {
 								return "Administrator"

@@ -16,12 +16,12 @@ import (
 // BuildRouter builds the router.
 func BuildRouter(c *services.Container) error {
 	// Force HTTPS, if enabled.
-	if c.Config.HTTP.TLS.Enabled {
+	if c.Config.HTTP.TLSEnabled {
 		c.Web.Use(echomw.HTTPSRedirect())
 	}
 
 	// Serve public files with cache control.
-	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.PublicFile)).
+	c.Web.Group("", middleware.CacheControl(c.Config.Cache.ExpirationPublicFile)).
 		Static("files", "public/files")
 
 	// Serve static files.
@@ -42,7 +42,7 @@ func BuildRouter(c *services.Container) error {
 				return true
 			},
 		}),
-		middleware.CacheControl(c.Config.Cache.Expiration.PublicFile),
+		middleware.CacheControl(c.Config.Cache.ExpirationPublicFile),
 	).StaticFS("static", echo.MustSubFS(files.Static, "static"))
 
 	// Non-static file route group.

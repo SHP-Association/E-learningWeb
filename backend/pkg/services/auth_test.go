@@ -54,7 +54,7 @@ func TestAuthClient_CheckPassword(t *testing.T) {
 func TestAuthClient_GeneratePasswordResetToken(t *testing.T) {
 	token, pt, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
 	require.NoError(t, err)
-	assert.Len(t, token, c.Config.App.PasswordToken.Length)
+	assert.Len(t, token, c.Config.App.PasswordTokenLength)
 	assert.NoError(t, c.Auth.CheckPassword(token, pt.Token))
 }
 
@@ -73,7 +73,7 @@ func TestAuthClient_GetValidPasswordToken(t *testing.T) {
 	// Expire the token by pushing the date far enough back
 	count, err := c.ORM.PasswordToken.
 		Update().
-		SetCreatedAt(time.Now().Add(-(c.Config.App.PasswordToken.Expiration + time.Hour))).
+		SetCreatedAt(time.Now().Add(-(c.Config.App.PasswordTokenExpiration + time.Hour))).
 		Where(passwordtoken.ID(pt.ID)).
 		Save(context.Background())
 	require.NoError(t, err)
@@ -106,7 +106,7 @@ func TestAuthClient_DeletePasswordTokens(t *testing.T) {
 }
 
 func TestAuthClient_RandomToken(t *testing.T) {
-	length := c.Config.App.PasswordToken.Length
+	length := c.Config.App.PasswordTokenLength
 	a, err := c.Auth.RandomToken(length)
 	require.NoError(t, err)
 	b, err := c.Auth.RandomToken(length)

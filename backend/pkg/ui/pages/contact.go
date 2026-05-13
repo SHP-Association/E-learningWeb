@@ -12,29 +12,36 @@ import (
 
 func ContactUs(ctx echo.Context, form *forms.Contact) error {
 	r := ui.NewRequest(ctx)
-	r.Title = "Contact us"
-	r.Metatags.Description = "Get in touch with us."
+	r.Title = "Get in Touch"
+	r.Metatags.Description = "Have questions? We're here to help."
 
 	g := Group{
 		Iff(r.Htmx.Target != "contact", func() Node {
 			return Card(CardParams{
-				Title: "Card component",
+				Title: "Contact Information",
 				Body: Group{
-					Span(Text("This is an example of a form with inline, server-side validation and HTMX-powered AJAX submissions without writing a single line of JavaScript.")),
-					Span(Text("Only the form below will update async upon submission.")),
+					P(Class("text-secondary-text mb-4"), Text("Use the form below to send us a message. Our team typically responds within 24 hours.")),
+					Div(
+						Class("flex flex-col gap-4 mt-8"),
+						Div(
+							Class("flex items-center gap-4"),
+							Div(Class("w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent"), Icon("Mail", "w-5 h-5")),
+							Div(
+								Class("flex flex-col"),
+								Span(Class("text-xs font-black uppercase tracking-widest text-secondary-text"), Text("Email")),
+								Span(Class("text-sm font-bold"), Text("support@shpassociation.org")),
+							),
+						),
+					),
 				},
-				Color: ColorWarning,
-				Size:  SizeMedium,
 			})
 		}),
 		Iff(form.IsDone(), func() Node {
 			return Card(CardParams{
-				Title: "Thank you!",
+				Title: "Message Received",
 				Body: Group{
-					Span(Text("No email was actually sent but this entire operation was handled server-side and degrades without JavaScript enabled.")),
+					P(Class("text-secondary-text"), Text("Thank you for your message! We've received your inquiry and will get back to you shortly.")),
 				},
-				Color: ColorSuccess,
-				Size:  SizeLarge,
 			})
 		}),
 		Iff(!form.IsDone(), func() Node {

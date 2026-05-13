@@ -117,7 +117,7 @@ func (c *AuthClient) CheckPassword(password, hash string) error {
 // the generated token and the token entity which only contains the hash.
 func (c *AuthClient) GeneratePasswordResetToken(ctx echo.Context, userID int) (string, *ent.PasswordToken, error) {
 	// Generate the token, which is what will go in the URL, but not the database
-	token, err := c.RandomToken(c.config.App.PasswordToken.Length)
+	token, err := c.RandomToken(c.config.App.PasswordTokenLength)
 	if err != nil {
 		return "", nil, err
 	}
@@ -137,7 +137,7 @@ func (c *AuthClient) GeneratePasswordResetToken(ctx echo.Context, userID int) (s
 // found a hash of the provided token is compared with the hash stored in the database in order to validate.
 func (c *AuthClient) GetValidPasswordToken(ctx echo.Context, userID, tokenID int, token string) (*ent.PasswordToken, error) {
 	// Ensure expired tokens are never returned
-	expiration := time.Now().Add(-c.config.App.PasswordToken.Expiration)
+	expiration := time.Now().Add(-c.config.App.PasswordTokenExpiration)
 
 	// Query to find a password token entity that matches the given user and token ID
 	pt, err := c.orm.PasswordToken.

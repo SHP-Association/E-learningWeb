@@ -4,3 +4,5 @@ uploads
 tmp
 tailwindcss
 daisyui*
+# Local backend runtime config (generated)
+config/config.yaml

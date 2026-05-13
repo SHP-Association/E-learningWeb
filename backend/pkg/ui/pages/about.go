@@ -12,50 +12,45 @@ import (
 
 func About(ctx echo.Context) error {
 	r := ui.NewRequest(ctx)
-	r.Title = "About"
-	r.Metatags.Description = "Learn a little about what's included in Pagoda."
+	r.Title = "About SHP LMS"
+	r.Metatags.Description = "Learn about the technology powering the SHP E-learning platform."
 
-	// The tabs are static, so we can render and cache them.
-	tabs := cache.SetIfNotExists("pages.about.Tabs", func() Node {
-		return Group{
-			H2(Text("Frontend")),
-			P(Text("The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.")),
-			Tabs(
-				[]Tab{
-					{
-						Title: "HTMX",
-						Body:  "Completes HTML as a hypertext by providing attributes to AJAXify anything and much more. Visit <a href=\"https://htmx.org/\">htmx.org</a> to learn more.",
-					},
-					{
-						Title: "Alpine.js",
-						Body:  "Drop-in, Vue-like functionality written directly in your markup. Visit <a href=\"https://alpinejs.dev/\">alpinejs.dev</a> to learn more.",
-					},
-					{
-						Title: "DaisyUI",
-						Body:  "DaisyUI is the Tailwind CSS plugin you will love! It provides useful component class names to help you write less code and build faster. No JavaScript requirements. Visit <a href=\"https://daisyui.com/\">daisyui.com</a> to learn more.",
-					},
+	content := cache.SetIfNotExists("pages.about.Content", func() Node {
+		return Div(
+			Class("flex flex-col gap-12"),
+			Card(CardParams{
+				Title: "Our Mission",
+				Body: Group{
+					P(Class("text-secondary-text leading-relaxed"), Text("The SHP E-learning Platform is dedicated to providing high-quality, accessible education through a modern, high-performance web experience. Our goal is to empower learners with the tools they need to succeed in their academic and professional journeys.")),
 				},
+			}),
+			Div(
+				Class("grid lg:grid-cols-2 gap-8"),
+				Card(CardParams{
+					Title: "Frontend Excellence",
+					Body: Group{
+						P(Class("text-secondary-text text-sm mb-6"), Text("We use cutting-edge technologies to deliver a zero-refresh, fluid interface.")),
+						Tabs([]Tab{
+							{Title: "HTMX", Body: "Powers our dynamic, server-driven UI updates without the complexity of heavy JS frameworks."},
+							{Title: "Alpine.js", Body: "Provides lightweight client-side interactions and state management."},
+							{Title: "Vanilla CSS", Body: "Custom-crafted OKLAB-based design system for maximum performance and visual fidelity."},
+						}),
+					},
+				}),
+				Card(CardParams{
+					Title: "Backend Reliability",
+					Body: Group{
+						P(Class("text-secondary-text text-sm mb-6"), Text("Our core is built on Go, ensuring top-tier performance and safety.")),
+						Tabs([]Tab{
+							{Title: "Echo", Body: "A high-performance, minimalist Go web framework that handles our routing and middleware."},
+							{Title: "Ent", Body: "An entity framework that provides a type-safe and powerful way to interact with our database."},
+							{Title: "Gomponents", Body: "Allows us to build our UI entirely in Go, ensuring type safety from backend to frontend."},
+						}),
+					},
+				}),
 			),
-			H2(Text("Backend")),
-			P(Text("The following incredible projects provide the foundation of the Go backend. See the repository for a complete list of included projects.")),
-			Tabs(
-				[]Tab{
-					{
-						Title: "Echo",
-						Body:  "High performance, extensible, minimalist Go web framework. Visit <a href=\"https://echo.labstack.com/\">echo.labstack.com</a> to learn more.",
-					},
-					{
-						Title: "Ent",
-						Body:  "Simple, yet powerful ORM for modeling and querying data. Visit <a href=\"https://entgo.io/\">entgo.io</a> to learn more.",
-					},
-					{
-						Title: "Gomponents",
-						Body:  "HTML components written in pure Go. They render to HTML 5, and make it easy for you to build reusable components. Visit <a href=\"https://gomponents.com/\">gomponents.com</a> to learn more.",
-					},
-				},
-			),
-		}
+		)
 	})
 
-	return r.Render(layouts.Primary, tabs)
+	return r.Render(layouts.Primary, content)
 }

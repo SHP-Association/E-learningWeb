@@ -10,13 +10,13 @@ import (
 	"strings"
 
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/SHP-Association/E-learningWeb/backend/config"
+	"github.com/SHP-Association/E-learningWeb/backend/ent"
+	"github.com/SHP-Association/E-learningWeb/backend/pkg/log"
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/backlite"
-	"github.com/SHP-Association/E-learningWeb/backend/config"
-	"github.com/SHP-Association/E-learningWeb/backend/ent"
-	"github.com/SHP-Association/E-learningWeb/backend/pkg/log"
 	"github.com/spf13/afero"
 
 	"github.com/SHP-Association/E-learningWeb/backend/ent/hook"
@@ -112,7 +112,12 @@ func (c *Container) initConfig() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
+
 	c.Config = &cfg
+
+	if err := config.GenerateConfigYAML("config/config.yaml"); err != nil {
+		panic(fmt.Sprintf("failed to generate config.yaml: %v", err))
+	}
 
 	// Configure logging.
 	switch cfg.App.Environment {

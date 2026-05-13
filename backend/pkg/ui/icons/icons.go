@@ -241,3 +241,59 @@ func icon(id string, els ...Node) Node {
 		)
 	})
 }
+
+// Icon renders an icon by its name.
+func Icon(name, class string) Node {
+	var node Node
+	switch name {
+	case "CircleStack":
+		node = CircleStack()
+	case "Eyes":
+		node = Eyes()
+	case "UserCircle":
+		node = UserCircle()
+	case "Globe":
+		node = Globe()
+	case "Home":
+		node = Home()
+	case "Info":
+		node = Info()
+	case "Mail":
+		node = Mail()
+	case "Archive":
+		node = Archive()
+	case "PencilSquare":
+		node = PencilSquare()
+	case "Document":
+		node = Document()
+	case "Exit":
+		node = Exit()
+	case "Enter":
+		node = Enter()
+	case "UserPlus":
+		node = UserPlus()
+	case "QuestionCircle":
+		node = QuestionCircle()
+	case "XCircle":
+		node = XCircle()
+	case "MagnifyingGlass":
+		node = MagnifyingGlass()
+	case "LockClosed":
+		node = LockClosed()
+	case "Star":
+		node = Star()
+	case "Clock":
+		node = Clock()
+	case "CheckCircle":
+		node = CheckCircle()
+	case "AcademicCap":
+		node = AcademicCap()
+	default:
+		return nil
+	}
+
+	if class != "" {
+		return Div(Class(class), node)
+	}
+	return node
+}
