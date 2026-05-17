@@ -37,6 +37,11 @@ func PremiumStyles() Node {
 			--page-bg: var(--color-page-bg);
 			--card-bg: var(--color-card-bg);
 			--table-bg: var(--color-card-bg);
+			
+			/* Define premium default (dark mode) zebra & hover */
+			--color-zebra: rgba(255, 255, 255, 0.015);
+			--color-hover: rgba(255, 255, 255, 0.04);
+			
 			--table-zebra: var(--color-zebra);
 			--table-hover: var(--color-hover);
 			--accent: var(--color-accent);
@@ -51,6 +56,19 @@ func PremiumStyles() Node {
 			/* Premium Elevation Tokens */
 			--shadow-lume: 0 0 20px -5px var(--accent-glow);
 			--glass-border: color-mix(in oklab, var(--color-divider) 50%, transparent);
+			
+			/* Theme-Responsive Form Inputs */
+			--input-bg: rgba(0, 0, 0, 0.25);
+			--input-border: rgba(255, 255, 255, 0.08);
+			--input-border-hover: rgba(255, 255, 255, 0.16);
+		}
+		
+		[data-theme=light] {
+			--color-zebra: rgba(15, 23, 42, 0.02) !important;
+			--color-hover: rgba(15, 23, 42, 0.04) !important;
+			--input-bg: rgba(15, 23, 42, 0.035) !important;
+			--input-border: rgba(15, 23, 42, 0.1) !important;
+			--input-border-hover: rgba(15, 23, 42, 0.2) !important;
 		}
 		
 		.glass-frost {
@@ -86,40 +104,58 @@ func PremiumStyles() Node {
 		.btn-brand {
 			background: var(--color-accent) !important;
 			color: #ffffff !important;
-			font-family: 'Inter', sans-serif !important;
+			font-family: var(--font-main) !important;
 			font-weight: 700 !important;
 			border: none !important;
-			border-radius: 9999px !important;
+			border-radius: 14px !important;
 			transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
 			box-shadow: 0 4px 12px var(--color-accent-muted) !important;
 		}
 		.btn-brand:hover {
 			filter: brightness(1.1) !important;
-			transform: translateY(-1px) !important;
+			transform: translateY(-2px) !important;
 			box-shadow: 0 8px 20px -5px var(--color-accent-muted) !important;
 		}
-		.btn-brand:active { transform: translateY(0) scale(0.98) !important; }
+		.btn-brand:active { transform: translateY(0) scale(0.96) !important; }
 
 		.admin-form-input {
-			background: rgba(255, 255, 255, 0.03) !important;
-			border: 1px solid rgba(255, 255, 255, 0.08) !important;
-			border-radius: 12px !important;
-			color: #ffffff !important;
-			padding: 0.75rem 1rem !important;
 			width: 100% !important;
-			transition: all 0.3s ease !important;
+			background: var(--input-bg) !important;
+			border: 1.5px solid var(--input-border) !important;
+			padding: 12px 16px !important;
+			border-radius: 14px !important;
+			color: var(--color-primary-text) !important;
+			font-size: 13px !important;
+			transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+			outline: none !important;
+			box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05) !important;
+		}
+		.admin-form-input:hover {
+			border-color: var(--input-border-hover) !important;
+			background: var(--input-bg) !important;
 		}
 		.admin-form-input:focus {
 			border-color: var(--color-accent) !important;
-			background: rgba(255, 255, 255, 0.05) !important;
-			outline: none !important;
-			box-shadow: 0 0 0 4px var(--color-accent-muted) !important;
+			background: var(--color-card-bg) !important;
+			box-shadow: 0 0 0 4px var(--accent-soft) !important;
+		}
+
+		.flex-col.gap-1\.5 label {
+			font-family: 'Poppins', sans-serif !important;
+			font-size: 13px !important;
+			font-weight: 600 !important;
+			color: var(--color-secondary-text) !important;
+			letter-spacing: 0.015em !important;
+			transition: color 0.2s ease !important;
+		}
+		.flex-col.gap-1\.5:focus-within label {
+			color: var(--color-accent) !important;
 		}
 
 		.btn-teal {
 			background: var(--color-accent) !important;
 			color: #ffffff !important;
-			font-family: 'Outfit', sans-serif !important;
+			font-family: var(--font-main) !important;
 			font-weight: 700 !important;
 			text-transform: uppercase !important;
 			letter-spacing: 0.1em !important;
@@ -138,7 +174,7 @@ func PremiumStyles() Node {
 		.btn-danger {
 			background: var(--danger) !important;
 			color: #ffffff !important;
-			font-family: 'Outfit', sans-serif !important;
+			font-family: var(--font-main) !important;
 			font-weight: 700 !important;
 			text-transform: uppercase !important;
 			letter-spacing: 0.1em !important;
@@ -188,6 +224,37 @@ func PremiumStyles() Node {
 		.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
 
 		/* Improved Table Sticky Logic - GUARANTEED OPAQUE */
+		.sticky-column-left {
+			position: sticky !important;
+			left: 0 !important;
+			z-index: 20 !important;
+			background-color: var(--color-card-bg) !important;
+			box-shadow: 12px 0 16px -8px rgba(0,0,0,0.3) !important;
+			transition: all 0.3s ease !important;
+			opacity: 1 !important;
+			backdrop-filter: none !important;
+		}
+		.sticky-column-left::before {
+			content: "" !important;
+			position: absolute !important;
+			inset: 0 !important;
+			z-index: -1 !important;
+			background-color: var(--color-card-bg) !important;
+		}
+		.admin-table tr:nth-child(even) .sticky-column-left { 
+			background-color: var(--color-card-bg) !important;
+			background-image: linear-gradient(var(--color-zebra), var(--color-zebra)) !important;
+		}
+		.admin-table tr:hover .sticky-column-left { 
+			background-color: var(--color-card-bg) !important;
+			background-image: linear-gradient(var(--color-hover), var(--color-hover)) !important;
+		}
+		thead th.sticky-column-left { 
+			background-color: var(--color-card-bg) !important;
+			z-index: 30 !important; 
+			opacity: 1 !important;
+		}
+
 		.sticky-column-right {
 			position: sticky !important;
 			right: 0 !important;
@@ -217,6 +284,30 @@ func PremiumStyles() Node {
 			background-color: var(--color-card-bg) !important;
 			z-index: 30 !important; 
 			opacity: 1 !important;
+		}
+		
+		.admin-table {
+			width: 100%;
+			border-collapse: separate !important;
+			border-spacing: 0 !important;
+		}
+		.admin-table th {
+			background-color: var(--color-card-bg) !important;
+			color: var(--color-secondary-text) !important;
+			font-weight: 700 !important;
+			font-size: 11px !important;
+			text-transform: uppercase !important;
+			letter-spacing: 0.1em !important;
+			padding: 16px 24px !important;
+			border-bottom: 1.5px solid var(--color-divider) !important;
+			white-space: nowrap !important;
+		}
+		.admin-table td {
+			padding: 16px 24px !important;
+			color: var(--color-primary-text) !important;
+			font-size: 13px !important;
+			border-bottom: 1px solid var(--color-divider) !important;
+			white-space: nowrap !important;
 		}
 		
 		.admin-table-container {
@@ -263,22 +354,7 @@ func PremiumStyles() Node {
 		.table-scroll-btn-left  { left:  -16px; }
 		.table-scroll-btn-right { right: -16px; }
 
-		.admin-form-input {
-			width: 100%;
-			background: var(--color-card-bg) !important;
-			border: 1.5px solid var(--color-card-border) !important;
-			padding: 12px 16px !important;
-			border-radius: 14px !important;
-			color: var(--color-primary-text) !important;
-			font-size: 13px !important;
-			transition: all 0.3s ease !important;
-			outline: none !important;
-			box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.03) !important;
-		}
-		.admin-form-input:focus {
-			border-color: var(--color-accent) !important;
-			box-shadow: 0 0 0 4px var(--accent-soft) !important;
-		}
+		/* Overridden by the main definition above */
 		
 		.admin-form-section-header {
 			display: flex;
@@ -287,7 +363,7 @@ func PremiumStyles() Node {
 			margin-bottom: 24px;
 		}
 		.admin-form-section-title {
-			font-family: 'Outfit', sans-serif;
+			font-family: var(--font-main);
 			font-size: 11px;
 			font-weight: 800;
 			text-transform: uppercase;

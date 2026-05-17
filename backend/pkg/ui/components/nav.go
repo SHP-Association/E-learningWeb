@@ -47,7 +47,7 @@ func MenuLink(r *ui.Request, icon Node, title, routeName string, routeParams ...
 			Class("sidebar-link flex items-center gap-3 p-2.5 rounded-lg transition-all active:scale-95"),
 			Classes{
 				"active": isActive,
-				"text-secondary-text hover:text-white": !isActive,
+				"text-secondary-text hover:text-[var(--color-primary-text)]": !isActive,
 			},
 			
 			Span(Class("flex items-center justify-center w-5"), icon),
@@ -85,10 +85,10 @@ func Pager(page int, path string, hasNext bool, hxTarget string) Node {
 		)
 	}
 
-	btnClass := "btn h-10 min-h-0 bg-white/5 border border-white/5 hover:bg-primary/10 hover:border-primary/30 text-secondary-text rounded-xl transition-all active:scale-95 shadow-sm no-underline flex items-center justify-center px-4"
+	btnClass := "btn h-10 min-h-0 bg-divider/10 border border-divider hover:bg-primary/10 hover:border-primary/30 text-secondary-text rounded-xl transition-all active:scale-95 shadow-sm no-underline flex items-center justify-center px-4"
 
 	return Div(
-		Class("flex items-center gap-3 mt-12"),
+		Class("flex items-center gap-3"),
 		// Previous Button
 		func() Node {
 			if page <= 1 {

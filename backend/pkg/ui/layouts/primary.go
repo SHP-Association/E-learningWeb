@@ -24,7 +24,7 @@ func Primary(r *ui.Request, content Node) Node {
 				PremiumStyles(),
 			),
 			Body(
-				Class("bg-[var(--color-page-bg)] font-inter text-[var(--color-primary-text)] selection:bg-primary/30 transition-colors duration-400"),
+				Class("bg-[var(--color-page-bg)] text-[var(--color-primary-text)] selection:bg-primary/30 transition-colors duration-400"),
 				Div(
 					Class("drawer lg:drawer-open"),
 					Input(
@@ -41,7 +41,7 @@ func Primary(r *ui.Request, content Node) Node {
 						Main(
 							Class("flex-1 p-8 sm:p-12 page-transition prose-base flex flex-col"),
 							If(len(r.Title) > 0, H1(
-								Class("text-4xl font-black tracking-tight mb-10 text-white border-b border-divider pb-6"), 
+								Class("text-4xl font-black tracking-tight mb-10 text-[var(--color-primary-text)] border-b border-divider pb-6"), 
 								Text(r.Title),
 							)),
 							content,
@@ -74,7 +74,7 @@ func Primary(r *ui.Request, content Node) Node {
 						Class("modal-box max-w-2xl bg-card-bg border border-divider p-0 overflow-hidden rounded-3xl shadow-2xl"),
 						Div(
 							ID("modal-form-body"),
-							Class("max-h-[85vh] overflow-y-auto custom-scrollbar flex flex-col"),
+							Class("max-h-[85vh] overflow-hidden flex flex-col"),
 							Div(Class("flex justify-center py-10"), Span(Class("loading loading-spinner loading-lg text-primary"))),
 						),
 					),
@@ -118,7 +118,7 @@ func navbar(r *ui.Request) Node {
 						Class("w-7 h-7 rounded-lg bg-accent/20 p-0.5 border border-accent/30"),
 						Img(Src("https://api.dicebear.com/7.x/avataaars/svg?seed="+userName), Class("w-full h-full rounded")),
 					),
-					Span(Class("text-[12px] font-bold text-white"), Text(userName)),
+					Span(Class("text-[12px] font-bold text-[var(--color-primary-text)]"), Text(userName)),
 				),
 				Ul(
 					TabIndex("0"),
@@ -192,7 +192,7 @@ func sidebarMenu(r *ui.Request) Node {
 						Class("h-10 w-auto drop-shadow-glow transition-transform group-hover:rotate-6"),
 						Src(ui.StaticFile("logo.png")),
 					),
-					Span(Class("text-2xl font-black tracking-tighter text-white"), Text("SHP")),
+					Span(Class("text-2xl font-black tracking-tighter text-[var(--color-primary-text)]"), Text("SHP")),
 				),
 				ThemeToggle(),
 			),

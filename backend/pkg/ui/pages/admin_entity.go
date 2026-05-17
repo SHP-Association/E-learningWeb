@@ -55,10 +55,28 @@ func AdminEntityInput(ctx echo.Context, entityType admin.EntityType, values url.
 		ID("entity-form"),
 		Method(http.MethodPost),
 		Attr("hx-post", ctx.Request().URL.String()),
-		Attr("hx-target", "#admin-modal-body"),
+		Attr("hx-target", "#modal-form-body"),
 		Attr("hx-swap", "innerHTML"),
+		Class("p-6 flex flex-col h-full"),
+		
+		// Modal Header
 		Div(
-			Class("flex flex-col gap-6 max-h-[65vh] overflow-y-auto px-1 custom-scrollbar"),
+			Class("flex items-center justify-between pb-4 mb-4 border-b border-divider"),
+			H2(
+				Class("text-lg font-black text-[var(--color-primary-text)] tracking-tight"), 
+				Text(r.Title),
+			),
+			Button(
+				Type("button"),
+				Class("btn btn-sm btn-circle btn-ghost text-secondary-text hover:text-[var(--color-primary-text)] transition-colors"),
+				Attr("onclick", "document.getElementById('admin-modal-container').classList.remove('modal-open')"),
+				Text("✕"),
+			),
+		),
+
+		// Scrollable form fields
+		Div(
+			Class("flex flex-col gap-5 max-h-[calc(85vh-200px)] overflow-y-auto px-1 pr-2 custom-scrollbar"),
 			Group(func() []Node {
 				fields := entityType.GetSchema()
 				nodes := make([]Node, len(fields))
@@ -68,12 +86,14 @@ func AdminEntityInput(ctx echo.Context, entityType admin.EntityType, values url.
 				return nodes
 			}()),
 		),
+
+		// Modal Footer / Buttons
 		Div(
-			Class("flex justify-end gap-3 mt-8 pt-6 border-t border-divider"),
+			Class("flex justify-end gap-3 mt-4 pt-4 border-t border-divider"),
 			Button(
 				Type("button"),
 				Class("btn bg-divider/20 hover:bg-divider/30 text-secondary-text border-none rounded-xl px-6"),
-				Attr("onclick", "document.getElementById('admin-modal').close()"),
+				Attr("onclick", "document.getElementById('admin-modal-container').classList.remove('modal-open')"),
 				Text("Cancel"),
 			),
 			Button(
@@ -94,17 +114,30 @@ func AdminEntityInput(ctx echo.Context, entityType admin.EntityType, values url.
 	})
 }
 
+func formatLabel(s string) string {
+	s = strings.ReplaceAll(s, "_", " ")
+	parts := strings.Fields(s)
+	for i, p := range parts {
+		if len(p) > 0 {
+			parts[i] = strings.ToUpper(p[:1]) + p[1:]
+		}
+	}
+	return strings.Join(parts, " ")
+}
+
 func renderField(r *ui.Request, f *admin.FieldSchema, values url.Values) Node {
 	val := ""
 	if values != nil {
 		val = values.Get(f.Name)
 	}
 
+	labelName := formatLabel(f.Name)
+
 	common := InputFieldParams{
 		Form:      nil,
 		FormField: f.Name,
 		Name:      f.Name,
-		Label:     f.Name,
+		Label:     labelName,
 		Value:     val,
 		Required:  !f.Optional,
 		Help:      "",
@@ -116,14 +149,14 @@ func renderField(r *ui.Request, f *admin.FieldSchema, values url.Values) Node {
 			Form:      nil,
 			FormField: f.Name,
 			Name:      f.Name,
-			Label:     f.Name,
+			Label:     labelName,
 			Checked:   val == "true",
 			Required:  !f.Optional,
 		})
 	case strings.Contains(strings.ToLower(f.Name), "image") || strings.Contains(strings.ToLower(f.Name), "thumbnail") || strings.Contains(strings.ToLower(f.Name), "picture"):
 		return ImagePicker(ImagePickerParams{
 			Name:     f.Name,
-			Label:    f.Name,
+			Label:    labelName,
 			Value:    val,
 			Required: !f.Optional,
 		})
@@ -136,11 +169,25 @@ func renderField(r *ui.Request, f *admin.FieldSchema, values url.Values) Node {
 			Form:      nil,
 			FormField: f.Name,
 			Name:      f.Name,
-			Label:     f.Name,
+			Label:     labelName,
 			Value:     val,
 			Options:   choices,
 			Required:  !f.Optional,
 		})
+	case f.Type == field.TypeString && (strings.Contains(f.Name, "description") || strings.Contains(f.Name, "content") || strings.Contains(f.Name, "learn") || strings.Contains(f.Name, "requirement") || strings.Contains(f.Name, "audience") || strings.Contains(f.Name, "bio") || strings.Contains(f.Name, "comment") || strings.Contains(f.Name, "body") || strings.Contains(f.Name, "answer")):
+		return TextareaField(TextareaFieldParams{
+			Form:      nil,
+			FormField: f.Name,
+			Name:      f.Name,
+			Label:     labelName,
+			Value:     val,
+			Help:      "",
+			Required:  !f.Optional,
+		})
+	case f.Type == field.TypeInt || f.Type == field.TypeInt8 || f.Type == field.TypeInt16 || f.Type == field.TypeInt32 || f.Type == field.TypeInt64 || f.Type == field.TypeUint || f.Type == field.TypeUint8 || f.Type == field.TypeUint16 || f.Type == field.TypeUint32 || f.Type == field.TypeUint64 || f.Type == field.TypeFloat32 || f.Type == field.TypeFloat64:
+		return NumberField(common)
+	case f.Type == field.TypeTime:
+		return DateTimeField(common)
 	default:
 		return InputField(common)
 	}
@@ -220,11 +267,11 @@ func AdminEntityList(
 			
 			// Toolbar
 			Div(
-				Class("sticky-glass flex items-center justify-between gap-4 p-4 px-6 rounded-3xl mb-6 shadow-sm"),
+				Class("sticky-glass flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 px-6 rounded-3xl mb-6 shadow-sm"),
 				Div(
-					Class("flex items-center gap-4"),
+					Class("flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto"),
 					Div(
-						Class("relative w-72 group"),
+						Class("relative w-full md:w-72 group"),
 						Div(
 							Class("absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10"),
 							Icon("MagnifyingGlass", "w-5 h-5 text-accent"),
@@ -239,10 +286,10 @@ func AdminEntityList(
 					),
 				),
 				Div(
-					Class("flex items-center gap-4"),
+					Class("flex items-center justify-end gap-4 w-full md:w-auto"),
 					Button(
 						Type("button"),
-						Class("btn btn-brand px-6 h-11 rounded-2xl shadow-xl shadow-accent/10 text-sm transition-all hover:scale-105 active:scale-95"),
+						Class("btn btn-brand w-full md:w-auto px-6 h-11 rounded-2xl shadow-xl shadow-accent/10 text-sm transition-all hover:scale-105 active:scale-95"),
 						Attr("hx-get", addURL),
 						Attr("hx-target", "#modal-form-body"),
 						Attr("onclick", "document.getElementById('admin-modal-container').classList.add('modal-open')"),
@@ -284,11 +331,7 @@ func AdminEntityList(
 
 			// Footer / Pagination
 			Div(
-				Class("flex items-center justify-between mt-8 bg-card-bg/30 p-6 rounded-3xl border border-divider/40"),
-				Div(
-					Class("text-xs font-medium text-secondary-text"),
-					Textf("Showing %d records in current view", len(entityList.Entities)),
-				),
+				Class("flex items-center justify-center mt-8"),
 				Pager(
 					entityList.Page,
 					r.CurrentPath,

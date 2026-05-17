@@ -8,7 +8,7 @@ import (
 
 func ThemeToggle() Node {
 	return Label(
-		Class("swap swap-rotate text-secondary-text hover:text-white transition-colors cursor-pointer"),
+		Class("swap swap-rotate text-secondary-text hover:text-[var(--color-primary-text)] transition-colors cursor-pointer"),
 		Input(
 			Type("checkbox"),
 			Class("theme-controller"),
@@ -75,12 +75,25 @@ func ThemeStyles() Node {
 			--color-card-bg: #ffffff;
 			--color-card-border: #e2e8f0;
 			--color-accent: #0d9488;
+			--color-accent-hover: #0f766e;
+			--color-accent-muted: rgba(13, 148, 136, 0.12);
 			--color-primary-text: #0f172a;
 			--color-secondary-text: #475569;
 			--color-tertiary-text: #94a3b8;
+			
 			--color-divider: rgba(15, 23, 42, 0.08);
+			--color-hover: rgba(15, 23, 42, 0.04);
+			
+			/* Semantic Light Override */
+			--color-danger: #dc2626;
+			--color-success: #0d9488;
+			
 			--ui-shell-start: #ffffff;
 			--ui-shell-end: #f8fafc;
+			
+			/* Shadows Light Override */
+			--shadow-premium: 0 8px 30px rgba(15, 23, 42, 0.04);
+			--shadow-glow: 0 0 15px -3px rgba(13, 148, 136, 0.2);
 		}
 
 		body {
@@ -107,7 +120,7 @@ func ThemeStyles() Node {
 		}
 
 		.sidebar-link.active {
-			background: rgba(46, 196, 182, 0.08);
+			background: color-mix(in oklab, var(--color-accent) 8%, transparent) !important;
 			color: var(--color-accent) !important;
 		}
 		
@@ -122,7 +135,7 @@ func ThemeStyles() Node {
 
 		/* NavGroup Vertical Line */
 		.nav-group-border {
-			border-left: 1px solid rgba(255, 255, 255, 0.1);
+			border-left: 1px solid var(--color-divider);
 			margin-left: 20px;
 			padding-left: 10px;
 		}
@@ -133,8 +146,13 @@ func ThemeStyles() Node {
 		}
 
 		/* Ultra-thin Scrollbar */
+		.custom-scrollbar {
+			scrollbar-width: thin !important;
+			scrollbar-color: var(--color-divider) transparent !important;
+		}
 		.custom-scrollbar::-webkit-scrollbar {
-			width: 3px;
+			width: 6px;
+			height: 6px;
 		}
 		.custom-scrollbar::-webkit-scrollbar-track {
 			background: transparent;
@@ -150,8 +168,8 @@ func ThemeStyles() Node {
 		}
 
 		.teal-lume {
-			box-shadow: 0 0 20px -5px rgba(46, 196, 182, 0.2);
-			border-color: rgba(46, 196, 182, 0.2) !important;
+			box-shadow: 0 0 20px -5px color-mix(in oklab, var(--color-accent) 30%, transparent) !important;
+			border-color: color-mix(in oklab, var(--color-accent) 30%, transparent) !important;
 		}
 
 		/* Admin Dashboard Specifics */
@@ -162,7 +180,7 @@ func ThemeStyles() Node {
 			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		}
 		.admin-card:hover {
-			border-color: rgba(255, 255, 255, 0.1);
+			border-color: color-mix(in oklab, var(--color-divider) 150%, transparent) !important;
 			transform: translateY(-2px);
 			box-shadow: var(--shadow-premium);
 		}
@@ -175,14 +193,14 @@ func ThemeStyles() Node {
 		}
 		.logout-btn:hover {
 			opacity: 1;
-			background: rgba(255, 77, 77, 0.05);
+			background: color-mix(in oklab, var(--color-danger) 8%, transparent) !important;
 			transform: translateX(4px);
 		}
 
 		/* Top Bar Components */
 		.search-pill {
-			background: rgba(255, 255, 255, 0.03);
-			border: 1px solid rgba(255, 255, 255, 0.05);
+			background: color-mix(in oklab, var(--color-divider) 30%, transparent);
+			border: 1px solid var(--color-divider);
 			border-radius: 9999px;
 			padding: 0.5rem 1rem;
 			color: var(--color-secondary-text);
@@ -190,14 +208,14 @@ func ThemeStyles() Node {
 			transition: all 0.3s ease;
 		}
 		.search-pill:focus-within {
-			background: rgba(255, 255, 255, 0.05);
+			background: color-mix(in oklab, var(--color-divider) 55%, transparent);
 			border-color: var(--color-accent);
 			box-shadow: 0 0 0 2px var(--color-accent-muted);
 		}
 
 		.profile-pill {
-			background: rgba(255, 255, 255, 0.03);
-			border: 1px solid rgba(255, 255, 255, 0.05);
+			background: color-mix(in oklab, var(--color-divider) 30%, transparent);
+			border: 1px solid var(--color-divider);
 			border-radius: 9999px;
 			padding: 0.4rem 0.8rem;
 			display: flex;
@@ -207,8 +225,8 @@ func ThemeStyles() Node {
 			cursor: pointer;
 		}
 		.profile-pill:hover {
-			background: rgba(255, 255, 255, 0.06);
-			border-color: rgba(255, 255, 255, 0.1);
+			background: color-mix(in oklab, var(--color-divider) 55%, transparent);
+			border-color: color-mix(in oklab, var(--color-divider) 150%, transparent);
 		}
 	</style>
 	`)

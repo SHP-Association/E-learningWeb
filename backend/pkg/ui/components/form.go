@@ -381,7 +381,7 @@ func FormGroup(label string, required bool, els ...Node) Node {
 		If(len(label) > 0, Label(
 			Class("flex items-center text-[13px] font-[600] text-secondary-text"),
 			Text(label),
-			If(required, Span(Class("inline-flex items-center ml-2 px-1.5 py-0.5 rounded-md bg-danger/10 text-danger text-[9px] font-black uppercase tracking-wider"), Text("Required"))),
+			If(required, Span(Class("text-danger ml-1 font-bold"), Text("*"))),
 		)),
 		Group(els),
 	)
