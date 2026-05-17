@@ -46,11 +46,14 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      // Call backend login API
-      const response = await apiService.post<any>('/api/login/', credentials);
+      // Call backend login API via the centralized apiService helper
+      const response = await apiService.login({
+        email: credentials.email || credentials.username || '',
+        password: credentials.password
+      });
 
       // Handle new standardized response format
-      if (response.success || response.message === 'Login successful') {
+      if (response.success || response.message === 'login successful' || response.message === 'Login successful') {
         // Fetch user profile after successful login
         await fetchUserProfile();
         return true;
@@ -72,12 +75,21 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      const response = await apiService.post<any>('/api/register/', data);
+      const response = await apiService.register({
+        username: data.username,
+        email: data.email,
+        password: data.password
+      });
 
       // Handle new standardized response format
-      if (response.success || response.message === 'Registration successful!') {
+      if (
+        response.success || 
+        response.message === 'Registration successful!' || 
+        response.message === 'account created and logged in'
+      ) {
         // Auto-login after registration
         return await login({
+          email: data.email,
           username: data.username,
           password: data.password,
         });
@@ -99,7 +111,7 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      await apiService.post('/api/logout/', {});
+      await apiService.logout();
     } catch (err: any) {
       console.error('Logout error:', err);
     } finally {
@@ -113,8 +125,8 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      // Fetch current user profile using /me endpoint
-      const response = await apiService.get<any>('/api/users/me/');
+      // Fetch current user profile using the centralized apiService helper
+      const response = await apiService.getCurrentUser();
 
       // Handle new standardized response format
       if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {

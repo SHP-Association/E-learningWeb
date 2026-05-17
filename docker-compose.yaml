@@ -56,7 +56,7 @@ services:
       DATABASE_NAME: ${DATABASE_NAME:-shp_db}
       DATABASE_CONNECTION: ${DATABASE_CONNECTION:-host=db port=5432 user=postgres password=postgres dbname=shp_db sslmode=disable}
     ports:
-      - "${BACKEND_PORT:-8001}:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy

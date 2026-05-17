@@ -807,7 +807,7 @@ func (h *Handler) EnrollmentList(ctx echo.Context) (*EntityList, error) {
 			ID: res[i].ID,
 			Values: []string{
 				res[i].EnrolledAt.Format(h.Config.TimeFormat),
-				formatTimePtr(res[i].CompletedAt, h.Config.TimeFormat),
+				res[i].CompletedAt.Format(h.Config.TimeFormat),
 				fmt.Sprint(res[i].Progress),
 				fmt.Sprint(res[i].IsCompleted),
 			},
@@ -824,7 +824,7 @@ func (h *Handler) EnrollmentGet(ctx echo.Context, id int) (url.Values, error) {
 	}
 
 	v := url.Values{}
-	v.Set("completed_at", formatTimePtr(entity.CompletedAt, dateTimeFormat))
+	v.Set("completed_at", entity.CompletedAt.Format(dateTimeFormat))
 	v.Set("progress", fmt.Sprint(entity.Progress))
 	v.Set("is_completed", fmt.Sprint(entity.IsCompleted))
 	return v, err
@@ -1779,7 +1779,7 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 				res[i].Role,
 				res[i].Bio,
 				res[i].ProfilePicture,
-				formatTimePtr(res[i].DateOfBirth, h.Config.TimeFormat),
+				res[i].DateOfBirth.Format(h.Config.TimeFormat),
 				res[i].Gender,
 				res[i].ContactNumber,
 				res[i].Address,
@@ -1793,13 +1793,13 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 				fmt.Sprint(res[i].InstructorRating),
 				fmt.Sprint(res[i].TotalReviews),
 				fmt.Sprint(res[i].IsActiveUser),
-				formatTimePtr(res[i].LastActivity, h.Config.TimeFormat),
+				res[i].LastActivity.Format(h.Config.TimeFormat),
 				res[i].LoginAddress,
 				fmt.Sprint(res[i].TwoFactorEnabled),
 				fmt.Sprint(res[i].IsStaff),
 				fmt.Sprint(res[i].IsActive),
 				fmt.Sprint(res[i].IsSuperuser),
-				formatTimePtr(res[i].LastLogin, h.Config.TimeFormat),
+				res[i].LastLogin.Format(h.Config.TimeFormat),
 				res[i].DateJoined.Format(h.Config.TimeFormat),
 				fmt.Sprint(res[i].Verified),
 				fmt.Sprint(res[i].Admin),
@@ -1825,7 +1825,7 @@ func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
 	v.Set("role", entity.Role)
 	v.Set("bio", entity.Bio)
 	v.Set("profile_picture", entity.ProfilePicture)
-	v.Set("date_of_birth", formatTimePtr(entity.DateOfBirth, dateTimeFormat))
+	v.Set("date_of_birth", entity.DateOfBirth.Format(dateTimeFormat))
 	v.Set("gender", entity.Gender)
 	v.Set("contact_number", entity.ContactNumber)
 	v.Set("address", entity.Address)
@@ -1839,13 +1839,13 @@ func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
 	v.Set("instructor_rating", fmt.Sprint(entity.InstructorRating))
 	v.Set("total_reviews", fmt.Sprint(entity.TotalReviews))
 	v.Set("is_active_user", fmt.Sprint(entity.IsActiveUser))
-	v.Set("last_activity", formatTimePtr(entity.LastActivity, dateTimeFormat))
+	v.Set("last_activity", entity.LastActivity.Format(dateTimeFormat))
 	v.Set("login_address", entity.LoginAddress)
 	v.Set("two_factor_enabled", fmt.Sprint(entity.TwoFactorEnabled))
 	v.Set("is_staff", fmt.Sprint(entity.IsStaff))
 	v.Set("is_active", fmt.Sprint(entity.IsActive))
 	v.Set("is_superuser", fmt.Sprint(entity.IsSuperuser))
-	v.Set("last_login", formatTimePtr(entity.LastLogin, dateTimeFormat))
+	v.Set("last_login", entity.LastLogin.Format(dateTimeFormat))
 	v.Set("verified", fmt.Sprint(entity.Verified))
 	v.Set("admin", fmt.Sprint(entity.Admin))
 	return v, err
@@ -1989,11 +1989,3 @@ func (h *Handler) bind(ctx echo.Context, entity any) error {
 	}
 	return ctx.Bind(entity)
 }
-
-func formatTimePtr(t *time.Time, layout string) string {
-	if t == nil {
-		return ""
-	}
-	return t.Format(layout)
-}
-

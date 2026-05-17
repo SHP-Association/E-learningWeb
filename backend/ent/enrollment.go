@@ -30,10 +30,10 @@ type Enrollment struct {
 	IsCompleted bool `json:"is_completed,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnrollmentQuery when eager-loading is set.
-	Edges              EnrollmentEdges `json:"edges"`
-	course_enrollments *int
-	user_enrollments   *int
-	selectValues       sql.SelectValues
+	Edges        EnrollmentEdges `json:"edges"`
+	course_id    *int
+	student_id   *int
+	selectValues sql.SelectValues
 }
 
 // EnrollmentEdges holds the relations/edges for other nodes in the graph.
@@ -95,9 +95,9 @@ func (*Enrollment) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case enrollment.FieldEnrolledAt, enrollment.FieldCompletedAt:
 			values[i] = new(sql.NullTime)
-		case enrollment.ForeignKeys[0]: // course_enrollments
+		case enrollment.ForeignKeys[0]: // course_id
 			values[i] = new(sql.NullInt64)
-		case enrollment.ForeignKeys[1]: // user_enrollments
+		case enrollment.ForeignKeys[1]: // student_id
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -147,17 +147,17 @@ func (_m *Enrollment) assignValues(columns []string, values []any) error {
 			}
 		case enrollment.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field course_enrollments", value)
+				return fmt.Errorf("unexpected type %T for edge-field course_id", value)
 			} else if value.Valid {
-				_m.course_enrollments = new(int)
-				*_m.course_enrollments = int(value.Int64)
+				_m.course_id = new(int)
+				*_m.course_id = int(value.Int64)
 			}
 		case enrollment.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_enrollments", value)
+				return fmt.Errorf("unexpected type %T for edge-field student_id", value)
 			} else if value.Valid {
-				_m.user_enrollments = new(int)
-				*_m.user_enrollments = int(value.Int64)
+				_m.student_id = new(int)
+				*_m.student_id = int(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

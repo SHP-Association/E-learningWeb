@@ -8,13 +8,12 @@ import (
 )
 
 func TestGetConfig(t *testing.T) {
+	t.Setenv("APP_ENCRYPTION_KEY", "?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf")
 	_, err := GetConfig()
 	require.NoError(t, err)
 
-	var env environment
-	env = "abc"
-	SwitchEnvironment(env)
+	t.Setenv("APP_ENVIRONMENT", "abc")
 	cfg, err := GetConfig()
 	require.NoError(t, err)
-	assert.Equal(t, env, cfg.App.Environment)
+	assert.Equal(t, environment("abc"), cfg.App.Environment)
 }

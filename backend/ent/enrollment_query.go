@@ -500,10 +500,10 @@ func (_q *EnrollmentQuery) loadStudent(ctx context.Context, query *UserQuery, no
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*Enrollment)
 	for i := range nodes {
-		if nodes[i].user_enrollments == nil {
+		if nodes[i].student_id == nil {
 			continue
 		}
-		fk := *nodes[i].user_enrollments
+		fk := *nodes[i].student_id
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -520,7 +520,7 @@ func (_q *EnrollmentQuery) loadStudent(ctx context.Context, query *UserQuery, no
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_enrollments" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "student_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -532,10 +532,10 @@ func (_q *EnrollmentQuery) loadCourse(ctx context.Context, query *CourseQuery, n
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*Enrollment)
 	for i := range nodes {
-		if nodes[i].course_enrollments == nil {
+		if nodes[i].course_id == nil {
 			continue
 		}
-		fk := *nodes[i].course_enrollments
+		fk := *nodes[i].course_id
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -552,7 +552,7 @@ func (_q *EnrollmentQuery) loadCourse(ctx context.Context, query *CourseQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "course_enrollments" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "course_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

@@ -36,14 +36,14 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	StudentInverseTable = "Account_customuser"
 	// StudentColumn is the table column denoting the student relation/edge.
-	StudentColumn = "user_enrollments"
+	StudentColumn = "student_id"
 	// CourseTable is the table that holds the course relation/edge.
 	CourseTable = "Enrollment_enrollment"
 	// CourseInverseTable is the table name for the Course entity.
 	// It exists in this package in order to avoid circular dependency with the "course" package.
 	CourseInverseTable = "courses_course"
 	// CourseColumn is the table column denoting the course relation/edge.
-	CourseColumn = "course_enrollments"
+	CourseColumn = "course_id"
 	// CertificateTable is the table that holds the certificate relation/edge.
 	CertificateTable = "Certificate_certificate"
 	// CertificateInverseTable is the table name for the Certificate entity.
@@ -65,8 +65,8 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "Enrollment_enrollment"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"course_enrollments",
-	"user_enrollments",
+	"course_id",
+	"student_id",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

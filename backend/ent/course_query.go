@@ -785,13 +785,13 @@ func (_q *CourseQuery) loadEnrollments(ctx context.Context, query *EnrollmentQue
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.course_enrollments
+		fk := n.course_id
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "course_enrollments" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "course_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "course_enrollments" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "course_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

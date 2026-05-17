@@ -1,6 +1,6 @@
 // Comprehensive API Service with dedicated methods for all endpoints
 
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:8001';
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:8000';
 
 export class ApiError extends Error {
     constructor(
@@ -59,10 +59,11 @@ class ApiService {
             }
         }
 
-        // Add CSRF token for non-GET requests
+        // Add CSRF token for non-GET requests (checking both Echo _csrf and legacy Django csrftoken)
         if (fetchOptions.method && fetchOptions.method !== 'GET') {
-            const csrfToken = getCookie('csrftoken');
+            const csrfToken = getCookie('_csrf') || getCookie('csrftoken');
             if (csrfToken) {
+                (headers as any)['X-CSRF-Token'] = csrfToken;
                 (headers as any)['X-CSRFToken'] = csrfToken;
             }
         }
@@ -91,7 +92,7 @@ class ApiService {
 
             if (!response.ok) {
                 throw new ApiError(
-                    data.message || data.detail || 'An error occurred',
+                    data.error || data.message || data.detail || 'An error occurred',
                     response.status,
                     data.errors || data
                 );
@@ -144,10 +145,16 @@ class ApiService {
 
     async getList<T>(endpoint: string, options?: RequestOptions): Promise<{ items: T[]; total: number }> {
         const response = await this.request<any>(endpoint, { ...options, method: 'GET' });
-        if (response.data && 'items' in response.data && 'total' in response.data) {
-            return response.data;
+        if (Array.isArray(response)) {
+            return { items: response, total: response.length };
         }
-        return { items: Array.isArray(response) ? response : [], total: 0 };
+        if (response.data && Array.isArray(response.data)) {
+            return { items: response.data, total: response.data.length };
+        }
+        if (response.items && Array.isArray(response.items)) {
+            return { items: response.items, total: response.total || response.items.length };
+        }
+        return { items: [], total: 0 };
     }
 
     async getOne<T>(endpoint: string, options?: RequestOptions): Promise<T> {
@@ -160,68 +167,45 @@ class ApiService {
 
     // ==================== Authentication APIs ====================
 
-    async login(credentials: { username: string; password: string }): Promise<any> {
-        return this.post('/api/login/', credentials);
+    async login(credentials: { email: string; password: string }): Promise<any> {
+        // Echo supports both /api/auth/login and legacy /api/login (non-trailing slash)
+        return this.post('/api/auth/login', credentials);
     }
 
     async logout(): Promise<any> {
-        return this.post('/api/logout/', {});
+        return this.post('/api/auth/logout', {});
     }
 
     async register(data: {
         username: string;
         email: string;
         password: string;
-        first_name?: string;
-        last_name?: string;
-        role: 'student' | 'instructor';
     }): Promise<any> {
-        return this.post('/api/register/', data);
+        return this.post('/api/auth/register', data);
     }
 
-    async requestPasswordReset(email: string): Promise<any> {
-        return this.post('/api/password_reset/', { email });
+    // ==================== User & Profile APIs ====================
+
+    async getCurrentUser(): Promise<any> {
+        // Go backend maps student profile to /api/profile
+        const response = await this.get<any>('/api/profile');
+        return response.data && typeof response.data === 'object' ? response.data : response;
     }
 
-    async confirmPasswordReset(uid: string, token: string, newPassword: string): Promise<any> {
-        return this.post(`/api/password_reset/${uid}/${token}/`, { new_password: newPassword });
-    }
-
-    // ==================== User APIs ====================
-
-    async getUsers(params?: { page?: number; search?: string }): Promise<{ items: any[]; total: number }> {
-        const queryParams = new URLSearchParams();
-        if (params?.page) queryParams.append('page', params.page.toString());
-        if (params?.search) queryParams.append('search', params.search);
-        const query = queryParams.toString();
-        return this.getList(`/api/users/${query ? '?' + query : ''}`);
-    }
-
-    async getUser(userId: number): Promise<any> {
-        return this.getOne(`/api/users/${userId}/`);
+    async getProfile(): Promise<any> {
+        return this.getCurrentUser();
     }
 
     async updateUser(userId: number, data: any): Promise<any> {
-        const isFormData = data instanceof FormData;
-        const response = await this.patch<any>(`/api/users/${userId}/`, isFormData ? data : data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
+        // Fallback profile update mapping
+        return this.patch<any>('/api/profile', data);
     }
 
     async uploadProfilePicture(userId: number, formData: FormData): Promise<any> {
-        const response = await this.request<any>(`/api/users/${userId}/`, {
+        return this.request<any>('/api/profile', {
             method: 'PATCH',
             body: formData
         });
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteUser(userId: number): Promise<any> {
-        return this.delete(`/api/users/${userId}/`);
-    }
-
-    async getCurrentUser(): Promise<any> {
-        const response = await this.get<any>('/api/users/me/');
-        return response.data && typeof response.data === 'object' ? response.data : response;
     }
 
     // ==================== Course APIs ====================
@@ -232,108 +216,48 @@ class ApiService {
         if (params?.level) queryParams.append('level', params.level);
         if (params?.search) queryParams.append('search', params.search);
         const query = queryParams.toString();
-        return this.getList(`/api/courses/${query ? '?' + query : ''}`);
+        return this.getList(`/api/courses${query ? '?' + query : ''}`);
     }
 
-    async getCourse(slug: string): Promise<any> {
-        return this.getOne(`/api/courses/${slug}/`);
-    }
-
-    async createCourse(data: any): Promise<any> {
-        const response = await this.post<any>('/api/courses/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async updateCourse(slug: string, data: any): Promise<any> {
-        const response = await this.patch<any>(`/api/courses/${slug}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteCourse(slug: string): Promise<any> {
-        return this.delete(`/api/courses/${slug}/`);
+    async getCourse(id: number | string): Promise<any> {
+        // Mapped to /api/courses/{id}
+        return this.getOne(`/api/courses/${id}`);
     }
 
     // ==================== Category APIs ====================
 
     async getCategories(): Promise<{ items: any[]; total: number }> {
-        return this.getList('/api/categories/');
+        return this.getList('/api/categories');
     }
 
     async getCategory(id: number): Promise<any> {
-        return this.getOne(`/api/categories/${id}/`);
-    }
-
-    async createCategory(data: { name: string; description?: string; image?: string }): Promise<any> {
-        const response = await this.post<any>('/api/categories/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async updateCategory(id: number, data: any): Promise<any> {
-        const response = await this.patch<any>(`/api/categories/${id}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteCategory(id: number): Promise<any> {
-        return this.delete(`/api/categories/${id}/`);
+        return this.getOne(`/api/categories/${id}`);
     }
 
     // ==================== Lesson APIs ====================
 
-    async getLessons(courseSlug?: string): Promise<{ items: any[]; total: number }> {
-        const endpoint = courseSlug ? `/api/lessons/?course=${courseSlug}` : '/api/lessons/';
-        return this.getList(endpoint);
-    }
-
     async getLesson(id: number): Promise<any> {
-        return this.getOne(`/api/lessons/${id}/`);
-    }
-
-    async createLesson(data: any): Promise<any> {
-        const response = await this.post<any>('/api/lessons/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async updateLesson(id: number, data: any): Promise<any> {
-        const response = await this.patch<any>(`/api/lessons/${id}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteLesson(id: number): Promise<any> {
-        return this.delete(`/api/lessons/${id}/`);
+        return this.getOne(`/api/lessons/${id}`);
     }
 
     // ==================== Enrollment APIs ====================
 
-    async getEnrollments(params?: { student?: number; course?: string }): Promise<{ items: any[]; total: number }> {
-        const queryParams = new URLSearchParams();
-        if (params?.student) queryParams.append('student', params.student.toString());
-        if (params?.course) queryParams.append('course', params.course);
-        const query = queryParams.toString();
-        return this.getList(`/api/enrollments/${query ? '?' + query : ''}`);
-    }
-
-    async getEnrollment(id: number): Promise<any> {
-        return this.getOne(`/api/enrollments/${id}/`);
-    }
-
     async createEnrollment(data: { course_slug: string }): Promise<any> {
-        const response = await this.post<any>('/api/enrollments/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
+        // Call the newly fixed POST /api/enroll/{slug}
+        return this.post(`/api/enroll/${data.course_slug}`, {});
     }
 
-    async updateEnrollment(id: number, data: { progress?: number; completed?: boolean }): Promise<any> {
-        const response = await this.patch<any>(`/api/enrollments/${id}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteEnrollment(id: number): Promise<any> {
-        return this.delete(`/api/enrollments/${id}/`);
+    async enrollInCourse(slug: string): Promise<any> {
+        return this.post(`/api/enroll/${slug}`, {});
     }
 
     async checkEnrollment(courseId: number): Promise<boolean> {
         try {
-            const { items } = await this.getEnrollments();
-            return items.some((enrollment: any) => enrollment.course.id === courseId);
+            const user = await this.getCurrentUser();
+            const enrollments = user?.edges?.enrollments || [];
+            return enrollments.some(
+                (enrollment: any) => enrollment?.edges?.course?.id === courseId
+            );
         } catch {
             return false;
         }
@@ -341,123 +265,31 @@ class ApiService {
 
     // ==================== Quiz APIs ====================
 
-    async getQuizzes(lessonId?: number): Promise<{ items: any[]; total: number }> {
-        const endpoint = lessonId ? `/api/quizzes/?lesson=${lessonId}` : '/api/quizzes/';
-        return this.getList(endpoint);
-    }
-
     async getQuiz(quizId: number): Promise<any> {
-        return this.getOne(`/api/quizzes/${quizId}/`);
-    }
-
-    async createQuiz(data: any): Promise<any> {
-        const response = await this.post<any>('/api/quizzes/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async updateQuiz(quizId: number, data: any): Promise<any> {
-        const response = await this.patch<any>(`/api/quizzes/${quizId}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteQuiz(quizId: number): Promise<any> {
-        return this.delete(`/api/quizzes/${quizId}/`);
+        return this.getOne(`/api/quizzes/${quizId}`);
     }
 
     async submitQuiz(quizId: number, answers: any): Promise<any> {
-        const response = await this.post<any>(`/api/quizzes/${quizId}/submit/`, answers);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    // ==================== Question APIs ====================
-
-    async getQuestions(quizId?: number): Promise<{ items: any[]; total: number }> {
-        const endpoint = quizId ? `/api/questions/?quiz=${quizId}` : '/api/questions/';
-        return this.getList(endpoint);
-    }
-
-    async getQuestion(questionId: number): Promise<any> {
-        return this.getOne(`/api/questions/${questionId}/`);
-    }
-
-    async createQuestion(data: any): Promise<any> {
-        const response = await this.post<any>('/api/questions/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async updateQuestion(questionId: number, data: any): Promise<any> {
-        const response = await this.patch<any>(`/api/questions/${questionId}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteQuestion(questionId: number): Promise<any> {
-        return this.delete(`/api/questions/${questionId}/`);
+        return this.post(`/api/quizzes/${quizId}/submit`, answers);
     }
 
     // ==================== Review APIs ====================
 
-    async getReviews(courseId?: number): Promise<{ items: any[]; total: number }> {
-        const endpoint = courseId ? `/api/reviews/?course=${courseId}` : '/api/reviews/';
-        return this.getList(endpoint);
-    }
-
-    async getReview(reviewId: number): Promise<any> {
-        return this.getOne(`/api/reviews/${reviewId}/`);
+    async getReviews(courseId: number): Promise<{ items: any[]; total: number }> {
+        return this.getList(`/api/courses/${courseId}/reviews`);
     }
 
     async createReview(data: { course: number; rating: number; comment?: string }): Promise<any> {
-        const response = await this.post<any>('/api/reviews/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async updateReview(reviewId: number, data: any): Promise<any> {
-        const response = await this.patch<any>(`/api/reviews/${reviewId}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteReview(reviewId: number): Promise<any> {
-        return this.delete(`/api/reviews/${reviewId}/`);
-    }
-
-    // ==================== Certificate APIs ====================
-
-    async getCertificates(enrollmentId?: number): Promise<{ items: any[]; total: number }> {
-        const endpoint = enrollmentId ? `/api/certificates/?enrollment=${enrollmentId}` : '/api/certificates/';
-        return this.getList(endpoint);
-    }
-
-    async getCertificate(certificateId: number): Promise<any> {
-        return this.getOne(`/api/certificates/${certificateId}/`);
-    }
-
-    async createCertificate(data: { enrollment: number }): Promise<any> {
-        const response = await this.post<any>('/api/certificates/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
+        return this.post(`/api/courses/${data.course}/reviews`, {
+            rating: data.rating,
+            comment: data.comment
+        });
     }
 
     // ==================== FAQ APIs ====================
 
-    async getFAQs(category?: string): Promise<{ items: any[]; total: number }> {
-        const endpoint = category ? `/api/faqs/?category=${category}` : '/api/faqs/';
-        return this.getList(endpoint);
-    }
-
-    async getFAQ(faqId: number): Promise<any> {
-        return this.getOne(`/api/faqs/${faqId}/`);
-    }
-
-    async createFAQ(data: { question: string; answer: string; category?: number }): Promise<any> {
-        const response = await this.post<any>('/api/faqs/', data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async updateFAQ(faqId: number, data: any): Promise<any> {
-        const response = await this.patch<any>(`/api/faqs/${faqId}/`, data);
-        return response.data && typeof response.data === 'object' ? response.data : response;
-    }
-
-    async deleteFAQ(faqId: number): Promise<any> {
-        return this.delete(`/api/faqs/${faqId}/`);
+    async getFAQs(): Promise<{ items: any[]; total: number }> {
+        return this.getList('/api/faqs');
     }
 }
 

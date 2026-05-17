@@ -45,13 +45,26 @@ func BuildRouter(c *services.Container) error {
 		middleware.CacheControl(c.Config.Cache.ExpirationPublicFile),
 	).StaticFS("static", echo.MustSubFS(files.Static, "static"))
 
+	// CORS configuration
+	origins := strings.Split(c.Config.CORS.AllowOrigins, ",")
+	for i, o := range origins {
+		origins[i] = strings.TrimSpace(o)
+	}
+
+	c.Web.Use(echomw.CORSWithConfig(echomw.CORSConfig{
+		AllowOrigins:     origins,
+		AllowHeaders:     strings.Split(c.Config.CORS.AllowHeaders, ","),
+		AllowMethods:     strings.Split(c.Config.CORS.AllowMethods, ","),
+		AllowCredentials: true,
+	}))
+
 	// Non-static file route group.
 	g := c.Web.Group("")
 
 	// Create a cookie store for session data.
 	cookieStore := sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))
 	cookieStore.Options.HttpOnly = true
-	cookieStore.Options.SameSite = http.SameSiteStrictMode
+	cookieStore.Options.SameSite = http.SameSiteLaxMode
 
 	g.Use(
 		echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
@@ -63,17 +76,22 @@ func BuildRouter(c *services.Container) error {
 		middleware.SetLogger(),
 		middleware.LogRequest(),
 		echomw.Gzip(),
-		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
-			Timeout: c.Config.App.Timeout,
-		}),
 		middleware.Config(c.Config),
 		middleware.Session(cookieStore),
 		middleware.LoadAuthenticatedUser(c.Auth),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
-			TokenLookup:    "header:X-CSRF-Token,form:csrf",
-			CookieHTTPOnly: true,
-			CookieSameSite: http.SameSiteStrictMode,
+			TokenLookup:    "header:X-CSRF-Token,form:csrf,header:X-Csrf-Token",
+			CookieHTTPOnly: false,
+			CookieSameSite: http.SameSiteLaxMode,
 			ContextKey:     context.CSRFKey,
+			Skipper: func(ctx echo.Context) bool {
+				path := ctx.Path()
+				return path == "/api/health" ||
+					path == "/api/auth/login" ||
+					path == "/api/login" ||
+					path == "/api/auth/register" ||
+					path == "/api/register"
+			},
 		}),
 	)
 

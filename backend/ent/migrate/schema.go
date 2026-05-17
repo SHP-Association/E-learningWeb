@@ -117,8 +117,8 @@ var (
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "progress", Type: field.TypeFloat64, Default: 0},
 		{Name: "is_completed", Type: field.TypeBool, Default: false},
-		{Name: "course_enrollments", Type: field.TypeInt},
-		{Name: "user_enrollments", Type: field.TypeInt},
+		{Name: "course_id", Type: field.TypeInt},
+		{Name: "student_id", Type: field.TypeInt},
 	}
 	// EnrollmentEnrollmentTable holds the schema information for the "Enrollment_enrollment" table.
 	EnrollmentEnrollmentTable = &schema.Table{

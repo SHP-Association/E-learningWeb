@@ -119,7 +119,8 @@ func (User) Edges() []ent.Edge {
 			Ref("user"),
 		edge.To("taught_courses", Course.Type),
 		edge.To("quiz_attempts", UserQuizAttempt.Type),
-		edge.To("enrollments", Enrollment.Type),
+		edge.To("enrollments", Enrollment.Type).
+			StorageKey(edge.Column("student_id")),
 		edge.To("reviews_given", Review.Type),
 		edge.To("enrolled_courses", Course.Type),
 		edge.To("completed_courses", Course.Type),

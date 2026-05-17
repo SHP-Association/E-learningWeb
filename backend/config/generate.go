@@ -29,6 +29,14 @@ type (
 		Files    FilesConfig
 		Tasks    TasksConfig
 		Mail     MailConfig
+		CORS     CORSConfig
+	}
+
+	// CORSConfig stores CORS configuration.
+	CORSConfig struct {
+		AllowOrigins string
+		AllowHeaders string
+		AllowMethods string
 	}
 
 	// HTTPConfig stores HTTP configuration.
@@ -149,6 +157,10 @@ func GetConfig() (Config, error) {
 	c.Mail.Password = getEnv("MAIL_PASSWORD", "admin")
 	c.Mail.FromAddress = getEnv("MAIL_FROM_ADDRESS", "admin@localhost")
 
+	c.CORS.AllowOrigins = getEnv("CORS_ALLOW_ORIGINS", "*")
+	c.CORS.AllowHeaders = getEnv("CORS_ALLOW_HEADERS", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Cookie")
+	c.CORS.AllowMethods = getEnv("CORS_ALLOW_METHODS", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+
 	if err := c.Validate(); err != nil {
 		return c, err
 	}
@@ -217,6 +229,10 @@ func GenerateConfigYAML(path string) error {
 		"MAIL_USER":         getEnv("MAIL_USER", "admin"),
 		"MAIL_PASSWORD":     getEnv("MAIL_PASSWORD", "admin"),
 		"MAIL_FROM_ADDRESS": getEnv("MAIL_FROM_ADDRESS", "admin@localhost"),
+
+		"CORS_ALLOW_ORIGINS": getEnv("CORS_ALLOW_ORIGINS", "*"),
+		"CORS_ALLOW_HEADERS": getEnv("CORS_ALLOW_HEADERS", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Cookie"),
+		"CORS_ALLOW_METHODS": getEnv("CORS_ALLOW_METHODS", "GET, POST, PUT, DELETE, PATCH, OPTIONS"),
 	}
 
 	out, err := yaml.Marshal(cfg)

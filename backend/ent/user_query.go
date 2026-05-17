@@ -776,13 +776,13 @@ func (_q *UserQuery) loadEnrollments(ctx context.Context, query *EnrollmentQuery
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_enrollments
+		fk := n.student_id
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_enrollments" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "student_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_enrollments" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "student_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

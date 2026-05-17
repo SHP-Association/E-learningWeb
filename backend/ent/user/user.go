@@ -123,7 +123,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "enrollment" package.
 	EnrollmentsInverseTable = "Enrollment_enrollment"
 	// EnrollmentsColumn is the table column denoting the enrollments relation/edge.
-	EnrollmentsColumn = "user_enrollments"
+	EnrollmentsColumn = "student_id"
 	// ReviewsGivenTable is the table that holds the reviews_given relation/edge.
 	ReviewsGivenTable = "Review_review"
 	// ReviewsGivenInverseTable is the table name for the Review entity.
