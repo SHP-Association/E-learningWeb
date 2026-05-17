@@ -92,12 +92,12 @@ func Pager(page int, path string, hasNext bool, hxTarget string) Node {
 		// Previous Button
 		func() Node {
 			if page <= 1 {
-				return Span(Class(btnClass+" opacity-20 cursor-not-allowed pointer-events-none"), Text("«"))
+				return Span(Class(btnClass+" opacity-20 cursor-not-allowed pointer-events-none"), Icon("ChevronLeft", "w-4 h-4"))
 			}
 			link := A(
 				Class(btnClass),
 				Href(href(page-1)),
-				Text("«"),
+				Icon("ChevronLeft", "w-4 h-4"),
 			)
 			if len(hxTarget) > 0 {
 				return Group{link, Attr("hx-get", href(page-1)), Attr("hx-swap", "outerHTML"), Attr("hx-target", hxTarget)}
@@ -114,12 +114,12 @@ func Pager(page int, path string, hasNext bool, hxTarget string) Node {
 		// Next Button
 		func() Node {
 			if !hasNext {
-				return Span(Class(btnClass+" opacity-20 cursor-not-allowed pointer-events-none"), Text("»"))
+				return Span(Class(btnClass+" opacity-20 cursor-not-allowed pointer-events-none"), Icon("ChevronRight", "w-4 h-4"))
 			}
 			link := A(
 				Class(btnClass),
 				Href(href(page+1)),
-				Text("»"),
+				Icon("ChevronRight", "w-4 h-4"),
 			)
 			if len(hxTarget) > 0 {
 				return Group{link, Attr("hx-get", href(page+1)), Attr("hx-swap", "outerHTML"), Attr("hx-target", hxTarget)}

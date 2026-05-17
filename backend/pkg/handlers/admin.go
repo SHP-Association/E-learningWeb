@@ -40,7 +40,7 @@ func (h *Admin) Init(c *services.Container) error {
 		TimeFormat:   time.DateTime,
 	})
 	h.backlite, err = ui.NewHandler(ui.Config{
-		DB:           c.Database,
+		DB:           c.TaskDB,
 		BasePath:     "/admin/tasks",
 		ItemsPerPage: 25,
 		ReleaseAfter: c.Config.Tasks.ReleaseAfter,

@@ -58,6 +58,9 @@ type Container struct {
 
 	// Tasks stores the task client.
 	Tasks *backlite.Client
+
+	// TaskDB stores the separate SQLite database used for tasks.
+	TaskDB *sql.DB
 }
 
 // NewContainer creates and initializes a new Container.
@@ -89,6 +92,13 @@ func (c *Container) Shutdown() error {
 	taskCtx, taskCancel := context.WithTimeout(context.Background(), c.Config.Tasks.ShutdownTimeout)
 	defer taskCancel()
 	c.Tasks.Stop(taskCtx)
+
+	// Shutdown the task database.
+	if c.TaskDB != nil {
+		if err := c.TaskDB.Close(); err != nil {
+			return err
+		}
+	}
 
 	// Shutdown the ORM.
 	if err := c.ORM.Close(); err != nil {
@@ -253,13 +263,13 @@ func (c *Container) initTasks() {
 
 	// Backlite currently only supports SQLite and uses SQLite-specific syntax (STRICT tables).
 	// We use a separate SQLite database for tasks to allow the main database to be Postgres.
-	taskDB, err := openDB("sqlite3", "tasks.sqlite?cache=shared&_fk=true")
+	c.TaskDB, err = openDB("sqlite3", "tasks.sqlite?cache=shared&_fk=true")
 	if err != nil {
 		panic(fmt.Sprintf("failed to open task database: %v", err))
 	}
 
 	c.Tasks, err = backlite.NewClient(backlite.ClientConfig{
-		DB:              taskDB,
+		DB:              c.TaskDB,
 		Logger:          log.Default(),
 		NumWorkers:      c.Config.Tasks.Goroutines,
 		ReleaseAfter:    c.Config.Tasks.ReleaseAfter,

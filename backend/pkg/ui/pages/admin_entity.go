@@ -57,7 +57,7 @@ func AdminEntityInput(ctx echo.Context, entityType admin.EntityType, values url.
 		Attr("hx-post", ctx.Request().URL.String()),
 		Attr("hx-target", "#modal-form-body"),
 		Attr("hx-swap", "innerHTML"),
-		Class("p-6 flex flex-col h-full"),
+		Class("p-6 flex flex-col"),
 		
 		// Modal Header
 		Div(
@@ -76,7 +76,8 @@ func AdminEntityInput(ctx echo.Context, entityType admin.EntityType, values url.
 
 		// Scrollable form fields
 		Div(
-			Class("flex flex-col gap-5 max-h-[calc(85vh-200px)] overflow-y-auto px-1 pr-2 custom-scrollbar"),
+			Class("flex flex-col gap-5 overflow-y-auto px-1 pr-2 custom-scrollbar"),
+			Style("max-height: calc(100vh - 350px);"),
 			Group(func() []Node {
 				fields := entityType.GetSchema()
 				nodes := make([]Node, len(fields))
@@ -240,12 +241,12 @@ func AdminEntityList(
 						Attr("hx-get", editURL),
 						Attr("hx-target", "#modal-form-body"),
 						Attr("onclick", "document.getElementById('admin-modal-container').classList.add('modal-open')"),
-						Icon("PencilSquare", "w-4 h-4"),
+						Icon("Pencil", "w-4 h-4"),
 					),
 					A(
 						Href(deleteURL),
 						Class("btn btn-sm bg-white/5 border-divider/40 hover:bg-danger/10 hover:border-danger/40 text-danger px-3"),
-						Icon("XCircle", "w-4 h-4"),
+						Icon("Trash", "w-4 h-4"),
 					),
 				),
 			),
@@ -306,14 +307,14 @@ func AdminEntityList(
 					Class("table-scroll-btn table-scroll-btn-left"),
 					ID("scroll-left"),
 					Attr("onclick", "scrollTable(-300)"),
-					Icon("Enter", "w-4 h-4 rotate-180"),
+					Icon("ChevronLeft", "w-4 h-4"),
 				),
 				Button(
 					Type("button"),
 					Class("table-scroll-btn table-scroll-btn-right"),
 					ID("scroll-right"),
 					Attr("onclick", "scrollTable(300)"),
-					Icon("Enter", "w-4 h-4"),
+					Icon("ChevronRight", "w-4 h-4"),
 				),
 				Div(
 					Class("admin-table-container"),

@@ -73,16 +73,16 @@ func Stats(stats ...Stat) Node {
 	g := make(Group, 0, len(stats))
 	for _, stat := range stats {
 		g = append(g, Div(
-			Class("admin-card p-8 flex items-center justify-between group hover:teal-lume"),
+			Class("admin-card p-6 flex items-center justify-between group hover:teal-lume"),
 			Div(
-				Class("flex flex-col gap-1.5"),
-				P(Class("text-[10px] font-black uppercase tracking-ultra text-secondary-text/60"), Text(stat.Title)),
-				H3(Class("text-4xl font-black text-white tracking-tight"), Text(stat.Value)),
-				If(stat.Description != "", P(Class("text-[11px] text-secondary-text/40 font-medium mt-1"), Text(stat.Description))),
+				Class("flex flex-col"),
+				P(Class("text-[10px] font-black uppercase tracking-ultra text-secondary-text/70"), Text(stat.Title)),
+				H3(Class("text-3xl font-black text-[var(--color-primary-text)] tracking-tight mt-1"), Text(stat.Value)),
+				If(stat.Description != "", P(Class("text-[11px] text-secondary-text/50 font-medium mt-1"), Text(stat.Description))),
 			),
 			Iff(stat.Icon != nil, func() Node {
 				return Div(
-					Class("w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-accent/80 transition-all group-hover:scale-110 group-hover:bg-accent/10 group-hover:text-accent"),
+					Class("w-12 h-12 rounded-xl bg-divider/10 border border-divider/25 flex items-center justify-center text-accent transition-all group-hover:scale-105 group-hover:bg-accent/15 group-hover:text-accent"),
 					stat.Icon,
 				)
 			}),
