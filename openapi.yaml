@@ -57,6 +57,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Email verification required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationPendingResponse'
         '500':
           description: Server error
           content:
@@ -67,7 +73,7 @@ paths:
   /api/auth/register:
     post:
       tags: [Auth]
-      summary: Register a new user
+      summary: Student signup (create account or resend OTP for unverified account)
       requestBody:
         required: true
         content:
@@ -75,18 +81,30 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
-        '201':
-          description: Account created and logged in
+        '200':
+          description: OTP resent for existing unverified student signup
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthSuccessResponse'
+                $ref: '#/components/schemas/SignupInitResponse'
+        '201':
+          description: Account created and OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupInitResponse'
         '400':
-          description: Invalid request body
+          description: Invalid request body or role not student
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: OTP cooldown active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtpCooldownResponse'
         '409':
           description: Email or username already exists
           content:
@@ -99,6 +117,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/verify-otp:
+    post:
+      tags: [Auth]
+      summary: Verify signup OTP and login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOTPRequest'
+      responses:
+        '200':
+          description: Verification complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          description: Invalid or expired OTP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/signup-config:
+    get:
+      tags: [Auth]
+      summary: Get web signup configuration
+      responses:
+        '200':
+          description: Signup configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupConfigResponse'
+        '500':
+          description: Server error
 
   /api/auth/logout:
     post:
@@ -408,6 +476,36 @@ paths:
         '500':
           description: Server error
 
+  /api/profile/onboarding:
+    patch:
+      tags: [LMS]
+      summary: Save required student onboarding details
+      security:
+        - SessionCookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingRequest'
+      responses:
+        '200':
+          description: Onboarding details saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingResponse'
+        '400':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Authentication required
+        '500':
+          description: Server error
+
 components:
   securitySchemes:
     SessionCookieAuth:
@@ -422,6 +520,40 @@ components:
         error:
           type: string
       required: [error]
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required: [error, errors]
+
+    VerificationPendingResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        verification_pending:
+          type: boolean
+        email:
+          type: string
+          format: email
+      required: [error, verification_pending, email]
+
+    OtpCooldownResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        retry_after_seconds:
+          type: integer
+      required: [error, retry_after_seconds]
 
     MessageResponse:
       type: object
@@ -461,6 +593,40 @@ components:
           minLength: 8
       required: [username, email, password]
 
+    VerifyOTPRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          minLength: 6
+          maxLength: 6
+      required: [email, otp]
+
+    SignupInitResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        verification_required:
+          type: boolean
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+      required: [message, verification_required, email]
+
+    SignupConfigResponse:
+      type: object
+      properties:
+        instructor_contact_email:
+          type: string
+          format: email
+      required: [instructor_contact_email]
+
     AuthSuccessResponse:
       type: object
       properties:
@@ -481,7 +647,39 @@ components:
           type: string
         role:
           type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        contact_number:
+          type: string
+        country:
+          type: string
+        onboarding_required:
+          type: boolean
       required: [id, username, email, role]
+
+    OnboardingRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        contact_number:
+          type: string
+        country:
+          type: string
+      required: [first_name, last_name, contact_number, country]
+
+    OnboardingResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required: [message, user]
 
     Category:
       type: object

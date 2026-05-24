@@ -80,6 +80,10 @@ const (
 	FieldAdmin = "admin"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldOtpCode holds the string denoting the otp_code field in the database.
+	FieldOtpCode = "otp_code"
+	// FieldOtpExpiresAt holds the string denoting the otp_expires_at field in the database.
+	FieldOtpExpiresAt = "otp_expires_at"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
 	EdgeOwner = "owner"
 	// EdgeTaughtCourses holds the string denoting the taught_courses edge name in mutations.
@@ -179,6 +183,8 @@ var Columns = []string{
 	FieldVerified,
 	FieldAdmin,
 	FieldCreatedAt,
+	FieldOtpCode,
+	FieldOtpExpiresAt,
 }
 
 var (
@@ -406,6 +412,16 @@ func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByOtpCode orders the results by the otp_code field.
+func ByOtpCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOtpCode, opts...).ToFunc()
+}
+
+// ByOtpExpiresAt orders the results by the otp_expires_at field.
+func ByOtpExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOtpExpiresAt, opts...).ToFunc()
 }
 
 // ByOwnerCount orders the results by owner count.

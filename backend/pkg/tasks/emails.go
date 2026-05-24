@@ -39,3 +39,30 @@ func NewWelcomeEmailTaskQueue(c *services.Container) backlite.Queue {
 			          // I might need to adjust Mail.Send to accept nil or a generic context.
 	})
 }
+
+// SendOTPTask processes sending an OTP code to a user for email verification.
+type SendOTPTask struct {
+	Email    string
+	Username string
+	OTP      string
+}
+
+func (t SendOTPTask) Config() backlite.QueueConfig {
+	return backlite.QueueConfig{
+		Name:        "SendOTPTask",
+		MaxAttempts: 3,
+		Timeout:     10 * time.Second,
+		Backoff:     30 * time.Second,
+	}
+}
+
+func NewSendOTPTaskQueue(c *services.Container) backlite.Queue {
+	return backlite.NewQueue[SendOTPTask](func(ctx context.Context, task SendOTPTask) error {
+		return c.Mail.
+			Compose().
+			To(task.Email).
+			Subject("Verify your email address").
+			Body(fmt.Sprintf("Hi %s,\n\nYour 6-digit verification code is: %s\n\nThis code will expire in 15 minutes.\n\nBest regards,\nSHP Association Team", task.Username, task.OTP)).
+			Send(nil)
+	})
+}

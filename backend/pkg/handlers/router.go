@@ -88,9 +88,8 @@ func BuildRouter(c *services.Container) error {
 				path := ctx.Path()
 				return path == "/api/health" ||
 					path == "/api/auth/login" ||
-					path == "/api/login" ||
 					path == "/api/auth/register" ||
-					path == "/api/register"
+					path == "/api/auth/verify-otp"
 			},
 		}),
 	)

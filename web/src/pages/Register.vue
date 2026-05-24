@@ -1,79 +1,26 @@
 <template>
   <AuthShell
-    title="Join SHP-Learner!"
-    subtitle="Create your account and start learning today."
+    title="Student Signup"
+    subtitle="Create your student account, verify your email with OTP, then finish onboarding."
     tone="secondary"
   >
     <template #status>
-      <div v-if="hasErrors" class="space-y-3">
-        <AlertMessage
-          type="error"
-          title="Please correct the following errors:"
-          :messages="errorList"
-          compact
-        />
-      </div>
-      <AppDialog
-        v-model="isSuccessDialogOpen"
-        title="Welcome Aboard!"
-      >
-        <p class="text-base text-zinc-300">{{ successMessage }}</p>
-        <template #footer>
-          <AppButton
-            tone="primary"
-            block
-            @click="goToProfile"
-          >
-            Go to Profile
-          </AppButton>
-        </template>
-      </AppDialog>
-      <AppDialog
-        v-model="isErrorDialogOpen"
-        title="Registration Issue"
-      >
-        <p class="text-base text-zinc-300">
-          We encountered a problem creating your account. Please check the form and try again.
-        </p>
-        <template #footer>
-          <AppButton
-            tone="danger"
-            block
-            @click="isErrorDialogOpen = false"
-          >
-            Close
-          </AppButton>
-        </template>
-      </AppDialog>
+      <AlertMessage
+        v-if="hasErrors"
+        type="error"
+        title="Please correct the following errors:"
+        :messages="errorList"
+        compact
+      />
+      <AlertMessage
+        v-if="userStore.error"
+        type="error"
+        :message="userStore.error"
+        compact
+      />
     </template>
 
     <form @submit.prevent="handleSubmit" class="space-y-5">
-      <div class="space-y-2">
-        <p class="text-sm font-medium text-gray-700">I want to register as:</p>
-        <div class="flex gap-4">
-          <label class="inline-flex items-center gap-2 text-gray-700">
-            <input
-              v-model="role"
-              type="radio"
-              name="role"
-              value="student"
-              class="h-5 w-5 border-gray-300 text-purple-600 focus:ring-purple-500"
-            />
-            <span class="font-medium">Student</span>
-          </label>
-          <label class="inline-flex items-center gap-2 text-gray-700">
-            <input
-              v-model="role"
-              type="radio"
-              name="role"
-              value="instructor"
-              class="h-5 w-5 border-gray-300 text-purple-600 focus:ring-purple-500"
-            />
-            <span class="font-medium">Instructor</span>
-          </label>
-        </div>
-      </div>
-
       <AppInput
         id="username"
         v-model="username"
@@ -125,13 +72,23 @@
         type="submit"
         tone="secondary"
         :loading="userStore.loading"
-        loading-label="Registering..."
+        loading-label="Creating account..."
         :disabled="userStore.loading"
         block
       >
-        Register
+        Continue
       </AppButton>
     </form>
+
+    <div class="rounded-lg border border-zinc-700 bg-zinc-900/30 p-4 text-sm text-zinc-300">
+      <p class="font-semibold text-zinc-100">Are you an instructor?</p>
+      <p class="mt-1">
+        Instructor signup is handled separately.
+        <a :href="`mailto:${instructorContactEmail}`" class="text-cyan-300 underline">
+          Contact us at {{ instructorContactEmail }}
+        </a>
+      </p>
+    </div>
 
     <template #footer>
       <p class="text-center text-sm text-gray-700 sm:text-base">
@@ -150,15 +107,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRegisterSEO } from '../composables/useSEO';
 import AlertMessage from '../components/AlertMessage.vue';
 import AppButton from '../components/ui/AppButton.vue';
 import AppInput from '../components/ui/AppInput.vue';
 import AuthShell from '../components/ui/AuthShell.vue';
-import AppDialog from '../components/ui/AppDialog.vue';
 import { useUserStore } from '../stores/userStore';
+import { apiService } from '../services/api.service';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -169,22 +126,14 @@ const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
-const role = ref<'student' | 'instructor'>('student');
+const instructorContactEmail = ref('admin@localhost');
 const errors = reactive<Record<string, string>>({});
-const successMessage = ref('');
-const isSuccessDialogOpen = ref(false);
-const isErrorDialogOpen = ref(false);
 
 const hasErrors = computed(() => Object.keys(errors).length > 0);
 const errorList = computed(() => Object.values(errors));
 
 const clearErrors = () => {
   Object.keys(errors).forEach((key) => delete errors[key]);
-};
-
-const goToProfile = () => {
-  isSuccessDialogOpen.value = false;
-  router.push('/profile');
 };
 
 const validateForm = (): boolean => {
@@ -211,32 +160,40 @@ const validateForm = (): boolean => {
   return Object.keys(errors).length === 0;
 };
 
+const loadSignupConfig = async () => {
+  try {
+    const response = await apiService.getSignupConfig();
+    if (response?.instructor_contact_email) {
+      instructorContactEmail.value = response.instructor_contact_email;
+    }
+  } catch (err) {
+    console.error('Failed to fetch signup config:', err);
+  }
+};
+
 const handleSubmit = async () => {
-  successMessage.value = '';
-  isSuccessDialogOpen.value = false;
-  isErrorDialogOpen.value = false;
+  userStore.clearError();
   clearErrors();
 
   if (!validateForm()) return;
 
-  try {
-    await userStore.registerUser({
-      username: username.value,
-      email: email.value,
-      password: password.value,
-      role: role.value,
-    });
+  const ok = await userStore.registerStudent({
+    username: username.value.trim(),
+    email: email.value.trim(),
+    password: password.value,
+  });
 
-    successMessage.value = 'Registration successful! We\'re excited to have you on board.';
-    isSuccessDialogOpen.value = true;
-  } catch (err: any) {
-    if (err.errors) {
-      if (err.errors.username) errors.username = Array.isArray(err.errors.username) ? err.errors.username[0] : err.errors.username;
-      if (err.errors.email) errors.email = Array.isArray(err.errors.email) ? err.errors.email[0] : err.errors.email;
-    } else {
-      errors.apiError = err.message || 'Registration failed.';
-    }
-    isErrorDialogOpen.value = true;
+  if (!ok) {
+    return;
   }
+
+  router.push({
+    path: '/register/verify',
+    query: { email: userStore.pendingVerificationEmail || email.value.trim() },
+  });
 };
+
+onMounted(() => {
+  loadSignupConfig();
+});
 </script>

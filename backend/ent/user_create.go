@@ -463,6 +463,34 @@ func (_c *UserCreate) SetNillableCreatedAt(v *time.Time) *UserCreate {
 	return _c
 }
 
+// SetOtpCode sets the "otp_code" field.
+func (_c *UserCreate) SetOtpCode(v string) *UserCreate {
+	_c.mutation.SetOtpCode(v)
+	return _c
+}
+
+// SetNillableOtpCode sets the "otp_code" field if the given value is not nil.
+func (_c *UserCreate) SetNillableOtpCode(v *string) *UserCreate {
+	if v != nil {
+		_c.SetOtpCode(*v)
+	}
+	return _c
+}
+
+// SetOtpExpiresAt sets the "otp_expires_at" field.
+func (_c *UserCreate) SetOtpExpiresAt(v time.Time) *UserCreate {
+	_c.mutation.SetOtpExpiresAt(v)
+	return _c
+}
+
+// SetNillableOtpExpiresAt sets the "otp_expires_at" field if the given value is not nil.
+func (_c *UserCreate) SetNillableOtpExpiresAt(v *time.Time) *UserCreate {
+	if v != nil {
+		_c.SetOtpExpiresAt(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *UserCreate) SetID(v int) *UserCreate {
 	_c.mutation.SetID(v)
@@ -891,6 +919,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.OtpCode(); ok {
+		_spec.SetField(user.FieldOtpCode, field.TypeString, value)
+		_node.OtpCode = value
+	}
+	if value, ok := _c.mutation.OtpExpiresAt(); ok {
+		_spec.SetField(user.FieldOtpExpiresAt, field.TypeTime, value)
+		_node.OtpExpiresAt = value
 	}
 	if nodes := _c.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -1586,6 +1586,12 @@ func (h *Handler) UserCreate(ctx echo.Context) error {
 	if payload.CreatedAt != nil {
 		op.SetCreatedAt(*payload.CreatedAt)
 	}
+	if payload.OtpCode != nil {
+		op.SetOtpCode(*payload.OtpCode)
+	}
+	if payload.OtpExpiresAt != nil {
+		op.SetOtpExpiresAt(*payload.OtpExpiresAt)
+	}
 	_, err := op.Save(ctx.Request().Context())
 	return err
 }
@@ -1706,6 +1712,16 @@ func (h *Handler) UserUpdate(ctx echo.Context, id int) error {
 	op.SetNillableLastLogin(payload.LastLogin)
 	op.SetVerified(payload.Verified)
 	op.SetAdmin(payload.Admin)
+	if payload.OtpCode == nil {
+		op.ClearOtpCode()
+	} else {
+		op.SetOtpCode(*payload.OtpCode)
+	}
+	if payload.OtpExpiresAt == nil {
+		op.ClearOtpExpiresAt()
+	} else {
+		op.SetOtpExpiresAt(*payload.OtpExpiresAt)
+	}
 	_, err = op.Save(ctx.Request().Context())
 	return err
 }
@@ -1762,6 +1778,8 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 			"Verified",
 			"Admin",
 			"Created at",
+			"Otp code",
+			"Otp expires at",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
 		Page:        page,
@@ -1804,6 +1822,8 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 				fmt.Sprint(res[i].Verified),
 				fmt.Sprint(res[i].Admin),
 				res[i].CreatedAt.Format(h.Config.TimeFormat),
+				res[i].OtpCode,
+				res[i].OtpExpiresAt.Format(h.Config.TimeFormat),
 			},
 		})
 	}
@@ -1848,6 +1868,8 @@ func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
 	v.Set("last_login", entity.LastLogin.Format(dateTimeFormat))
 	v.Set("verified", fmt.Sprint(entity.Verified))
 	v.Set("admin", fmt.Sprint(entity.Admin))
+	v.Set("otp_code", entity.OtpCode)
+	v.Set("otp_expires_at", entity.OtpExpiresAt.Format(dateTimeFormat))
 	return v, err
 }
 

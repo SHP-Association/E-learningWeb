@@ -124,6 +124,14 @@ const handleSubmit = async () => {
   if (success) {
     router.push('/profile');
   } else {
+    if (userStore.pendingVerificationEmail) {
+      router.push({
+        path: '/register/verify',
+        query: { email: userStore.pendingVerificationEmail },
+      });
+      return;
+    }
+
     errorMessage.value = userStore.error || 'Invalid username or password.';
     isErrorDialogOpen.value = true;
   }

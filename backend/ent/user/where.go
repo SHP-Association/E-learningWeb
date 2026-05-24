@@ -220,6 +220,16 @@ func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
 }
 
+// OtpCode applies equality check predicate on the "otp_code" field. It's identical to OtpCodeEQ.
+func OtpCode(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldOtpCode, v))
+}
+
+// OtpExpiresAt applies equality check predicate on the "otp_expires_at" field. It's identical to OtpExpiresAtEQ.
+func OtpExpiresAt(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldOtpExpiresAt, v))
+}
+
 // UsernameEQ applies the EQ predicate on the "username" field.
 func UsernameEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUsername, v))
@@ -1918,6 +1928,131 @@ func CreatedAtLT(v time.Time) predicate.User {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// OtpCodeEQ applies the EQ predicate on the "otp_code" field.
+func OtpCodeEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldOtpCode, v))
+}
+
+// OtpCodeNEQ applies the NEQ predicate on the "otp_code" field.
+func OtpCodeNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldOtpCode, v))
+}
+
+// OtpCodeIn applies the In predicate on the "otp_code" field.
+func OtpCodeIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldOtpCode, vs...))
+}
+
+// OtpCodeNotIn applies the NotIn predicate on the "otp_code" field.
+func OtpCodeNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldOtpCode, vs...))
+}
+
+// OtpCodeGT applies the GT predicate on the "otp_code" field.
+func OtpCodeGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldOtpCode, v))
+}
+
+// OtpCodeGTE applies the GTE predicate on the "otp_code" field.
+func OtpCodeGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldOtpCode, v))
+}
+
+// OtpCodeLT applies the LT predicate on the "otp_code" field.
+func OtpCodeLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldOtpCode, v))
+}
+
+// OtpCodeLTE applies the LTE predicate on the "otp_code" field.
+func OtpCodeLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldOtpCode, v))
+}
+
+// OtpCodeContains applies the Contains predicate on the "otp_code" field.
+func OtpCodeContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldOtpCode, v))
+}
+
+// OtpCodeHasPrefix applies the HasPrefix predicate on the "otp_code" field.
+func OtpCodeHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldOtpCode, v))
+}
+
+// OtpCodeHasSuffix applies the HasSuffix predicate on the "otp_code" field.
+func OtpCodeHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldOtpCode, v))
+}
+
+// OtpCodeIsNil applies the IsNil predicate on the "otp_code" field.
+func OtpCodeIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldOtpCode))
+}
+
+// OtpCodeNotNil applies the NotNil predicate on the "otp_code" field.
+func OtpCodeNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldOtpCode))
+}
+
+// OtpCodeEqualFold applies the EqualFold predicate on the "otp_code" field.
+func OtpCodeEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldOtpCode, v))
+}
+
+// OtpCodeContainsFold applies the ContainsFold predicate on the "otp_code" field.
+func OtpCodeContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldOtpCode, v))
+}
+
+// OtpExpiresAtEQ applies the EQ predicate on the "otp_expires_at" field.
+func OtpExpiresAtEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldOtpExpiresAt, v))
+}
+
+// OtpExpiresAtNEQ applies the NEQ predicate on the "otp_expires_at" field.
+func OtpExpiresAtNEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldOtpExpiresAt, v))
+}
+
+// OtpExpiresAtIn applies the In predicate on the "otp_expires_at" field.
+func OtpExpiresAtIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldIn(FieldOtpExpiresAt, vs...))
+}
+
+// OtpExpiresAtNotIn applies the NotIn predicate on the "otp_expires_at" field.
+func OtpExpiresAtNotIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldOtpExpiresAt, vs...))
+}
+
+// OtpExpiresAtGT applies the GT predicate on the "otp_expires_at" field.
+func OtpExpiresAtGT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGT(FieldOtpExpiresAt, v))
+}
+
+// OtpExpiresAtGTE applies the GTE predicate on the "otp_expires_at" field.
+func OtpExpiresAtGTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldOtpExpiresAt, v))
+}
+
+// OtpExpiresAtLT applies the LT predicate on the "otp_expires_at" field.
+func OtpExpiresAtLT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLT(FieldOtpExpiresAt, v))
+}
+
+// OtpExpiresAtLTE applies the LTE predicate on the "otp_expires_at" field.
+func OtpExpiresAtLTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldOtpExpiresAt, v))
+}
+
+// OtpExpiresAtIsNil applies the IsNil predicate on the "otp_expires_at" field.
+func OtpExpiresAtIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldOtpExpiresAt))
+}
+
+// OtpExpiresAtNotNil applies the NotNil predicate on the "otp_expires_at" field.
+func OtpExpiresAtNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldOtpExpiresAt))
 }
 
 // HasOwner applies the HasEdge predicate on the "owner" edge.

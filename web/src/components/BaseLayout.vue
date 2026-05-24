@@ -81,6 +81,31 @@
       </div>
     </nav>
 
+    <div
+      v-if="userStore.showOnboardingReminder && route.path !== '/onboarding'"
+      class="bg-amber-100 border-b border-amber-300"
+    >
+      <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <p class="text-amber-900 text-sm">
+          Complete your onboarding profile (name, contact number, country) for the best student experience.
+        </p>
+        <div class="flex items-center gap-2">
+          <button
+            class="text-sm font-medium px-3 py-1 rounded bg-amber-500 text-white hover:bg-amber-600"
+            @click="navigate('/onboarding')"
+          >
+            Complete now
+          </button>
+          <button
+            class="text-sm font-medium px-3 py-1 rounded border border-amber-600 text-amber-800 hover:bg-amber-200"
+            @click="dismissOnboardingReminder"
+          >
+            Remind later
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Main content slot -->
     <main class="container mx-auto p-4 md:p-6 flex-grow">
       <router-view />
@@ -133,13 +158,16 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../stores/userStore';
-import { apiService } from '../services/api.service';
 import logo from '../assets/logo.png';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
+
+// Backend URL for non-proxied links (e.g. Django/Go admin panel)
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:8000';
 
 // Use computed to make user reactive
 const user = computed(() => userStore.user);
@@ -167,8 +195,12 @@ const logout = async () => {
   router.push('/');
 };
 
+const dismissOnboardingReminder = () => {
+  userStore.dismissOnboardingReminder();
+};
+
 const openAdmin = () => {
-  window.open(`${apiService.baseURL}/admin`, '_blank');
+  window.open(`${BACKEND_URL}/admin`, '_blank');
 };
 
 const handleClickOutside = (event: MouseEvent) => {
@@ -190,4 +222,3 @@ onUnmounted(() => {
   document.removeEventListener('mousedown', handleClickOutside);
 });
 </script>
-

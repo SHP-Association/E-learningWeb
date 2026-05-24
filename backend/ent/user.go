@@ -83,6 +83,10 @@ type User struct {
 	Admin bool `json:"admin,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// OtpCode holds the value of the "otp_code" field.
+	OtpCode string `json:"otp_code,omitempty"`
+	// OtpExpiresAt holds the value of the "otp_expires_at" field.
+	OtpExpiresAt time.Time `json:"otp_expires_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -184,9 +188,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case user.FieldID, user.FieldTotalReviews:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldEmail, user.FieldPassword, user.FieldRole, user.FieldBio, user.FieldProfilePicture, user.FieldGender, user.FieldContactNumber, user.FieldAddress, user.FieldCountry, user.FieldHighestQualification, user.FieldInstitution, user.FieldSkills, user.FieldLinkedinProfile, user.FieldGithubProfile, user.FieldLoginAddress:
+		case user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldEmail, user.FieldPassword, user.FieldRole, user.FieldBio, user.FieldProfilePicture, user.FieldGender, user.FieldContactNumber, user.FieldAddress, user.FieldCountry, user.FieldHighestQualification, user.FieldInstitution, user.FieldSkills, user.FieldLinkedinProfile, user.FieldGithubProfile, user.FieldLoginAddress, user.FieldOtpCode:
 			values[i] = new(sql.NullString)
-		case user.FieldDateOfBirth, user.FieldLastActivity, user.FieldLastLogin, user.FieldDateJoined, user.FieldCreatedAt:
+		case user.FieldDateOfBirth, user.FieldLastActivity, user.FieldLastLogin, user.FieldDateJoined, user.FieldCreatedAt, user.FieldOtpExpiresAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -410,6 +414,18 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
+		case user.FieldOtpCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field otp_code", values[i])
+			} else if value.Valid {
+				_m.OtpCode = value.String
+			}
+		case user.FieldOtpExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field otp_expires_at", values[i])
+			} else if value.Valid {
+				_m.OtpExpiresAt = value.Time
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -584,6 +600,12 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("otp_code=")
+	builder.WriteString(_m.OtpCode)
+	builder.WriteString(", ")
+	builder.WriteString("otp_expires_at=")
+	builder.WriteString(_m.OtpExpiresAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

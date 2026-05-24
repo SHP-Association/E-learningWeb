@@ -109,6 +109,10 @@ func (User) Fields() []ent.Field {
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
+		field.String("otp_code").
+			Optional(),
+		field.Time("otp_expires_at").
+			Optional(),
 	}
 }
 

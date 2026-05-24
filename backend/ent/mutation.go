@@ -8827,6 +8827,8 @@ type UserMutation struct {
 	verified                 *bool
 	admin                    *bool
 	created_at               *time.Time
+	otp_code                 *string
+	otp_expires_at           *time.Time
 	clearedFields            map[string]struct{}
 	owner                    map[int]struct{}
 	removedowner             map[int]struct{}
@@ -10407,6 +10409,104 @@ func (m *UserMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// SetOtpCode sets the "otp_code" field.
+func (m *UserMutation) SetOtpCode(s string) {
+	m.otp_code = &s
+}
+
+// OtpCode returns the value of the "otp_code" field in the mutation.
+func (m *UserMutation) OtpCode() (r string, exists bool) {
+	v := m.otp_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtpCode returns the old "otp_code" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldOtpCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtpCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtpCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtpCode: %w", err)
+	}
+	return oldValue.OtpCode, nil
+}
+
+// ClearOtpCode clears the value of the "otp_code" field.
+func (m *UserMutation) ClearOtpCode() {
+	m.otp_code = nil
+	m.clearedFields[user.FieldOtpCode] = struct{}{}
+}
+
+// OtpCodeCleared returns if the "otp_code" field was cleared in this mutation.
+func (m *UserMutation) OtpCodeCleared() bool {
+	_, ok := m.clearedFields[user.FieldOtpCode]
+	return ok
+}
+
+// ResetOtpCode resets all changes to the "otp_code" field.
+func (m *UserMutation) ResetOtpCode() {
+	m.otp_code = nil
+	delete(m.clearedFields, user.FieldOtpCode)
+}
+
+// SetOtpExpiresAt sets the "otp_expires_at" field.
+func (m *UserMutation) SetOtpExpiresAt(t time.Time) {
+	m.otp_expires_at = &t
+}
+
+// OtpExpiresAt returns the value of the "otp_expires_at" field in the mutation.
+func (m *UserMutation) OtpExpiresAt() (r time.Time, exists bool) {
+	v := m.otp_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtpExpiresAt returns the old "otp_expires_at" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldOtpExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtpExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtpExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtpExpiresAt: %w", err)
+	}
+	return oldValue.OtpExpiresAt, nil
+}
+
+// ClearOtpExpiresAt clears the value of the "otp_expires_at" field.
+func (m *UserMutation) ClearOtpExpiresAt() {
+	m.otp_expires_at = nil
+	m.clearedFields[user.FieldOtpExpiresAt] = struct{}{}
+}
+
+// OtpExpiresAtCleared returns if the "otp_expires_at" field was cleared in this mutation.
+func (m *UserMutation) OtpExpiresAtCleared() bool {
+	_, ok := m.clearedFields[user.FieldOtpExpiresAt]
+	return ok
+}
+
+// ResetOtpExpiresAt resets all changes to the "otp_expires_at" field.
+func (m *UserMutation) ResetOtpExpiresAt() {
+	m.otp_expires_at = nil
+	delete(m.clearedFields, user.FieldOtpExpiresAt)
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by ids.
 func (m *UserMutation) AddOwnerIDs(ids ...int) {
 	if m.owner == nil {
@@ -10819,7 +10919,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 33)
+	fields := make([]string, 0, 35)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
@@ -10919,6 +11019,12 @@ func (m *UserMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
+	if m.otp_code != nil {
+		fields = append(fields, user.FieldOtpCode)
+	}
+	if m.otp_expires_at != nil {
+		fields = append(fields, user.FieldOtpExpiresAt)
+	}
 	return fields
 }
 
@@ -10993,6 +11099,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Admin()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
+	case user.FieldOtpCode:
+		return m.OtpCode()
+	case user.FieldOtpExpiresAt:
+		return m.OtpExpiresAt()
 	}
 	return nil, false
 }
@@ -11068,6 +11178,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldAdmin(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case user.FieldOtpCode:
+		return m.OldOtpCode(ctx)
+	case user.FieldOtpExpiresAt:
+		return m.OldOtpExpiresAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -11308,6 +11422,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
+	case user.FieldOtpCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtpCode(v)
+		return nil
+	case user.FieldOtpExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtpExpiresAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -11416,6 +11544,12 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldLastLogin) {
 		fields = append(fields, user.FieldLastLogin)
 	}
+	if m.FieldCleared(user.FieldOtpCode) {
+		fields = append(fields, user.FieldOtpCode)
+	}
+	if m.FieldCleared(user.FieldOtpExpiresAt) {
+		fields = append(fields, user.FieldOtpExpiresAt)
+	}
 	return fields
 }
 
@@ -11480,6 +11614,12 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldLastLogin:
 		m.ClearLastLogin()
+		return nil
+	case user.FieldOtpCode:
+		m.ClearOtpCode()
+		return nil
+	case user.FieldOtpExpiresAt:
+		m.ClearOtpExpiresAt()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -11587,6 +11727,12 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case user.FieldOtpCode:
+		m.ResetOtpCode()
+		return nil
+	case user.FieldOtpExpiresAt:
+		m.ResetOtpExpiresAt()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

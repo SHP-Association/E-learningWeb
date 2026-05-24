@@ -8,4 +8,5 @@ import (
 func Register(c *services.Container) {
 	c.Tasks.Register(NewExampleTaskQueue(c))
 	c.Tasks.Register(NewWelcomeEmailTaskQueue(c))
+	c.Tasks.Register(NewSendOTPTaskQueue(c))
 }

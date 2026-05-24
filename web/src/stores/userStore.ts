@@ -1,68 +1,146 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { apiService } from '../services/api.service';
-import type { User, LoginCredentials, RegisterData } from '../types/api.types';
+import type {
+  User,
+  LoginCredentials,
+  RegisterData,
+  VerifyOTPData,
+  OnboardingData,
+} from '../types/api.types';
+
+const USER_STORAGE_KEY = 'user';
+const ONBOARDING_REMINDER_KEY = 'onboardingReminderDismissed';
+const PENDING_SIGNUP_STORAGE_KEY = 'pendingSignupData';
+
+interface PendingSignupData {
+  username: string;
+  email: string;
+  password: string;
+}
+
+function computeNeedsOnboarding(userData: User | null): boolean {
+  if (!userData || userData.role !== 'student') {
+    return false;
+  }
+
+  return (
+    !userData.first_name?.trim() ||
+    !userData.last_name?.trim() ||
+    !userData.contact_number?.trim() ||
+    !userData.country?.trim()
+  );
+}
 
 export const useUserStore = defineStore('user', () => {
-  // State
   const user = ref<User | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const pendingVerificationEmail = ref<string | null>(null);
+  const pendingSignupData = ref<PendingSignupData | null>(null);
+  const onboardingReminderDismissed = ref(false);
 
-  // Getters
   const isLoggedIn = computed(() => user.value !== null);
   const isInstructor = computed(() => user.value?.role === 'instructor');
   const isAdmin = computed(() => user.value?.role === 'admin' || user.value?.is_staff === true);
   const isStudent = computed(() => user.value?.role === 'student');
+  const needsOnboarding = computed(() => computeNeedsOnboarding(user.value));
+  const showOnboardingReminder = computed(() => isLoggedIn.value && needsOnboarding.value && !onboardingReminderDismissed.value);
 
-  // Load user from localStorage on app start
   function loadUser() {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    const reminderDismissed = localStorage.getItem(ONBOARDING_REMINDER_KEY);
+    const storedPendingSignupData = localStorage.getItem(PENDING_SIGNUP_STORAGE_KEY);
+
+    if (reminderDismissed === 'true') {
+      onboardingReminderDismissed.value = true;
+    }
+
+    if (storedPendingSignupData) {
       try {
-        user.value = JSON.parse(storedUser);
+        pendingSignupData.value = JSON.parse(storedPendingSignupData);
+        pendingVerificationEmail.value = pendingSignupData.value?.email || null;
       } catch (e) {
-        console.error('Failed to parse stored user:', e);
-        localStorage.removeItem('user');
+        console.error('Failed to parse pending signup data:', e);
+        localStorage.removeItem(PENDING_SIGNUP_STORAGE_KEY);
       }
+    }
+
+    if (!storedUser) return;
+
+    try {
+      user.value = JSON.parse(storedUser);
+    } catch (e) {
+      console.error('Failed to parse stored user:', e);
+      localStorage.removeItem(USER_STORAGE_KEY);
     }
   }
 
-  // Save user to localStorage
   function saveUser(userData: User) {
-    user.value = userData;
-    localStorage.setItem('user', JSON.stringify(userData));
+    user.value = {
+      ...userData,
+      onboarding_required: computeNeedsOnboarding(userData),
+    };
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user.value));
   }
 
-  // Clear user from localStorage
   function clearUser() {
     user.value = null;
-    localStorage.removeItem('user');
+    localStorage.removeItem(USER_STORAGE_KEY);
+    clearPendingVerification();
+    onboardingReminderDismissed.value = false;
+    localStorage.removeItem(ONBOARDING_REMINDER_KEY);
   }
 
-  // Actions
+  function clearPendingVerification() {
+    pendingVerificationEmail.value = null;
+    pendingSignupData.value = null;
+    localStorage.removeItem(PENDING_SIGNUP_STORAGE_KEY);
+  }
+
+  function dismissOnboardingReminder() {
+    onboardingReminderDismissed.value = true;
+    localStorage.setItem(ONBOARDING_REMINDER_KEY, 'true');
+  }
+
+  function resetOnboardingReminder() {
+    onboardingReminderDismissed.value = false;
+    localStorage.removeItem(ONBOARDING_REMINDER_KEY);
+  }
+
   async function login(credentials: LoginCredentials): Promise<boolean> {
     loading.value = true;
     error.value = null;
 
     try {
-      // Call backend login API via the centralized apiService helper
       const response = await apiService.login({
         email: credentials.email || credentials.username || '',
-        password: credentials.password
+        password: credentials.password,
       });
 
-      // Handle new standardized response format
-      if (response.success || response.message === 'login successful' || response.message === 'Login successful') {
-        // Fetch user profile after successful login
-        await fetchUserProfile();
-        return true;
+      const loginSuccessful =
+        response.success ||
+        response.message === 'logged in successfully' ||
+        response.message === 'login successful' ||
+        response.message === 'Login successful';
+
+      if (!loginSuccessful) {
+        error.value = response.message || 'Login failed';
+        return false;
       }
 
-      error.value = response.message || 'Login failed';
-      return false;
+      clearPendingVerification();
+      await fetchUserProfile();
+      resetOnboardingReminder();
+      return true;
     } catch (err: any) {
-      error.value = err.message || 'Login failed';
+      const payload = err?.errors || {};
+      if (payload.verification_pending === true) {
+        pendingVerificationEmail.value = payload.email || null;
+        error.value = 'Email verification required. Please verify your email with OTP.';
+      } else {
+        error.value = err.message || 'Login failed';
+      }
       console.error('Login error:', err);
       return false;
     } finally {
@@ -70,7 +148,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function register(data: RegisterData): Promise<boolean> {
+  async function registerStudent(data: RegisterData): Promise<boolean> {
     loading.value = true;
     error.value = null;
 
@@ -78,21 +156,18 @@ export const useUserStore = defineStore('user', () => {
       const response = await apiService.register({
         username: data.username,
         email: data.email,
-        password: data.password
+        password: data.password,
       });
 
-      // Handle new standardized response format
-      if (
-        response.success || 
-        response.message === 'Registration successful!' || 
-        response.message === 'account created and logged in'
-      ) {
-        // Auto-login after registration
-        return await login({
-          email: data.email,
+      if (response.verification_required === true) {
+        pendingVerificationEmail.value = response.email || data.email;
+        pendingSignupData.value = {
           username: data.username,
+          email: data.email,
           password: data.password,
-        });
+        };
+        localStorage.setItem(PENDING_SIGNUP_STORAGE_KEY, JSON.stringify(pendingSignupData.value));
+        return true;
       }
 
       error.value = response.message || 'Registration failed';
@@ -100,6 +175,67 @@ export const useUserStore = defineStore('user', () => {
     } catch (err: any) {
       error.value = err.message || 'Registration failed';
       console.error('Registration error:', err);
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function verifyOtp(data: VerifyOTPData): Promise<boolean> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await apiService.verifyOTP(data);
+      const verified =
+        response?.message === 'verification successful, logged in' ||
+        response?.message === 'email verified successfully, please log in manually';
+
+      if (!verified) {
+        error.value = response?.message || 'OTP verification failed';
+        return false;
+      }
+
+      clearPendingVerification();
+      await fetchUserProfile();
+      resetOnboardingReminder();
+      return true;
+    } catch (err: any) {
+      error.value = err.message || 'OTP verification failed';
+      console.error('Verify OTP error:', err);
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function resendOtp(): Promise<boolean> {
+    if (!pendingSignupData.value) {
+      error.value = 'Signup details are missing. Please register again.';
+      return false;
+    }
+
+    return registerStudent(pendingSignupData.value);
+  }
+
+  async function submitOnboarding(data: OnboardingData): Promise<boolean> {
+    if (!user.value) {
+      error.value = 'No user logged in';
+      return false;
+    }
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await apiService.submitOnboarding(data);
+      const updatedUser = (response?.user || response?.data || response) as User;
+      saveUser(updatedUser);
+      resetOnboardingReminder();
+      return true;
+    } catch (err: any) {
+      error.value = err.message || 'Failed to save onboarding details';
+      console.error('Onboarding submit error:', err);
       return false;
     } finally {
       loading.value = false;
@@ -125,10 +261,7 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
 
     try {
-      // Fetch current user profile using the centralized apiService helper
       const response = await apiService.getCurrentUser();
-
-      // Handle new standardized response format
       if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
         saveUser(response.data);
       } else {
@@ -154,7 +287,6 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await apiService.updateUser(user.value.id, updates);
 
-      // Handle new standardized response format or direct object
       let updatedUser: User;
       if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
         updatedUser = response.data;
@@ -177,29 +309,37 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
   }
 
-  // Aliases for compatibility
   const loginUser = login;
-  const registerUser = register;
+  const register = registerStudent;
+  const registerUser = registerStudent;
   const handleLogout = logout;
 
   return {
-    // State
     user,
     loading,
     error,
-    // Getters
+    pendingVerificationEmail,
+    pendingSignupData,
     isLoggedIn,
     isInstructor,
     isAdmin,
     isStudent,
-    // Actions
+    needsOnboarding,
+    showOnboardingReminder,
     loadUser,
     saveUser,
     clearUser,
+    clearPendingVerification,
+    dismissOnboardingReminder,
+    resetOnboardingReminder,
     login,
     loginUser,
     register,
     registerUser,
+    registerStudent,
+    verifyOtp,
+    resendOtp,
+    submitOnboarding,
     logout,
     handleLogout,
     fetchUserProfile,

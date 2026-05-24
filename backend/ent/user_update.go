@@ -583,6 +583,46 @@ func (_u *UserUpdate) SetNillableAdmin(v *bool) *UserUpdate {
 	return _u
 }
 
+// SetOtpCode sets the "otp_code" field.
+func (_u *UserUpdate) SetOtpCode(v string) *UserUpdate {
+	_u.mutation.SetOtpCode(v)
+	return _u
+}
+
+// SetNillableOtpCode sets the "otp_code" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableOtpCode(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetOtpCode(*v)
+	}
+	return _u
+}
+
+// ClearOtpCode clears the value of the "otp_code" field.
+func (_u *UserUpdate) ClearOtpCode() *UserUpdate {
+	_u.mutation.ClearOtpCode()
+	return _u
+}
+
+// SetOtpExpiresAt sets the "otp_expires_at" field.
+func (_u *UserUpdate) SetOtpExpiresAt(v time.Time) *UserUpdate {
+	_u.mutation.SetOtpExpiresAt(v)
+	return _u
+}
+
+// SetNillableOtpExpiresAt sets the "otp_expires_at" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableOtpExpiresAt(v *time.Time) *UserUpdate {
+	if v != nil {
+		_u.SetOtpExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearOtpExpiresAt clears the value of the "otp_expires_at" field.
+func (_u *UserUpdate) ClearOtpExpiresAt() *UserUpdate {
+	_u.mutation.ClearOtpExpiresAt()
+	return _u
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (_u *UserUpdate) AddOwnerIDs(ids ...int) *UserUpdate {
 	_u.mutation.AddOwnerIDs(ids...)
@@ -1048,6 +1088,18 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Admin(); ok {
 		_spec.SetField(user.FieldAdmin, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.OtpCode(); ok {
+		_spec.SetField(user.FieldOtpCode, field.TypeString, value)
+	}
+	if _u.mutation.OtpCodeCleared() {
+		_spec.ClearField(user.FieldOtpCode, field.TypeString)
+	}
+	if value, ok := _u.mutation.OtpExpiresAt(); ok {
+		_spec.SetField(user.FieldOtpExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.OtpExpiresAtCleared() {
+		_spec.ClearField(user.FieldOtpExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1934,6 +1986,46 @@ func (_u *UserUpdateOne) SetNillableAdmin(v *bool) *UserUpdateOne {
 	return _u
 }
 
+// SetOtpCode sets the "otp_code" field.
+func (_u *UserUpdateOne) SetOtpCode(v string) *UserUpdateOne {
+	_u.mutation.SetOtpCode(v)
+	return _u
+}
+
+// SetNillableOtpCode sets the "otp_code" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableOtpCode(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetOtpCode(*v)
+	}
+	return _u
+}
+
+// ClearOtpCode clears the value of the "otp_code" field.
+func (_u *UserUpdateOne) ClearOtpCode() *UserUpdateOne {
+	_u.mutation.ClearOtpCode()
+	return _u
+}
+
+// SetOtpExpiresAt sets the "otp_expires_at" field.
+func (_u *UserUpdateOne) SetOtpExpiresAt(v time.Time) *UserUpdateOne {
+	_u.mutation.SetOtpExpiresAt(v)
+	return _u
+}
+
+// SetNillableOtpExpiresAt sets the "otp_expires_at" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableOtpExpiresAt(v *time.Time) *UserUpdateOne {
+	if v != nil {
+		_u.SetOtpExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearOtpExpiresAt clears the value of the "otp_expires_at" field.
+func (_u *UserUpdateOne) ClearOtpExpiresAt() *UserUpdateOne {
+	_u.mutation.ClearOtpExpiresAt()
+	return _u
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (_u *UserUpdateOne) AddOwnerIDs(ids ...int) *UserUpdateOne {
 	_u.mutation.AddOwnerIDs(ids...)
@@ -2429,6 +2521,18 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Admin(); ok {
 		_spec.SetField(user.FieldAdmin, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.OtpCode(); ok {
+		_spec.SetField(user.FieldOtpCode, field.TypeString, value)
+	}
+	if _u.mutation.OtpCodeCleared() {
+		_spec.ClearField(user.FieldOtpCode, field.TypeString)
+	}
+	if value, ok := _u.mutation.OtpExpiresAt(); ok {
+		_spec.SetField(user.FieldOtpExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.OtpExpiresAtCleared() {
+		_spec.ClearField(user.FieldOtpExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{

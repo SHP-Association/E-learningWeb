@@ -325,6 +325,8 @@ var (
 		{Name: "verified", Type: field.TypeBool, Default: false},
 		{Name: "admin", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "otp_code", Type: field.TypeString, Nullable: true},
+		{Name: "otp_expires_at", Type: field.TypeTime, Nullable: true},
 	}
 	// AccountCustomuserTable holds the schema information for the "Account_customuser" table.
 	AccountCustomuserTable = &schema.Table{

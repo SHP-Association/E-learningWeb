@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/SHP-Association/E-learningWeb/backend/ent"
 	"github.com/SHP-Association/E-learningWeb/backend/ent/course"
@@ -52,6 +53,7 @@ func (h *LMSAPI) Routes(g *echo.Group) {
 	auth := api.Group("", middleware.RequireAuthentication)
 	auth.POST("/enroll/:slug", h.enroll)
 	auth.GET("/profile", h.getProfile)
+	auth.PATCH("/profile/onboarding", h.updateOnboarding)
 }
 
 func (h *LMSAPI) getLesson(ctx echo.Context) error {
@@ -171,6 +173,63 @@ func (h *LMSAPI) getProfile(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, userWithData)
+}
+
+func (h *LMSAPI) updateOnboarding(ctx echo.Context) error {
+	type onboardingInput struct {
+		FirstName     string `json:"first_name"`
+		LastName      string `json:"last_name"`
+		ContactNumber string `json:"contact_number"`
+		Country       string `json:"country"`
+	}
+
+	var input onboardingInput
+	if err := ctx.Bind(&input); err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "invalid request body"})
+	}
+
+	input.FirstName = strings.TrimSpace(input.FirstName)
+	input.LastName = strings.TrimSpace(input.LastName)
+	input.ContactNumber = strings.TrimSpace(input.ContactNumber)
+	input.Country = strings.TrimSpace(input.Country)
+
+	validationErrors := map[string][]string{}
+	if input.FirstName == "" {
+		validationErrors["first_name"] = []string{"first name is required"}
+	}
+	if input.LastName == "" {
+		validationErrors["last_name"] = []string{"last name is required"}
+	}
+	if input.ContactNumber == "" {
+		validationErrors["contact_number"] = []string{"contact number is required"}
+	}
+	if input.Country == "" {
+		validationErrors["country"] = []string{"country is required"}
+	}
+
+	if len(validationErrors) > 0 {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"error":  "validation failed",
+			"errors": validationErrors,
+		})
+	}
+
+	authUser := ctx.Get(context.AuthenticatedUserKey).(*ent.User)
+	updatedUser, err := h.orm.User.
+		UpdateOneID(authUser.ID).
+		SetFirstName(input.FirstName).
+		SetLastName(input.LastName).
+		SetContactNumber(input.ContactNumber).
+		SetCountry(input.Country).
+		Save(ctx.Request().Context())
+	if err != nil {
+		return jsonInternalError(ctx, "unable to update onboarding details")
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"message": "onboarding details saved",
+		"user":    updatedUser,
+	})
 }
 
 func (h *LMSAPI) submitReview(ctx echo.Context) error {

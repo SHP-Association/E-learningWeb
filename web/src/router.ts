@@ -8,6 +8,8 @@ const FAQ = () => import('./pages/FAQ.vue');
 const Login = () => import('./pages/Login.vue');
 const Profile = () => import('./pages/Profile.vue');
 const Register = () => import('./pages/Register.vue');
+const RegisterVerifyOTP = () => import('./pages/RegisterVerifyOTP.vue');
+const StudentOnboarding = () => import('./pages/StudentOnboarding.vue');
 const PasswordReset = () => import('./pages/PasswordReset.vue');
 const PasswordResetDone = () => import('./pages/PasswordResetDone.vue');
 const PasswordResetConfirm = () => import('./pages/PasswordResetConfirm.vue');
@@ -36,6 +38,8 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/profile', name: 'Profile', component: Profile },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
+  { path: '/register/verify', name: 'RegisterVerifyOTP', component: RegisterVerifyOTP },
+  { path: '/onboarding', name: 'StudentOnboarding', component: StudentOnboarding },
   { path: '/faq', name: 'FAQ', component: FAQ },
   {
     path: '/quiz/:id',

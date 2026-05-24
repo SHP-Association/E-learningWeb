@@ -42,6 +42,7 @@ export interface User {
     linkedin_profile?: string;
     github_profile?: string;
     website?: string;
+    onboarding_required?: boolean;
 }
 
 export interface Category {
@@ -165,7 +166,8 @@ export interface FAQ {
 }
 
 export interface LoginCredentials {
-    username: string;
+    username?: string;
+    email?: string;
     password: string;
 }
 
@@ -175,7 +177,18 @@ export interface RegisterData {
     password: string;
     first_name?: string;
     last_name?: string;
-    role: 'student' | 'instructor';
+}
+
+export interface VerifyOTPData {
+    email: string;
+    otp: string;
+}
+
+export interface OnboardingData {
+    first_name: string;
+    last_name: string;
+    contact_number: string;
+    country: string;
 }
 
 export interface ApiError {

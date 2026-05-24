@@ -218,6 +218,8 @@ type User struct {
 	Verified             bool       `form:"verified"`
 	Admin                bool       `form:"admin"`
 	CreatedAt            *time.Time `form:"created_at"`
+	OtpCode              *string    `form:"otp_code"`
+	OtpExpiresAt         *time.Time `form:"otp_expires_at"`
 }
 
 func (e *User) GetName() string {

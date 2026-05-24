@@ -1,6 +1,6 @@
 // Comprehensive API Service with dedicated methods for all endpoints
-
-const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL || 'http://localhost:8000';
+// In dev, Vite proxies /api requests to the backend (see vite.config.js).
+// In production, a reverse proxy (nginx, etc.) routes /api to the backend.
 
 export class ApiError extends Error {
     constructor(
@@ -184,6 +184,26 @@ class ApiService {
         return this.post('/api/auth/register', data);
     }
 
+    async verifyOTP(data: { email: string; otp: string }): Promise<any> {
+        return this.post('/api/auth/verify-otp', data);
+    }
+
+    async getSignupConfig(): Promise<{ instructor_contact_email?: string }> {
+        return this.get('/api/auth/signup-config');
+    }
+
+    async requestPasswordReset(email: string): Promise<any> {
+        return this.post('/api/auth/password-reset', { email });
+    }
+
+    async confirmPasswordReset(uid: string, token: string, newPassword: string): Promise<any> {
+        return this.post('/api/auth/password-reset/confirm', {
+            uid,
+            token,
+            new_password: newPassword,
+        });
+    }
+
     // ==================== User & Profile APIs ====================
 
     async getCurrentUser(): Promise<any> {
@@ -206,6 +226,15 @@ class ApiService {
             method: 'PATCH',
             body: formData
         });
+    }
+
+    async submitOnboarding(data: {
+        first_name: string;
+        last_name: string;
+        contact_number: string;
+        country: string;
+    }): Promise<any> {
+        return this.patch('/api/profile/onboarding', data);
     }
 
     // ==================== Course APIs ====================
@@ -242,6 +271,10 @@ class ApiService {
 
     // ==================== Enrollment APIs ====================
 
+    async getEnrollments(): Promise<{ items: any[]; total: number }> {
+        return this.getList('/api/enrollments');
+    }
+
     async createEnrollment(data: { course_slug: string }): Promise<any> {
         // Call the newly fixed POST /api/enroll/{slug}
         return this.post(`/api/enroll/${data.course_slug}`, {});
@@ -265,8 +298,16 @@ class ApiService {
 
     // ==================== Quiz APIs ====================
 
+    async getQuizzes(): Promise<{ items: any[]; total: number }> {
+        return this.getList('/api/quizzes');
+    }
+
     async getQuiz(quizId: number): Promise<any> {
         return this.getOne(`/api/quizzes/${quizId}`);
+    }
+
+    async getQuestions(quizId: number): Promise<{ items: any[]; total: number }> {
+        return this.getList(`/api/quizzes/${quizId}/questions`);
     }
 
     async submitQuiz(quizId: number, answers: any): Promise<any> {
@@ -293,8 +334,8 @@ class ApiService {
     }
 }
 
-// Export singleton instance
-export const apiService = new ApiService(BACKEND_URL);
+// Export singleton instance — uses relative paths; proxied by Vite in dev
+export const apiService = new ApiService('');
 
 // Export helper function for CSRF token
 export { getCookie };

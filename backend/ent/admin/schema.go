@@ -820,6 +820,22 @@ var fieldsUser = []*FieldSchema{
 		Sensitive: false,
 		Enums:     nil,
 	},
+	{
+		Name:      "otp_code",
+		Type:      field.TypeString,
+		Optional:  true,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "otp_expires_at",
+		Type:      field.TypeTime,
+		Optional:  true,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
 }
 
 const NameUserQuizAttempt = "UserQuizAttempt"
